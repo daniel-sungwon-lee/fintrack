@@ -1,7 +1,21 @@
 import { Button, TextField } from "@mui/material"
 import Image from "next/image"
+import { useState } from "react"
 
 export default function Auth () {
+  const [error, setError] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const handleChange = (e) => {
+    const { id, value } = e.target
+
+    if (id === "email") {
+      setEmail(value)
+    } else {
+      setPassword(value)
+    }
+  }
 
   const handleLogin = (e) => {
     e.preventDefault()
@@ -23,8 +37,8 @@ export default function Auth () {
       </div>
 
         <form className="d-flex flex-column align-items-center m-5" onSubmit={handleLogin}>
-          <TextField className="mb-3" id="email" required variant="standard" label="Email" InputLabelProps={{required: false}}></TextField>
-          <TextField className="mb-5" id="password" required variant="standard" label="Password" InputLabelProps={{required: false}}></TextField>
+          <TextField value={email} className="mb-3" id="email" required variant="standard" label="Email" onChange={handleChange} InputLabelProps={{required: false}} error={error}></TextField>
+          <TextField value={password} className="mb-5" id="password" required variant="standard" label="Password" onChange={handleChange} InputLabelProps={{required: false}} error={error}></TextField>
           <Button type="submit" className="mb-5" variant="contained" sx={{backgroundColor: "#00C169"}}>Login</Button>
         </form>
 
