@@ -1,11 +1,15 @@
 {
   "name": "fintrack",
   "version": "1.0.0",
-  "description": "A finance tracking app.",
+  "description": "A finance tracking app",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "client": "cd client && npm run dev",
+    "server": "nodemon server.js",
+    "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\"",
+    "start": "node server.js",
+    "db:import": "bash scripts/db-import.bash",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -16,7 +20,7 @@
   "bugs": {
     "url": "https://github.com/daniel-sungwon-lee/fintrack/issues"
   },
-  "homepage": "https://github.com/daniel-sungwon-lee/fintrack#readme",
+  "homepage": "https://github.com/daniel-sungwon-lee/fintrack",
   "devDependencies": {
     "concurrently": "^7.5.0",
     "nodemon": "^2.0.20"
