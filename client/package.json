@@ -1,0 +1,28 @@
+{
+  "name": "fintrack",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
+    "@material-ui/core": "^5.0.0-beta.2",
+    "@material-ui/icons": "^5.0.0-beta.1",
+    "@mui/icons-material": "^5.10.6",
+    "@mui/material": "^5.10.9",
+    "@mui/styles": "^5.10.9",
+    "@next/font": "^13.0.2",
+    "next": "11.0.1",
+    "react": "17.0.2",
+    "react-dom": "17.0.2"
+  },
+  "devDependencies": {
+    "eslint": "7.32.0",
+    "eslint-config-next": "11.0.1"
+  }
+}
