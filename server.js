@@ -1,12 +1,12 @@
 require('dotenv/config')
-import { Pool } from 'pg'
+const pg = require('pg');
 const express = require('express');
 const port = process.env.PORT || 3001;
 const path = require('path');
 const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
 
-const db = new Pool({
+const db = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
