@@ -16,8 +16,13 @@ export default function Auth (props) {
 
     if (id === "email") {
       setEmail(value)
-    } else {
+    } else if (id === "password") {
       setPassword(value)
+    }
+
+    if(value.length === 0) {
+      setError(false)
+      setErrorText('')
     }
   }
 
@@ -52,7 +57,12 @@ export default function Auth (props) {
         setPage("login")
         setLoading(false)
       })
-      .catch(() => window.location.reload())
+      .catch((error) => {
+        console.error(error)
+        setError(true)
+        setErrorText('Please try again')
+        setLoading(false)
+      })
   }
 
   const handleLogin = (e) => {
@@ -80,7 +90,12 @@ export default function Auth (props) {
           setLoading(false)
         }
       })
-      .catch(() => window.location.reload())
+      .catch((error) => {
+        console.error(error)
+        setError(true)
+        setErrorText('Please try again')
+        setLoading(false)
+      })
   }
 
   if(page==="login") {
@@ -100,9 +115,16 @@ export default function Auth (props) {
           </div>
 
           <form className="d-flex flex-column align-items-center mx-5 mt-5" onSubmit={handleLogin}>
-            <TextField value={email} className="mb-3" id="email" required variant="standard" label="Email" onChange={handleChange} InputLabelProps={{required: false}} error={error}></TextField>
-            <TextField value={password} type="password" className="mb-5" id="password" required variant="standard" label="Password" onChange={handleChange} InputLabelProps={{required: false}} error={error}></TextField>
-            <LoadingButton loading={loading} type="submit" className="mb-5" variant="contained" sx={{backgroundColor: "#00C169"}}>
+            <TextField value={email} type="email" className="mb-3" id="email" required
+              variant="standard" label="Email" onChange={handleChange} InputLabelProps={{required: false}} error={error}
+              helperText={errorText} />
+
+            <TextField value={password} type="password" className="mb-5" id="password" required
+              variant="standard" label="Password" onChange={handleChange} InputLabelProps={{required: false}} error={error}
+              helperText={errorText} />
+
+            <LoadingButton loading={loading} type="submit" className="mb-5"
+              variant="contained" sx={{color: 'white'}}>
               Login
             </LoadingButton>
           </form>
@@ -133,10 +155,17 @@ export default function Auth (props) {
             <Image draggable='false' src="/images/money.svg" alt="FinTrack Logo" width={'500'} height={'300'} />
           </div>
 
-          <form className="d-flex flex-column align-items-center mx-5 mt-5" onSubmit={handleLogin}>
-            <TextField value={email} className="mb-3" id="email" required variant="standard" label="Email" onChange={handleChange} InputLabelProps={{ required: false }} error={error}></TextField>
-            <TextField value={password} type='password' className="mb-5" id="password" required variant="standard" label="Password" onChange={handleChange} InputLabelProps={{ required: false }} error={error}></TextField>
-            <LoadingButton loading={loading} type="submit" className="mb-5" variant="contained" sx={{ backgroundColor: "#00C169" }}>
+          <form className="d-flex flex-column align-items-center mx-5 mt-5" onSubmit={handleSignUp}>
+            <TextField value={email} type="email" className="mb-3" id="email" required
+              variant="standard" label="Email" onChange={handleChange} InputLabelProps={{ required: false }} error={error}
+              helperText={errorText} />
+
+            <TextField value={password} type='password' className="mb-5" id="password"
+              required variant="standard" label="Password" onChange={handleChange} InputLabelProps={{ required: false }} error={error}
+              helperText={errorText} />
+
+            <LoadingButton loading={loading} type="submit" className="mb-5"
+              variant="contained" sx={{color:'white'}}>
               Sign up
             </LoadingButton>
           </form>
