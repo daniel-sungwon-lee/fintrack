@@ -1,12 +1,20 @@
 {
   "name": "fintrack",
-  "version": "0.1.0",
+  "description": "A finance tracking app",
+  "version": "1.0.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daniel-sungwon-lee/fintrack.git"
+  },
+  "author": "Daniel Sungwon Lee",
+  "homepage": "https://github.com/daniel-sungwon-lee/fintrack",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:import": "bash scripts/db-import.bash"
   },
   "dependencies": {
     "@emotion/react": "^11.10.5",
@@ -29,6 +37,5 @@
   "devDependencies": {
     "eslint": "7.32.0",
     "eslint-config-next": "11.0.1"
-  },
-  "proxy": "http://localhost:3001/"
+  }
 }
