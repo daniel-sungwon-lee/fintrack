@@ -3,7 +3,7 @@ import { LoadingButton } from '@mui/lab';
 import Image from "next/image";
 import { useState } from "react";
 
-export default function Auth (props) {
+export default function Auth ({handleLoginRoot}) {
   const [page, setPage] = useState('login')
   const [error, setError] = useState(false)
   const [email, setEmail] = useState('')
@@ -48,7 +48,7 @@ export default function Auth (props) {
 
     const reqBody = { email, password }
 
-    fetch('/api/signup', {
+    fetch('/api/server/signup', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(reqBody)
@@ -72,7 +72,7 @@ export default function Auth (props) {
 
     const reqBody = { email, password }
 
-    fetch('/api/login', {
+    fetch('/api/server/login', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(reqBody)
@@ -86,7 +86,7 @@ export default function Auth (props) {
         }
 
         if (result.token && result.user) {
-          props.handleLogin(result)
+          handleLoginRoot(result)
           setLoading(false)
         }
       })

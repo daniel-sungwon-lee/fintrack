@@ -8,46 +8,46 @@ export default function Home() {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    const token = window.localStorage.getItem("dailyUserToken")
+    const token = window.localStorage.getItem("finTrackUserToken")
     const user = token ? decodeToken(token) : null
 
     setUser(user)
   }, [])
 
   const handleLogin = (result) => {
-    setLoading(true)
     const { user, token } = result
 
     setUser(user)
-    window.localStorage.setItem("dailyUserToken", token)
+    window.localStorage.setItem("finTrackUserToken", token)
 
-    if (window.localStorage.getItem("dailyUserToken")) {
+    if (window.localStorage.getItem("finTrackUserToken")) {
       window.location.pathname = "/"
     }
   }
 
   const handleSignOut = () => {
-    window.localStorage.removeItem("dailyUserToken")
+    window.localStorage.removeItem("finTrackUserToken")
     setUser(null)
-  }
-
-  if (!user) {
-    return (
-      <>
-        <Auth handleLogin={handleLogin} />
-      </>
-    )
   }
 
   if (window.location.pathname === "/auth" && user) {
     window.location.pathname = "/"
   }
 
-  return (
-    <>
-      <div>
-        hello
-      </div>
-    </>
-  )
+  if (!user) {
+    return (
+      <>
+        <Auth handleLoginRoot={handleLogin} />
+      </>
+    )
+  } else {
+    return (
+      <>
+        <div>
+          hello
+        </div>
+      </>
+    )
+  }
+
 }
