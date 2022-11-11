@@ -3,7 +3,7 @@ import { LoadingButton } from '@mui/lab';
 import Image from "next/image";
 import { useState } from "react";
 
-export default function Auth ({handleLoginRoot}) {
+export default function Auth ({ setUser }) {
   const [page, setPage] = useState('login')
   const [error, setError] = useState(false)
   const [email, setEmail] = useState('')
@@ -86,7 +86,15 @@ export default function Auth ({handleLoginRoot}) {
         }
 
         if (result.token && result.user) {
-          handleLoginRoot(result)
+          const { user, token } = result
+
+          setUser(user)
+          window.localStorage.setItem("finTrackUserToken", token)
+
+          if (window.localStorage.getItem("finTrackUserToken")) {
+            window.location.pathname = "/"
+          }
+
           setLoading(false)
         }
       })
