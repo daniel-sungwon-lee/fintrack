@@ -1,19 +1,36 @@
 {
   "name": "fintrack",
-  "version": "0.1.0",
+  "description": "A finance tracking app",
+  "version": "1.0.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daniel-sungwon-lee/fintrack.git"
+  },
+  "author": "Daniel Sungwon Lee",
+  "homepage": "https://github.com/daniel-sungwon-lee/fintrack",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:import": "bash scripts/db-import.bash"
   },
   "dependencies": {
-    "@emotion/react": "^11.4.0",
-    "@emotion/styled": "^11.3.0",
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
     "@material-ui/core": "^5.0.0-beta.2",
     "@material-ui/icons": "^5.0.0-beta.1",
+    "@mui/icons-material": "^5.10.6",
+    "@mui/lab": "^5.0.0-alpha.107",
+    "@mui/material": "^5.10.13",
+    "@mui/styles": "^5.10.9",
+    "@next/font": "^13.0.2",
+    "argon2": "^0.30.2",
+    "dotenv": "^16.0.3",
+    "jsonwebtoken": "^8.5.1",
     "next": "11.0.1",
+    "pg": "^8.8.0",
     "react": "17.0.2",
     "react-dom": "17.0.2"
   },
