@@ -13,7 +13,7 @@ export default function Home({ user, setUser }) {
   if (!user) {
     return (
       <>
-        <Auth />
+        <Auth setUser={setUser} />
       </>
     )
   }

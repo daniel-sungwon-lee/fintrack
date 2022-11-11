@@ -1,7 +1,7 @@
-import { Button, CircularProgress, Link, TextField } from "@mui/material";
+import { Button, CircularProgress, Collapse, Zoom, Link, TextField } from "@mui/material";
 import { LoadingButton } from '@mui/lab';
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Auth ({ setUser }) {
   const [page, setPage] = useState('login')
@@ -10,6 +10,11 @@ export default function Auth ({ setUser }) {
   const [password, setPassword] = useState('')
   const [errorText, setErrorText] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showLogin, setShowLogin] = useState(false)
+
+  useEffect(() => {
+    const collapseTimeout = setTimeout(() => setShowLogin(true), 300)
+  })
 
   const handleChange = (e) => {
     const { id, value } = e.target
@@ -108,7 +113,7 @@ export default function Auth ({ setUser }) {
 
   if(page==="login") {
     return (
-      <>
+      <Collapse in={showLogin} collapsedSize={0}>
         <div className="container">
 
           <div className="d-flex flex-column align-items-center m-5 text-center">
@@ -145,11 +150,11 @@ export default function Auth ({ setUser }) {
           </div>
 
         </div>
-      </>
+      </Collapse>
     )
   } else {
     return (
-      <>
+      <Zoom in timeout={300}>
         <div className="container">
 
           <div className="d-flex flex-column align-items-center m-5">
@@ -185,7 +190,7 @@ export default function Auth ({ setUser }) {
           </div>
 
         </div>
-      </>
+      </Zoom>
     )
   }
 
