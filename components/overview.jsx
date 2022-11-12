@@ -1,7 +1,7 @@
 import { useState } from "react"
 import Placeholder from "./placeholder"
 
-export default function Track() {
+export default function Overview() {
   const [loading, setLoading] = useState(true)
 
   return (
@@ -11,7 +11,7 @@ export default function Track() {
           ? <Placeholder />
           :
             <div>
-              Tracking...
+              Home!
             </div>
       }
     </>
