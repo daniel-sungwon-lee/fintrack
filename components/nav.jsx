@@ -1,9 +1,11 @@
 import { AssessmentRounded, HomeRounded, PowerSettingsNewRounded } from "@mui/icons-material";
 import { BottomNavigation, BottomNavigationAction } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function Nav({ setPage }) {
-  const [value, setValue] = useState('overview')
+export default function Nav({ page, setPage }) {
+  const [value, setValue] = useState(page || 'overview')
+
+  useEffect(() => setValue(page))
 
   return (
     <BottomNavigation sx={{ justifyContent: "space-around", height: '75px',
