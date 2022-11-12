@@ -3,7 +3,7 @@ import { BottomNavigation, BottomNavigationAction } from "@mui/material";
 import { useState } from "react";
 
 export default function Nav({ setPage }) {
-  const [value, setValue] = useState('home')
+  const [value, setValue] = useState('overview')
 
   return (
     <BottomNavigation sx={{justifyContent: "space-around", height: '75px'}} value={value}
