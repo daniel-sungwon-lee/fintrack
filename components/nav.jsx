@@ -16,7 +16,8 @@ export default function Nav({ page, setPage }) {
      }}>
       <BottomNavigationAction label='Overview' value='overview' icon={<HomeRounded />} />
       <BottomNavigationAction label='Track' value='track' icon={<AssessmentRounded />} />
-      <BottomNavigationAction label='Logout' value='logout' icon={<PowerSettingsNewRounded />} />
+      <BottomNavigationAction color="error" sx={{color:'red !important'}} label='Logout'
+       value='logout' icon={<PowerSettingsNewRounded />} />
     </BottomNavigation>
   )
 }
