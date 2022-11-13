@@ -99,8 +99,6 @@ export default function Auth ({ setUser }) {
           if (window.localStorage.getItem("finTrackUserToken")) {
             window.location.pathname = "/"
           }
-
-          setLoading(false)
         }
       })
       .catch((error) => {

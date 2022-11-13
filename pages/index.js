@@ -29,12 +29,12 @@ export default function Home({ user, setUser }) {
         break;
 
       case 'logout':
+        if(!logoutModal) {
+          setLogoutModal(true)
+        }
         return (
           <>
-            <Modal open={true} closeAfterTransition onClose={() => {
-             setLogoutModal(false)
-             setPage('overview')
-             }}>
+            <Modal open={logoutModal} closeAfterTransition>
               <Slide in direction='up'>
                 <Box sx={{width:'100%', display:'flex', justifyContent:'center',
                  height:'100%', alignItems:'center'}}>
@@ -48,14 +48,18 @@ export default function Home({ user, setUser }) {
 
                     <div className='d-flex w-100 justify-content-evenly'>
                       <Fab size='medium' color='error' variant='extended'
-                       onClick={() => setLogoutModal(false)}>
+                       onClick={() => {
+                        setLogoutModal(false)
+                        setPage('overview')
+                       }}>
                         <div className={styles.fab}>
                           <ClearRounded style={{marginRight:'0.5rem'}} />
                           No
                         </div>
                       </Fab>
 
-                      <Fab size='medium' color='primary' variant='extended'>
+                      <Fab size='medium' color='primary' variant='extended'
+                       onClick={handleSignOut}>
                         <div className={styles.fab}>
                           <LogoutRounded style={{ marginRight: '0.5rem' }} />
                           Yes
@@ -79,6 +83,7 @@ export default function Home({ user, setUser }) {
   const handleSignOut = () => {
     window.localStorage.removeItem("finTrackUserToken")
     setUser(null)
+    setPage('overview')
   }
 
   if (!user) {
