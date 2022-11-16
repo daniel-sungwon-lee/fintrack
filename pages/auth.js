@@ -8,6 +8,7 @@ export default function Auth ({ setUser }) {
   const [error, setError] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [errorText, setErrorText] = useState('')
   const [loading, setLoading] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
@@ -171,7 +172,7 @@ export default function Auth ({ setUser }) {
               variant="standard" label="Email" onChange={handleChange} InputLabelProps={{ required: false }} error={error}
               helperText={errorText} />
 
-            <TextField value={password} type='password' className="mb-5" id="password"
+            <TextField value={password} type={showPassword ? 'text' : 'password'} className="mb-5" id="password"
               required variant="standard" label="Password" onChange={handleChange} InputLabelProps={{ required: false }} error={error}
               helperText={errorText} />
 
