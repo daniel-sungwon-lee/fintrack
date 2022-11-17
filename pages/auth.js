@@ -2,6 +2,7 @@ import { Button, CircularProgress, Collapse, Zoom, Link, TextField } from "@mui/
 import { LoadingButton } from '@mui/lab';
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { VisibilityRounded, VisibilityOffRounded } from "@mui/icons-material";
 
 export default function Auth ({ setUser }) {
   const [page, setPage] = useState('login')
@@ -131,7 +132,7 @@ export default function Auth ({ setUser }) {
               variant="standard" label="Email" onChange={handleChange} InputLabelProps={{required: false}} error={error}
               helperText={errorText} />
 
-            <TextField value={password} type="password" className="mb-5" id="password" required
+            <TextField value={password} type={showPassword ? 'text' : 'password'} className="mb-5" id="password" required
               variant="standard" label="Password" onChange={handleChange} InputLabelProps={{required: false}} error={error}
               helperText={errorText} />
 
