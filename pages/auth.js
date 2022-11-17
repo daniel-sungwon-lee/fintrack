@@ -41,11 +41,13 @@ export default function Auth ({ setUser }) {
       setPassword("")
       setError(false)
       setErrorText("")
+      setShowPassword(false)
 
     } else {
       setPage("login")
       setEmail("")
       setPassword("")
+      setShowPassword(false)
     }
   }
 
