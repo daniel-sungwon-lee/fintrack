@@ -95,7 +95,7 @@ export default function Home({ user, setUser }) {
   }
 
   return (
-    <Collapse in={show}>
+    <Collapse in={show} collapsedSize={0}>
       <Nav page={page} setPage={setPage} />
 
       <div className='container'>
