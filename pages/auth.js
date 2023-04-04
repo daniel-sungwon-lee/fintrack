@@ -1,13 +1,16 @@
-import { Button, CircularProgress, Collapse, Zoom, Link, TextField } from "@mui/material";
+import { Button, CircularProgress, Collapse, Zoom, Link, TextField, FormControl,
+         InputLabel, Input, InputAdornment, IconButton } from "@mui/material";
 import { LoadingButton } from '@mui/lab';
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { VisibilityRounded, VisibilityOffRounded } from "@mui/icons-material";
 
 export default function Auth ({ setUser }) {
   const [page, setPage] = useState('login')
   const [error, setError] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [errorText, setErrorText] = useState('')
   const [loading, setLoading] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
@@ -38,12 +41,18 @@ export default function Auth ({ setUser }) {
       setPassword("")
       setError(false)
       setErrorText("")
+      setShowPassword(false)
 
     } else {
       setPage("login")
       setEmail("")
       setPassword("")
+      setShowPassword(false)
     }
+  }
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword)
   }
 
   const handleSignUp = (e) => {
@@ -99,8 +108,6 @@ export default function Auth ({ setUser }) {
           if (window.localStorage.getItem("finTrackUserToken")) {
             window.location.pathname = "/"
           }
-
-          setLoading(false)
         }
       })
       .catch((error) => {
@@ -130,11 +137,30 @@ export default function Auth ({ setUser }) {
           <form className="d-flex flex-column align-items-center mx-5 mt-5" onSubmit={handleLogin}>
             <TextField value={email} type="email" className="mb-3" id="email" required
               variant="standard" label="Email" onChange={handleChange} InputLabelProps={{required: false}} error={error}
-              helperText={errorText} />
+              helperText={errorText} sx={{width: '195px'}} />
 
-            <TextField value={password} type="password" className="mb-5" id="password" required
-              variant="standard" label="Password" onChange={handleChange} InputLabelProps={{required: false}} error={error}
-              helperText={errorText} />
+            <FormControl variant="standard" sx={{width: '195px'}}>
+              <InputLabel>Password</InputLabel>
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={handleChange}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={handleClickShowPassword}
+                    >
+                      {showPassword ? <VisibilityOffRounded /> : <VisibilityRounded />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+                className='mb-5'
+                required
+                error={error}
+                helperText={errorText}
+              />
+            </FormControl>
 
             <LoadingButton loading={loading} type="submit" className="mb-5"
               variant="contained" sx={{color: 'white'}}>
@@ -171,11 +197,30 @@ export default function Auth ({ setUser }) {
           <form className="d-flex flex-column align-items-center mx-5 mt-5" onSubmit={handleSignUp}>
             <TextField value={email} type="email" className="mb-3" id="email" required
               variant="standard" label="Email" onChange={handleChange} InputLabelProps={{ required: false }} error={error}
-              helperText={errorText} />
+              helperText={errorText} sx={{width: '195px'}} />
 
-            <TextField value={password} type='password' className="mb-5" id="password"
-              required variant="standard" label="Password" onChange={handleChange} InputLabelProps={{ required: false }} error={error}
-              helperText={errorText} />
+            <FormControl variant="standard" sx={{ width: '195px' }}>
+              <InputLabel>Password</InputLabel>
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={handleChange}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={handleClickShowPassword}
+                    >
+                      {showPassword ? <VisibilityOffRounded /> : <VisibilityRounded />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+                className='mb-5'
+                required
+                error={error}
+                helperText={errorText}
+              />
+            </FormControl>
 
             <LoadingButton loading={loading} type="submit" className="mb-5"
               variant="contained" sx={{color:'white'}}>

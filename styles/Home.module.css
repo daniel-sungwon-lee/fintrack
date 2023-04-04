@@ -1,0 +1,7 @@
+.fab {
+  color: white;
+  text-transform: none;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
