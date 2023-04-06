@@ -30,7 +30,7 @@ export default function handler (req, res) {
         .verify(hashedPassword, password)
         .then(isMatch => {
           if (!isMatch) {
-            throw new ClientError(401, 'Invalid login');
+            throw new ClientError(401, 'Password is incorrect');
           }
           const payload = { userId, email };
           const token = jwt.sign(payload, process.env.TOKEN_SECRET);

@@ -137,16 +137,16 @@ export default function Auth ({ setUser }) {
           <form className="d-flex flex-column align-items-center mx-5 mt-5" onSubmit={handleLogin}>
             <TextField value={email} type="email" className="mb-3" id="email" required
               variant="standard" label="Email" onChange={handleChange} InputLabelProps={{required: false}} error={error}
-              helperText={errorText} sx={{width: '195px'}} />
+              sx={{width: '195px'}} />
 
-            <FormControl variant="standard" sx={{width: '195px'}}>
-              <InputLabel>Password</InputLabel>
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={handleChange}
-                endAdornment={
+            <TextField
+              id="password"
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={handleChange}
+              InputProps={{
+                endAdornment:
                   <InputAdornment position="end">
                     <IconButton
                       onClick={handleClickShowPassword}
@@ -154,13 +154,15 @@ export default function Auth ({ setUser }) {
                       {showPassword ? <VisibilityOffRounded /> : <VisibilityRounded />}
                     </IconButton>
                   </InputAdornment>
-                }
-                className='mb-5'
-                required
-                error={error}
-                helperText={errorText}
-              />
-            </FormControl>
+              }}
+              InputLabelProps={{ required: false }}
+              className='mb-5'
+              required
+              error={error}
+              helperText={errorText}
+              variant="standard"
+              sx={{width: '195px'}}
+            />
 
             <LoadingButton loading={loading} type="submit" className="mb-5"
               variant="contained" sx={{color: 'white'}}>
