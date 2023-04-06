@@ -9,7 +9,7 @@ import Context from "./context.tsx";
 import { Products } from "plaid";
 
 //custom styles
-//import styles from '../../../styles/Home.module.css'
+import styles from '../../styles/Home.module.css'
 
 const Link = () => {
   const { linkToken, isPaymentInitiation, dispatch } = useContext(Context);
@@ -85,7 +85,7 @@ const Link = () => {
     //custom button (fab)
     <Fab onClick={() => open()} disabled={!ready} variant="extended" size="large"
       color="primary" sx={{ padding: '2rem', borderRadius: '2rem' }}>
-      <div /* add classname={styles.fab} */  style={{ fontSize: '20px' }}>
+      <div className={styles.fab} style={{ fontSize: '20px' }}>
         <AccountBalanceRounded style={{ marginRight: "0.5rem" }} />
         Connect bank account
       </div>
