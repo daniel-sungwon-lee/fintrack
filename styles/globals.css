@@ -24,6 +24,8 @@ a {
 
 #password-helper-text {
   margin-top: 1rem;
+  margin-bottom: -2.6rem;
   text-align: center;
   font-size: 16px;
+  font-family: 'Inter';
 }

@@ -118,6 +118,12 @@ export default function Auth ({ setUser }) {
       })
   }
 
+  const handleAutoFill = (e) => {
+    e.preventDefault();
+    setEmail('hello@there')
+    setPassword('obiwankenobi')
+  }
+
   if(page==="login") {
     return (
       <Collapse in={showLogin} collapsedSize={0}>
@@ -174,6 +180,7 @@ export default function Auth ({ setUser }) {
             <h4 className="text-center">Don't have an account?</h4>
             <div className="d-flex justify-content-center">
               <Link onClick={handleSwitch} href="#" underline="none">Sign up</Link>
+              <Link sx={{marginLeft: '2rem'}} onClick={handleAutoFill} href="#" underline="none">Demo</Link>
             </div>
           </div>
 
