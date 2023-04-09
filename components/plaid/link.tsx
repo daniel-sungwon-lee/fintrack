@@ -5,7 +5,7 @@ import { usePlaidLink } from "react-plaid-link";
 import { Fab } from "@mui/material";
 import { AccountBalanceRounded } from "@mui/icons-material"
 
-import Context from "./context.tsx";
+import Context from "../../pages/context.tsx";
 import { Products } from "plaid";
 
 //custom styles
