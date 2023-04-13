@@ -2,7 +2,7 @@ import React, { useEffect, useContext } from "react";
 import { usePlaidLink } from "react-plaid-link";
 
 //added custom button
-import { Fab } from "@mui/material";
+import { Fab, CircularProgress } from "@mui/material";
 import { AccountBalanceRounded } from "@mui/icons-material"
 
 import Context from "../../pages/context.tsx";
@@ -86,8 +86,17 @@ const Link = () => {
     <Fab onClick={() => open()} disabled={!ready} variant="extended" size="large"
       color="primary" sx={{ padding: '2rem', borderRadius: '2rem' }}>
       <div className={styles.fab} style={{ fontSize: '20px' }}>
-        <AccountBalanceRounded style={{ marginRight: "0.5rem" }} />
-        Connect bank account
+        {
+          ready
+            ?<>
+              <AccountBalanceRounded style={{ marginRight: "0.5rem" }} />
+              Connect bank account
+             </>
+            :<>
+              <CircularProgress color="inherit" size={30} sx={{marginRight: '1rem'}} />
+              Loading...
+             </>
+        }
       </div>
     </Fab>
   );
