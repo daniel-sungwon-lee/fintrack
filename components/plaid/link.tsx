@@ -93,7 +93,8 @@ const Link = () => {
               Connect bank account
              </>
             :<>
-              <CircularProgress color="inherit" size={30} sx={{marginRight: '1rem'}} />
+              <CircularProgress color="inherit" size={30} sx={{marginRight: '1rem'}}
+               thickness={5} />
               Loading...
              </>
         }
