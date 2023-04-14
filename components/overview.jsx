@@ -1,8 +1,9 @@
 import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent,
-         DialogContentText, DialogTitle, Grow, Paper, Zoom } from "@mui/material"
-import { AccountBalanceRounded } from "@mui/icons-material"
+         DialogContentText, DialogTitle, Fab, Grow, Paper, Zoom } from "@mui/material"
+import { AccountBalanceRounded, CloseRounded } from "@mui/icons-material"
 import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
+import styles from '../styles/Home.module.css'
 
 import Link from './plaid/link.tsx'
 
@@ -78,7 +79,8 @@ function AccountDetails({ open, setOpen, data }) {
   return (
     <>
       <Dialog open={open} TransitionComponent={Transition} onClose={() => setOpen(false)}
-       closeAfterTransition keepMounted>
+       closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#00C169",
+       color: "white", alignItems: "center"}}}>
         <DialogTitle>
           Bank Account Detail
         </DialogTitle>
@@ -88,8 +90,13 @@ function AccountDetails({ open, setOpen, data }) {
             the user's bank account details such as the balance and transactions
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-
+        <DialogActions sx={{position:'absolute', top:"0.5rem", right:"0.5rem"}}>
+          <Fab size='medium' color='error' variant='extended' onClick={() => setOpen(false)}>
+            <div className={styles.fab}>
+              <CloseRounded style={{marginRight:'0.25rem'}} />
+              Close
+            </div>
+          </Fab>
         </DialogActions>
       </Dialog>
     </>
