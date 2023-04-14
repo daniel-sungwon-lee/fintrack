@@ -37,15 +37,15 @@ export default function Overview() {
 
 function Account({ data }) {
   const [loading, setLoading] = useState(true)
-  const [hover, setHover] = useState(false)
 
   return (
     <>
       <Zoom in>
         <Paper sx={{minWidth: "80%", margin:"5rem 1rem", bgcolor:"#FFD800"}} elevation={3}>
 
-          <Card sx={{margin: "3rem", cursor: "pointer"}} raised={hover}
-           onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+          <Card sx={{margin: "3rem", cursor: "pointer"}} onMouseEnter={(e) =>
+           e.currentTarget.style.boxShadow="0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+           onMouseLeave={(e) => e.currentTarget.style.boxShadow="0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}>
             <CardHeader avatar={
               <Avatar sx={{bgcolor:"#FFD800"}}>
                 <AccountBalanceRounded color="primary" />
@@ -56,8 +56,9 @@ function Account({ data }) {
             </CardContent>
           </Card>
 
-          <Card sx={{ margin: "3rem", cursor: "pointer" }} raised={hover}
-            onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+          <Card sx={{ margin: "3rem", cursor: "pointer" }} onMouseEnter={(e) =>
+            e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+            onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}>
             <CardHeader avatar={
               <Avatar sx={{ bgcolor: "#FFD800" }}>
                 <AccountBalanceRounded color="primary" />
@@ -68,8 +69,9 @@ function Account({ data }) {
             </CardContent>
           </Card>
 
-          <Card sx={{ margin: "3rem", cursor: "pointer" }} raised={hover}
-            onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+          <Card sx={{ margin: "3rem", cursor: "pointer" }} onMouseEnter={(e) =>
+            e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+            onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}>
             <CardHeader avatar={
               <Avatar sx={{ bgcolor: "#FFD800" }}>
                 <AccountBalanceRounded color="primary" />
