@@ -1,6 +1,7 @@
-import { Avatar, Card, CardContent, CardHeader, Paper, Zoom } from "@mui/material"
+import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent,
+         DialogContentText, DialogTitle, Grow, Paper, Zoom } from "@mui/material"
 import { AccountBalanceRounded } from "@mui/icons-material"
-import { useEffect, useState } from "react"
+import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
 
 import Link from './plaid/link.tsx'
@@ -23,7 +24,7 @@ export default function Overview() {
               <div className="d-flex flex-column justify-content-center align-items-center"
                style={{minHeight: '50vh', marginBottom: '7rem'}}>
 
-                <Account data={data} />
+                <Accounts data={data} />
 
                 <Link />
 
@@ -35,17 +36,19 @@ export default function Overview() {
 }
 
 
-function Account({ data }) {
+function Accounts({ data }) {
   const [loading, setLoading] = useState(true)
+  const [open, setOpen] = useState(false)
 
   return (
     <>
       <Zoom in>
         <Paper sx={{minWidth: "80%", margin:"5rem 1rem", bgcolor:"#FFD800"}} elevation={3}>
 
-          <Card sx={{margin: "3rem", cursor: "pointer"}} onMouseEnter={(e) =>
+          <Card sx={{margin: "3rem", cursor: "pointer", borderRadius:"1rem"}} onMouseEnter={(e) =>
            e.currentTarget.style.boxShadow="0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
-           onMouseLeave={(e) => e.currentTarget.style.boxShadow="0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}>
+           onMouseLeave={(e) => e.currentTarget.style.boxShadow="0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+           onClick={() => setOpen(true)}>
             <CardHeader avatar={
               <Avatar sx={{bgcolor:"#FFD800"}}>
                 <AccountBalanceRounded color="primary" />
@@ -56,34 +59,39 @@ function Account({ data }) {
             </CardContent>
           </Card>
 
-          <Card sx={{ margin: "3rem", cursor: "pointer" }} onMouseEnter={(e) =>
-            e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
-            onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}>
-            <CardHeader avatar={
-              <Avatar sx={{ bgcolor: "#FFD800" }}>
-                <AccountBalanceRounded color="primary" />
-              </Avatar>
-            } title="Bank Account" />
-            <CardContent>
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
-            </CardContent>
-          </Card>
-
-          <Card sx={{ margin: "3rem", cursor: "pointer" }} onMouseEnter={(e) =>
-            e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
-            onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}>
-            <CardHeader avatar={
-              <Avatar sx={{ bgcolor: "#FFD800" }}>
-                <AccountBalanceRounded color="primary" />
-              </Avatar>
-            } title="Bank Account" />
-            <CardContent>
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
-            </CardContent>
-          </Card>
+          <AccountDetails open={open} setOpen={setOpen} data={data} />
 
         </Paper>
       </Zoom>
+    </>
+  )
+}
+
+
+const Transition = forwardRef(function Transition(props, ref) {
+  return <Grow in timeout={1000} ref={ref} {...props} style={{ transformOrigin: '0 0 0' }} />
+})
+
+function AccountDetails({ open, setOpen, data }) {
+  const [loading, setLoading] = useState(true)
+
+  return (
+    <>
+      <Dialog open={open} TransitionComponent={Transition} onClose={() => setOpen(false)}
+       closeAfterTransition keepMounted>
+        <DialogTitle>
+          Bank Account Detail
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This is the placeholder text for the dialog content, which will provide
+            the user's bank account details such as the balance and transactions
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+
+        </DialogActions>
+      </Dialog>
     </>
   )
 }

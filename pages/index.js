@@ -1,5 +1,4 @@
 import Image from 'next/image'
-import { Button } from '@material-ui/core'
 import Auth from './auth'
 import { useState, useEffect, useContext, useCallback } from 'react';
 import Nav from '../components/nav';
