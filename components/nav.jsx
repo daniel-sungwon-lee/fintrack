@@ -14,10 +14,10 @@ export default function Nav({ page, setPage }) {
       setValue(value)
       setPage(value)
      }}>
-      <BottomNavigationAction label='Overview' value='overview' icon={<HomeRounded />} />
-      <BottomNavigationAction label='Track' value='track' icon={<AssessmentRounded />} />
+      <BottomNavigationAction label='Overview' value='overview' icon={<HomeRounded />} title='Overview' />
+      <BottomNavigationAction label='Track' value='track' icon={<AssessmentRounded />} title='Track' />
       <BottomNavigationAction color="error" sx={{color:'red !important'}} label='Logout'
-       value='logout' icon={<PowerSettingsNewRounded />} />
+       value='logout' icon={<PowerSettingsNewRounded />} title="Logout" />
     </BottomNavigation>
   )
 }
