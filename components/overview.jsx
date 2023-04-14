@@ -21,11 +21,11 @@ export default function Overview() {
           :
             <Zoom in>
               <div className="d-flex flex-column justify-content-center align-items-center"
-               style={{minHeight: '50vh'}}>
-
-                <Link />
+               style={{minHeight: '50vh', marginBottom: '7rem'}}>
 
                 <Account data={data} />
+
+                <Link />
 
               </div>
             </Zoom>
@@ -34,6 +34,7 @@ export default function Overview() {
   )
 }
 
+
 function Account({ data }) {
   const [loading, setLoading] = useState(true)
   const [hover, setHover] = useState(false)
@@ -41,13 +42,13 @@ function Account({ data }) {
   return (
     <>
       <Zoom in>
-        <Paper sx={{minWidth: "80%", margin:"5rem 1rem"}} elevation={3}>
+        <Paper sx={{minWidth: "80%", margin:"5rem 1rem", bgcolor:"#FFD800"}} elevation={3}>
 
-          <Card sx={{margin: "3rem"}} raised={hover} onMouseEnter={() => setHover(true)}
-           onMouseLeave={() => setHover(false)}>
+          <Card sx={{margin: "3rem", cursor: "pointer"}} raised={hover}
+           onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
             <CardHeader avatar={
-              <Avatar>
-                <AccountBalanceRounded />
+              <Avatar sx={{bgcolor:"#FFD800"}}>
+                <AccountBalanceRounded color="primary" />
               </Avatar>
             } title="Bank Account" />
             <CardContent>
@@ -55,10 +56,11 @@ function Account({ data }) {
             </CardContent>
           </Card>
 
-          <Card sx={{ margin: "3rem" }} raised>
+          <Card sx={{ margin: "3rem", cursor: "pointer" }} raised={hover}
+            onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
             <CardHeader avatar={
-              <Avatar>
-                <AccountBalanceRounded />
+              <Avatar sx={{ bgcolor: "#FFD800" }}>
+                <AccountBalanceRounded color="primary" />
               </Avatar>
             } title="Bank Account" />
             <CardContent>
@@ -66,10 +68,11 @@ function Account({ data }) {
             </CardContent>
           </Card>
 
-          <Card sx={{ margin: "3rem" }} raised>
+          <Card sx={{ margin: "3rem", cursor: "pointer" }} raised={hover}
+            onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
             <CardHeader avatar={
-              <Avatar>
-                <AccountBalanceRounded />
+              <Avatar sx={{ bgcolor: "#FFD800" }}>
+                <AccountBalanceRounded color="primary" />
               </Avatar>
             } title="Bank Account" />
             <CardContent>

@@ -176,7 +176,7 @@ export default function Home({ user, setUser }) {
     <Collapse in={show} collapsedSize={0}>
       <Nav page={page} setPage={setPage} />
 
-      <div className='container'>
+      <div className='container mt-3 mb-5'>
         {
           handleSwitch(page)
         }
