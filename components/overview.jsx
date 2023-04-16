@@ -1,5 +1,5 @@
 import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent,
-         DialogContentText, DialogTitle, Fab, Grow, Paper, Zoom } from "@mui/material"
+         DialogContentText, DialogTitle, Fab, Slide, Paper, Zoom } from "@mui/material"
 import { AccountBalanceRounded, CloseRounded } from "@mui/icons-material"
 import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
@@ -70,7 +70,7 @@ function Accounts({ data }) {
 
 
 const Transition = forwardRef(function Transition(props, ref) {
-  return <Grow in timeout={1000} ref={ref} {...props} style={{ transformOrigin: '0 0 0' }} />
+  return <Slide in direction="up" timeout={1000} ref={ref} {...props} />
 })
 
 function AccountDetails({ open, setOpen, data }) {
