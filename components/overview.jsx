@@ -1,6 +1,7 @@
 import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent,
-         DialogContentText, DialogTitle, Fab, Slide, Paper, Zoom, Skeleton } from "@mui/material"
-import { AccountBalanceRounded, CloseRounded } from "@mui/icons-material"
+         DialogContentText, DialogTitle, Fab, Slide, Paper, Zoom, Skeleton,
+         CardActions, List, ListItem, ListItemAvatar, ListItemText} from "@mui/material"
+import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded } from "@mui/icons-material"
 import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
 import styles from '../styles/Home.module.css'
@@ -101,17 +102,48 @@ function AccountDetails({ open, setOpen, data }) {
     <>
       <Dialog open={open} TransitionComponent={Transition} onClose={() => setOpen(false)}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#00C169",
-       color: "white", alignItems: "center"}}}>
-        <DialogTitle>
-          Bank Account Detail
+       color: "white", alignItems: "center", padding: "3rem 0rem"}}}>
+        <DialogTitle className="w-100 text-center">
+          <h2 className={styles.font}>Bank of America</h2>
         </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            This is the placeholder text for the dialog content, which will provide
-            the user's bank account details such as the balance and transactions
+        <DialogContent className="w-100">
+
+          <DialogContentText className={styles.font} sx={{marginBottom:'3rem'}}>
+            <h4 className="text-center">Current Balance</h4>
           </DialogContentText>
+
+          <Card sx={{bgcolor: '#FFD800'}} className="w-75 m-auto">
+            <CardContent>
+              <h4>Transactions</h4>
+              <List>
+
+                <ListItem>
+                  <ListItemAvatar>
+                    <Avatar sx={{bgcolor: "white"}}>
+                      <AttachMoneyRounded color="primary" />
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText primary="$3.00" secondary="April 20th, 2023" />
+                </ListItem>
+
+                <ListItem>
+                  <ListItemAvatar>
+                    <Avatar sx={{ bgcolor: "white" }}>
+                      <AttachMoneyRounded color="primary" />
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText primary="$69.42" secondary="May 4th, 2023" />
+                </ListItem>
+
+              </List>
+            </CardContent>
+            <CardActions>
+
+            </CardActions>
+          </Card>
+
         </DialogContent>
-        <DialogActions sx={{position:'absolute', top:"0.5rem", right:"0.5rem"}}>
+        <DialogActions sx={{position:'absolute', top:"0.25rem", right:"0.25rem"}}>
           <Fab size='medium' color='error' variant='extended' onClick={() => setOpen(false)}>
             <div className={styles.fab}>
               <CloseRounded style={{marginRight:'0.25rem'}} />
