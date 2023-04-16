@@ -1,5 +1,4 @@
 import Image from 'next/image'
-import { Button } from '@material-ui/core'
 import Auth from './auth'
 import { useState, useEffect, useContext, useCallback } from 'react';
 import Nav from '../components/nav';
@@ -176,7 +175,7 @@ export default function Home({ user, setUser }) {
     <Collapse in={show} collapsedSize={0}>
       <Nav page={page} setPage={setPage} />
 
-      <div className='container'>
+      <div className='container mt-3 mb-5'>
         {
           handleSwitch(page)
         }
