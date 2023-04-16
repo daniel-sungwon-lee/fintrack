@@ -108,11 +108,11 @@ function AccountDetails({ open, setOpen, data }) {
         </DialogTitle>
         <DialogContent className="w-100">
 
-          <DialogContentText className={styles.font} sx={{marginBottom:'3rem'}}>
+          <DialogContentText className={styles.font} sx={{marginBottom:'3rem', color:'white'}}>
             <h4 className="text-center">Current Balance</h4>
           </DialogContentText>
 
-          <Card sx={{bgcolor: '#FFD800'}} className="w-75 m-auto">
+          <Card sx={{bgcolor: '#FFD800', borderRadius: '1rem'}} className="w-75 m-auto">
             <CardContent>
               <h4>Transactions</h4>
               <List>
