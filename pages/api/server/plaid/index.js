@@ -33,9 +33,9 @@ export const PLAID_ANDROID_PACKAGE_NAME = process.env.PLAID_ANDROID_PACKAGE_NAME
 
 // We store the access_token in memory - in production, store it in a secure
 // persistent data store
-export let ACCESS_TOKEN = null;
-export let PUBLIC_TOKEN = null;
-export let ITEM_ID = null;
+//export let ACCESS_TOKEN = null;
+//export let PUBLIC_TOKEN = null;
+//export let ITEM_ID = null;
 
 // Initialize the Plaid client
 // Find your API keys in the Dashboard (https://dashboard.plaid.com/account/keys)

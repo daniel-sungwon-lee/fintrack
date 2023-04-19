@@ -1,8 +1,12 @@
 import {
   PLAID_CLIENT_ID, PLAID_SECRET, PLAID_ENV, PLAID_PRODUCTS, PLAID_COUNTRY_CODES,
-  PLAID_REDIRECT_URI, PLAID_ANDROID_PACKAGE_NAME, ACCESS_TOKEN, PUBLIC_TOKEN,
-  ITEM_ID, configuration, client, prettyPrintResponse
+  PLAID_REDIRECT_URI, PLAID_ANDROID_PACKAGE_NAME, configuration, client,
+  prettyPrintResponse
 } from './index';
+
+export let ACCESS_TOKEN = null
+let PUBLIC_TOKEN = null
+export let ITEM_ID = null
 
 export default function handler (request, response, next) {
   PUBLIC_TOKEN = request.body.public_token;
@@ -14,9 +18,9 @@ export default function handler (request, response, next) {
       prettyPrintResponse(tokenResponse);
       ACCESS_TOKEN = tokenResponse.data.access_token;
       ITEM_ID = tokenResponse.data.item_id;
-      if (PLAID_PRODUCTS.includes(Products.Transfer)) {
-        TRANSFER_ID = await authorizeAndCreateTransfer(ACCESS_TOKEN);
-      }
+      // if (PLAID_PRODUCTS.includes(Products.Transfer)) {
+      //   TRANSFER_ID = await authorizeAndCreateTransfer(ACCESS_TOKEN);
+      // }
       response.json({
         // the 'access_token' is a private token, DO NOT pass this token to the frontend in your production environment
         access_token: ACCESS_TOKEN,

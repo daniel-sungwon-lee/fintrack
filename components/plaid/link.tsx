@@ -37,6 +37,9 @@ const Link = () => {
           return;
         }
         const data = await response.json();
+        //console.log('data:',data)
+        //access_token and item_id data object here, when successfully connected to new account(s)
+        //ready to be stored to context (changes when a new account is connected)
         dispatch({
           type: "SET_STATE",
           state: {
