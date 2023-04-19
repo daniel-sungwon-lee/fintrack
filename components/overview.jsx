@@ -49,7 +49,15 @@ function Accounts({ data }) {
   return (
     <>
       <Zoom in>
-        <Paper sx={{minWidth: "80%", margin:"5rem 1rem", bgcolor:"#FFD800"}} elevation={3}>
+        <Paper className="d-flex flex-column align-items-center" sx={
+          {minWidth: "80%", margin:"5rem 1rem", bgcolor:"#FFD800"}} elevation={3}>
+
+          {
+            loading ? <Skeleton className="mb-0 text-center m-5" variant="rectangle" sx={{borderRadius: '1rem'}}>
+                        <h2 className="mb-0">Institution name</h2>
+                      </Skeleton>
+                    : <h2 className="mb-0 text-center m-5">Institution name</h2>
+          }
 
           { loading
               ? <Skeleton variant="rectangle" sx={{borderRadius: '1rem', margin: '3rem'}}>
@@ -104,7 +112,7 @@ function AccountDetails({ open, setOpen, data }) {
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#00C169",
        color: "white", alignItems: "center", padding: "3rem 0rem"}}}>
         <DialogTitle className="w-100 text-center">
-          <h2 className={styles.font}>Bank of America</h2>
+          <h2 className={styles.font}>Fidelity Checking</h2>
         </DialogTitle>
         <DialogContent className="w-100">
 
