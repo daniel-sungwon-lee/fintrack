@@ -11,7 +11,7 @@ import { Products } from "plaid";
 //custom styles
 import styles from '../../styles/Home.module.css'
 
-const Link = ({ userId, setAccountsPlaceholder, setAccountsLoading, setData }) => {
+const Link = ({ userId, setAccountsPlaceholder, setAccountsLoading, setData, setNewData }) => {
   const { linkToken, isPaymentInitiation, dispatch } = useContext(Context);
 
   const onSuccess = React.useCallback(
@@ -19,6 +19,8 @@ const Link = ({ userId, setAccountsPlaceholder, setAccountsLoading, setData }) =
 
       setAccountsPlaceholder(true)
       setAccountsLoading(true)
+      setData(null)
+      setNewData(true)
 
       // If the access_token is needed, send public_token to server
       const exchangePublicTokenForAccessToken = async () => {
@@ -66,7 +68,7 @@ const Link = ({ userId, setAccountsPlaceholder, setAccountsLoading, setData }) =
                   .then(res => res.json())
                   .then(data => {
                     setData(data)
-                    setAccountsLoading(false)
+                    setAccountsPlaceholder(false)
                   })
                   .catch(error => {
                     window.alert(error)

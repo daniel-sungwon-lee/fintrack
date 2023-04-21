@@ -13,19 +13,24 @@ export default function Overview({ userId }) {
   const [accountsPlaceholder, setAccountsPlaceholder] = useState(false)
   const [accountsLoading, setAccountsLoading] = useState(true)
   const [data, setData] = useState(null)
+  const [newData, setNewData] = useState(false)
 
   useEffect(() => {
-    console.log('data:',data)
-    fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
-      .then(res => res.json())
-      .then(data => {
-        setData(data)
-        setLoading(false)
-      })
-      .catch(error => {
-        window.alert(error)
-        console.error(error)
-      })
+    if(!newData) {
+      fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
+        .then(res => res.json())
+        .then(data => {
+          setData(data)
+          setLoading(false)
+          setAccountsPlaceholder(false)
+
+          setNewData(true) //ready for new data (bank account connection)
+        })
+        .catch(error => {
+          window.alert(error)
+          console.error(error)
+        })
+    }
   },[])
 
   return (
@@ -39,14 +44,14 @@ export default function Overview({ userId }) {
                style={{minHeight: '50vh', marginBottom: '7rem'}}>
 
                 {
-                  data ? <List>
+                  data ? <List className="pt-0">
                           {
                             data.map(institutions => {
                               const { item_id, access_token, name } = institutions
 
                               return (
                                 <Accounts itemId={item_id} accessToken={access_token}
-                                 name={name} loading={accountsLoading} />
+                                 name={name} loading={accountsLoading} setLoading={setAccountsLoading} />
                               )
 
                             })
@@ -56,12 +61,12 @@ export default function Overview({ userId }) {
                 }
 
                 {
-                  accountsPlaceholder ? <Accounts loading={accountsLoading} />
+                  accountsPlaceholder ? <Accounts loading={accountsLoading} setLoading={setAccountsLoading} />
                                       : <></>
                 }
 
                 <Link userId={userId} setAccountsPlaceholder={setAccountsPlaceholder}
-                 setAccountsLoading={setAccountsLoading} setData={setData} />
+                 setAccountsLoading={setAccountsLoading} setData={setData} setNewData={setNewData} />
 
               </div>
             </Zoom>
@@ -71,14 +76,28 @@ export default function Overview({ userId }) {
 }
 
 
-function Accounts({ itemId, accessToken, name, loading }) {
+function Accounts({ itemId, accessToken, name, loading, setLoading }) {
   const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    fetch(`/api/server/plaid/auth`, { method: "GET" })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data)
+        setLoading(false)
+      })
+      .catch(error => {
+        window.alert(error)
+        console.error(error)
+      })
+  })
 
   return (
     <>
       <Zoom in>
         <Paper className="d-flex flex-column align-items-center" sx={
-          {minWidth: "80%", margin:"5rem 1rem", bgcolor:"#FFD800"}} elevation={3}>
+         {minWidth: "80%", margin:"5rem 1rem", bgcolor:"#FFD800", borderRadius:"8px"}}
+         elevation={3}>
 
           {
             loading ? <Skeleton className="mb-0 text-center m-5" variant="rectangle" sx={{borderRadius: '1rem'}}>
