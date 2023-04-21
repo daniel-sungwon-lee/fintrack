@@ -8,7 +8,7 @@ import styles from '../styles/Home.module.css'
 
 import Link from './plaid/link.tsx'
 
-export default function Overview() {
+export default function Overview({ userId }) {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState(null)
 
@@ -28,7 +28,7 @@ export default function Overview() {
 
                 <Accounts data={data} />
 
-                <Link />
+                <Link userId={userId} />
 
               </div>
             </Zoom>

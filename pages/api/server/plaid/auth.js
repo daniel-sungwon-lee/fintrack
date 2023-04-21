@@ -7,7 +7,6 @@ import { ACCESS_TOKEN } from './set_access_token';
 
 export default function handler (request, response, next) {
   Promise.resolve()
-    console.log(ACCESS_TOKEN)
     .then(async function () {
       const authResponse = await client.authGet({
         access_token: ACCESS_TOKEN,

@@ -98,7 +98,7 @@ export default function Home({ user, setUser }) {
   const handleSwitch = (page) => {
     switch(page) {
       case 'overview':
-        return <Overview />
+        return <Overview userId={user.userId} />
         break;
 
       case 'track':
@@ -153,7 +153,7 @@ export default function Home({ user, setUser }) {
         break;
 
       default:
-        return <Overview />
+        return <Overview userId={user.userId} />
     }
   }
 

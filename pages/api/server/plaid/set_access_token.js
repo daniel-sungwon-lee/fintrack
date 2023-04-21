@@ -8,6 +8,8 @@ export let ACCESS_TOKEN = null
 let PUBLIC_TOKEN = null
 export let ITEM_ID = null
 
+ACCESS_TOKEN ='access-development-e3a9aaf3-23a4-464c-a86a-bf2c3b75f453'
+
 export default function handler (request, response, next) {
   PUBLIC_TOKEN = request.body.public_token;
   Promise.resolve()
