@@ -11,11 +11,15 @@ import { Products } from "plaid";
 //custom styles
 import styles from '../../styles/Home.module.css'
 
-const Link = ({ userId }) => {
+const Link = ({ userId, setAccountsPlaceholder, setAccountsLoading, setData }) => {
   const { linkToken, isPaymentInitiation, dispatch } = useContext(Context);
 
   const onSuccess = React.useCallback(
     (public_token: string) => {
+
+      setAccountsPlaceholder(true)
+      setAccountsLoading(true)
+
       // If the access_token is needed, send public_token to server
       const exchangePublicTokenForAccessToken = async () => {
         const response = await fetch("/api/server/plaid/set_access_token" /* changed path */, {
@@ -41,32 +45,39 @@ const Link = ({ userId }) => {
         //access_token and item_id data object here, when successfully connected to new account(s)
         //ready to be stored to context (changes when a new account is connected)
 
-        // let name = null
-        // await fetch("/api/server/plaid/item", { method: "GET" })
-        //   .then(res => res.json())
-        //   .then(result => {
-        //     name = result.institution.name
-        //   })
-        //   .catch((error) => {
-        //     console.error(error)
-        //   })
+        await fetch("/api/server/plaid/item", { method: "GET" })
+          .then(res => res.json())
+          .then(result => {
+            const newData = {
+              item_id: data.item_id,
+              access_token: data.access_token,
+              userId: userId,
+              name: result.institution.name
+            }
 
-        // const newData = {
-        //   item_id: data.item_id,
-        //   access_token: data.access_token,
-        //   userId: userId,
-        //   name: name
-        // }
-        // await fetch("/api/server/institutions", {
-        //   method: "POST",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify(newData)
-        // })
-        //   .then(() => {
-        //   })
-        //   .catch((error) => {
-        //     console.error(error)
-        //   })
+            fetch("/api/server/institutions", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(newData)
+            })
+              .then(() => {
+
+                fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
+                  .then(res => res.json())
+                  .then(data => {
+                    setData(data)
+                    setAccountsLoading(false)
+                  })
+                  .catch(err => console.error(err))
+
+              })
+              .catch((error) => {
+                console.error(error)
+              })
+          })
+          .catch((error) => {
+            console.error(error)
+          })
 
         dispatch({
           type: "SET_STATE",

@@ -10,9 +10,12 @@ import Link from './plaid/link.tsx'
 
 export default function Overview({ userId }) {
   const [loading, setLoading] = useState(true)
+  const [accountsPlaceholder, setAccountsPlaceholder] = useState(false)
+  const [accountsLoading, setAccountsLoading] = useState(true)
   const [data, setData] = useState(null)
 
   useEffect(() => {
+    //console.log(data)
     setLoading(false)
   })
 
@@ -26,9 +29,13 @@ export default function Overview({ userId }) {
               <div className="d-flex flex-column justify-content-center align-items-center"
                style={{minHeight: '50vh', marginBottom: '7rem'}}>
 
-                <Accounts data={data} />
+                {
+                  accountsPlaceholder ? <Accounts data={data} loading={accountsLoading} />
+                                      : <></>
+                }
 
-                <Link userId={userId} />
+                <Link userId={userId} setAccountsPlaceholder={setAccountsPlaceholder}
+                 setAccountsLoading={setAccountsLoading} setData={setData} />
 
               </div>
             </Zoom>
@@ -38,13 +45,8 @@ export default function Overview({ userId }) {
 }
 
 
-function Accounts({ data }) {
-  const [loading, setLoading] = useState(true)
+function Accounts({ data, loading }) {
   const [open, setOpen] = useState(false)
-
-  useEffect(() => {
-    setLoading(false)
-  })
 
   return (
     <>
