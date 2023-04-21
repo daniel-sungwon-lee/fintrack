@@ -68,14 +68,19 @@ const Link = ({ userId, setAccountsPlaceholder, setAccountsLoading, setData }) =
                     setData(data)
                     setAccountsLoading(false)
                   })
-                  .catch(err => console.error(err))
+                  .catch(error => {
+                    window.alert(error)
+                    console.error(error)
+                  })
 
               })
               .catch((error) => {
+                window.alert(error)
                 console.error(error)
               })
           })
           .catch((error) => {
+            window.alert(error)
             console.error(error)
           })
 

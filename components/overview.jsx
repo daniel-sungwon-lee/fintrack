@@ -15,9 +15,18 @@ export default function Overview({ userId }) {
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    //console.log(data)
-    setLoading(false)
-  })
+    console.log('data:',data)
+    fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
+      .then(res => res.json())
+      .then(data => {
+        setData(data)
+        setLoading(false)
+      })
+      .catch(error => {
+        window.alert(error)
+        console.error(error)
+      })
+  },[])
 
   return (
     <>
@@ -30,7 +39,24 @@ export default function Overview({ userId }) {
                style={{minHeight: '50vh', marginBottom: '7rem'}}>
 
                 {
-                  accountsPlaceholder ? <Accounts data={data} loading={accountsLoading} />
+                  data ? <List>
+                          {
+                            data.map(institutions => {
+                              const { item_id, access_token, name } = institutions
+
+                              return (
+                                <Accounts itemId={item_id} accessToken={access_token}
+                                 name={name} loading={accountsLoading} />
+                              )
+
+                            })
+                          }
+                         </List>
+                       : <></>
+                }
+
+                {
+                  accountsPlaceholder ? <Accounts loading={accountsLoading} />
                                       : <></>
                 }
 
@@ -45,7 +71,7 @@ export default function Overview({ userId }) {
 }
 
 
-function Accounts({ data, loading }) {
+function Accounts({ itemId, accessToken, name, loading }) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -92,7 +118,7 @@ function Accounts({ data, loading }) {
                   </CardContent>
                 </Card>
           }
-          <AccountDetails open={open} setOpen={setOpen} data={data} />
+          <AccountDetails open={open} setOpen={setOpen} data={'data?'} />
 
         </Paper>
       </Zoom>
