@@ -50,8 +50,9 @@ export default function Overview({ userId }) {
                               const { item_id, access_token, name } = institutions
 
                               return (
-                                <Accounts itemId={item_id} accessToken={access_token}
-                                 name={name} loading={accountsLoading} setLoading={setAccountsLoading} />
+                                <Accounts key={item_id} itemId={item_id} accessToken={access_token}
+                                 name={name} loading={accountsLoading} setLoading={setAccountsLoading}
+                                 accountsPlaceholder={accountsPlaceholder} />
                               )
 
                             })
@@ -61,7 +62,8 @@ export default function Overview({ userId }) {
                 }
 
                 {
-                  accountsPlaceholder ? <Accounts loading={accountsLoading} setLoading={setAccountsLoading} />
+                  accountsPlaceholder ? <Accounts loading={accountsLoading}
+                                         accountsPlaceholder={accountsPlaceholder} />
                                       : <></>
                 }
 
@@ -76,20 +78,25 @@ export default function Overview({ userId }) {
 }
 
 
-function Accounts({ itemId, accessToken, name, loading, setLoading }) {
+function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlaceholder }) {
   const [open, setOpen] = useState(false)
+  const [accounts, setAccounts] = useState(null)
+  const [numbers, setNumbers] = useState(null)
 
   useEffect(() => {
-    fetch(`/api/server/plaid/auth`, { method: "GET" })
-      .then(res => res.json())
-      .then(data => {
-        console.log(data)
-        setLoading(false)
-      })
-      .catch(error => {
-        window.alert(error)
-        console.error(error)
-      })
+    if (!accountsPlaceholder && loading) {
+      fetch(`/api/server/plaid/auth`, { method: "GET" })
+        .then(res => res.json())
+        .then(data => {
+          setAccounts(data.accounts)
+          setNumbers(data.numbers.ach)
+          setLoading(false)
+        })
+        .catch(error => {
+          window.alert(error)
+          console.error(error)
+        })
+    }
   })
 
   return (
@@ -103,7 +110,7 @@ function Accounts({ itemId, accessToken, name, loading, setLoading }) {
             loading ? <Skeleton className="mb-0 text-center m-5" variant="rectangle" sx={{borderRadius: '1rem'}}>
                         <h2 className="mb-0">Institution name</h2>
                       </Skeleton>
-                    : <h2 className="mb-0 text-center m-5">Institution name</h2>
+                    : <h2 className="mb-0 text-center m-5">{name}</h2>
           }
 
           { loading
