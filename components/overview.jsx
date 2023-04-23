@@ -103,7 +103,7 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
           //       item_id: itemId,
           //       name: account.name,
           //       type: account.subtype,
-          //       balance: account.balances.current || account.balances.available,
+          //       balance: account.balances.current,
           //       account_num: accountNumber,
           //       routing_num: routingNumber
           //     }
@@ -174,7 +174,7 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
                         item_id: itemId,
                         name: account.name,
                         type: account.subtype,
-                        balance: account.balances.current || account.balances.available,
+                        balance: account.balances.current,
                         account_num: accountNumber,
                         routing_num: routingNumber
                       }
@@ -194,12 +194,14 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
                               Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
                             </div>
                             <div className="d-flex justify-content-between">
-                              <div className="text-capitalize">{accountData.type}</div>
-                              <div>{accountData.balance}</div>
-                            </div>
-                            <div className="d-flex justify-content-between">
-                              <div>{accountNumber}</div>
-                              <div>{routingNumber}</div>
+                              <div>
+                                <div className="text-capitalize">{accountData.type}</div>
+                                <div>Routing number: {routingNumber}</div>
+                                <div>Account number: {accountNumber}</div>
+                              </div>
+                              <div className="d-flex align-items-center" style={{fontSize: '24px'}}>
+                                ${accountData.balance}
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
