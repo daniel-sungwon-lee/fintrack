@@ -290,20 +290,26 @@ function AccountDetails({ open, setOpen }) {
                             </>
                           : <>
                               {
-                                transactions.map(transaction => {
-                                  const { account_id, amount, date, name } = transaction
+                                transactions ? <>
+                                                 {
+                                                    transactions.map(transaction => {
+                                                      const { account_id, amount, date, name } = transaction
 
-                                  return (
-                                    <ListItem key={account_id} sx={{ width: '100vw' }}>
-                                      <ListItemAvatar>
-                                        <Avatar sx={{ bgcolor: "white" }}>
-                                          <AttachMoneyRounded color="primary" />
-                                        </Avatar>
-                                      </ListItemAvatar>
-                                      <ListItemText primary={name} secondary={amount} />
-                                    </ListItem>
-                                  )
-                                })
+                                                      return (
+                                                        <ListItem key={account_id} sx={{ width: '100vw' }}>
+                                                          <ListItemAvatar>
+                                                            <Avatar sx={{ bgcolor: "white" }}>
+                                                              <AttachMoneyRounded color="primary" />
+                                                            </Avatar>
+                                                          </ListItemAvatar>
+                                                          <ListItemText primary={name} secondary={amount} />
+                                                        </ListItem>
+                                                      )
+                                                    })
+                                                 }
+                                               </>
+                                             : <></>
+
                               }
                             </>
                 }
