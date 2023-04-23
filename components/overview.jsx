@@ -210,7 +210,7 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
                   }
                 </>
           }
-          <AccountDetails open={open} setOpen={setOpen} data={'data?'} />
+          <AccountDetails open={open} setOpen={setOpen} />
 
         </Paper>
       </Zoom>
@@ -223,8 +223,9 @@ const Transition = forwardRef(function Transition(props, ref) {
   return <Slide in direction="up" timeout={1000} ref={ref} {...props} />
 })
 
-function AccountDetails({ open, setOpen, data }) {
+function AccountDetails({ open, setOpen }) {
   const [loading, setLoading] = useState(true)
+  const [transactions, setTransactions] = useState(null)
 
   return (
     <>
@@ -232,41 +233,86 @@ function AccountDetails({ open, setOpen, data }) {
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#00C169",
        color: "white", alignItems: "center", padding: "3rem 0rem"}}}>
         <DialogTitle className="w-100 text-center">
-          <h2 className={styles.font}>Fidelity Checking</h2>
+          {
+            loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
+                        <h2 className={styles.font}>Fidelity Checking</h2>
+                      </Skeleton>
+                    : <h2 className={styles.font}>Fidelity Checking</h2>
+          }
         </DialogTitle>
         <DialogContent className="w-100">
 
           <DialogContentText className={styles.font} sx={{marginBottom:'3rem', color:'white'}}>
-            <h4 className="text-center">Current Balance</h4>
+            {
+              loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
+                          <h4 className="text-center">Current Balance</h4>
+                        </Skeleton>
+                      : <h4 className="text-center">Current Balance</h4>
+            }
           </DialogContentText>
 
           <Card sx={{bgcolor: '#FFD800', borderRadius: '1rem'}} className="w-75 m-auto">
             <CardContent>
               <h4>Transactions</h4>
               <List>
+                {
+                  loading ? <>
+                              <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
+                                <ListItem sx={{width: '100vw'}}>
+                                  <ListItemAvatar>
+                                    <Avatar sx={{ bgcolor: "white" }}>
+                                      <AttachMoneyRounded color="primary" />
+                                    </Avatar>
+                                  </ListItemAvatar>
+                                  <ListItemText primary="$420.69" secondary="June 6th, 2023" />
+                                </ListItem>
+                              </Skeleton>
+                              <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
+                                <ListItem sx={{width: '100vw'}}>
+                                  <ListItemAvatar>
+                                    <Avatar sx={{ bgcolor: "white" }}>
+                                      <AttachMoneyRounded color="primary" />
+                                    </Avatar>
+                                  </ListItemAvatar>
+                                  <ListItemText primary="$3.33" secondary="April 20th, 2023" />
+                                </ListItem>
+                              </Skeleton>
+                              <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
+                                <ListItem sx={{width: '100vw'}}>
+                                  <ListItemAvatar>
+                                    <Avatar sx={{ bgcolor: "white" }}>
+                                      <AttachMoneyRounded color="primary" />
+                                    </Avatar>
+                                  </ListItemAvatar>
+                                  <ListItemText primary="$69.42" secondary="May 4th, 2023" />
+                                </ListItem>
+                              </Skeleton>
+                            </>
+                          : <>
+                              {
+                                transactions.map(transaction => {
+                                  const { account_id, amount, date, name } = transaction
 
-                <ListItem>
-                  <ListItemAvatar>
-                    <Avatar sx={{bgcolor: "white"}}>
-                      <AttachMoneyRounded color="primary" />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary="$3.00" secondary="April 20th, 2023" />
-                </ListItem>
-
-                <ListItem>
-                  <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: "white" }}>
-                      <AttachMoneyRounded color="primary" />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary="$69.42" secondary="May 4th, 2023" />
-                </ListItem>
-
+                                  return (
+                                    <ListItem key={account_id} sx={{ width: '100vw' }}>
+                                      <ListItemAvatar>
+                                        <Avatar sx={{ bgcolor: "white" }}>
+                                          <AttachMoneyRounded color="primary" />
+                                        </Avatar>
+                                      </ListItemAvatar>
+                                      <ListItemText primary={name} secondary={amount} />
+                                    </ListItem>
+                                  )
+                                })
+                              }
+                            </>
+                }
               </List>
             </CardContent>
             <CardActions>
-
+              {
+                //transactions refresh?
+              }
             </CardActions>
           </Card>
 
