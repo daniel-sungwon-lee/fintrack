@@ -91,6 +91,38 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
           setAccounts(data.accounts)
           setNumbers(data.numbers.ach)
           setLoading(false)
+
+          // if(accounts !== null && numbers !== null) {
+          //   accounts.map(account => {
+          //     const index = numbers.map(a => a.account_id).indexOf(account.account_id)
+          //     const accountNumber = numbers[index].account
+          //     const routingNumber = numbers[index].routing
+
+          //     const accountData = {
+          //       account_id: account.account_id,
+          //       item_id: itemId,
+          //       name: account.name,
+          //       type: account.subtype,
+          //       balance: account.balances.current || account.balances.available,
+          //       account_num: accountNumber,
+          //       routing_num: routingNumber
+          //     }
+
+          //     fetch('/api/server/accounts', {
+          //       method: "POST",
+          //       headers: { "Content-Type": "application/json" },
+          //       body: JSON.stringify(accountData)
+          //     })
+          //       .then(() => {
+
+          //       })
+          //       .catch(err => {
+          //         window.alert(error)
+          //         console.error(error)
+          //       })
+          //   })
+          // }
+
         })
         .catch(error => {
           window.alert(error)
@@ -108,9 +140,9 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
 
           {
             loading ? <Skeleton className="mb-0 text-center m-5" variant="rectangle" sx={{borderRadius: '1rem'}}>
-                        <h2 className="mb-0">Institution name</h2>
+                        <h2 className="mb-0" style={{fontWeight: 'bold'}}>Institution name</h2>
                       </Skeleton>
-                    : <h2 className="mb-0 text-center m-5">{name}</h2>
+                    : <h2 className="mb-0 text-center m-5" style={{fontWeight: 'bold'}}>{name}</h2>
           }
 
           { loading
@@ -130,19 +162,51 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
                   </Card>
                 </Skeleton>
               :
-                <Card sx={{margin: "3rem", cursor: "pointer", borderRadius:"1rem"}} onMouseEnter={(e) =>
-                e.currentTarget.style.boxShadow="0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
-                onMouseLeave={(e) => e.currentTarget.style.boxShadow="0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
-                onClick={() => setOpen(true)}>
-                  <CardHeader avatar={
-                    <Avatar sx={{bgcolor:"#FFD800"}}>
-                      <AccountBalanceRounded color="primary" />
-                    </Avatar>
-                  } title="Bank Account" />
-                  <CardContent>
-                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
-                  </CardContent>
-                </Card>
+                <>
+                  {
+                    accounts.map(account => {
+                      const index = numbers.map(a => a.account_id).indexOf(account.account_id)
+                      const accountNumber = numbers[index].account
+                      const routingNumber = numbers[index].routing
+
+                      const accountData = {
+                        account_id: account.account_id,
+                        item_id: itemId,
+                        name: account.name,
+                        type: account.subtype,
+                        balance: account.balances.current || account.balances.available,
+                        account_num: accountNumber,
+                        routing_num: routingNumber
+                      }
+
+                      return (
+                        <Card sx={{margin: "3rem", cursor: "pointer", borderRadius:"1rem"}} onMouseEnter={(e) =>
+                        e.currentTarget.style.boxShadow="0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                        onMouseLeave={(e) => e.currentTarget.style.boxShadow="0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                        onClick={() => setOpen(true)} key={accountData.account_id}>
+                          <CardHeader avatar={
+                            <Avatar sx={{bgcolor:"#FFD800"}}>
+                              <AccountBalanceRounded color="primary" />
+                            </Avatar>
+                          } title={accountData.name} />
+                          <CardContent>
+                            <div style={{height: 0}} className="invisible">
+                              Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
+                            </div>
+                            <div className="d-flex justify-content-between">
+                              <div className="text-capitalize">{accountData.type}</div>
+                              <div>{accountData.balance}</div>
+                            </div>
+                            <div className="d-flex justify-content-between">
+                              <div>{accountNumber}</div>
+                              <div>{routingNumber}</div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })
+                  }
+                </>
           }
           <AccountDetails open={open} setOpen={setOpen} data={'data?'} />
 
