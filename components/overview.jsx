@@ -83,6 +83,9 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
   const [accounts, setAccounts] = useState(null)
   const [numbers, setNumbers] = useState(null)
 
+  const [accountName, setAccountName] = useState(null)
+  const [accountBalance, setAccountBalance] = useState(null)
+
   useEffect(() => {
     if (!accountsPlaceholder && loading) {
       fetch(`/api/server/plaid/auth`, { method: "GET" })
@@ -164,53 +167,64 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
               :
                 <>
                   {
-                    accounts.map(account => {
-                      const index = numbers.map(a => a.account_id).indexOf(account.account_id)
-                      const accountNumber = numbers[index].account
-                      const routingNumber = numbers[index].routing
+                    accounts ? <>
+                                  {
+                                    accounts.map(account => {
+                                     const index = numbers.map(a => a.account_id).indexOf(account.account_id)
+                                     const accountNumber = numbers[index].account
+                                     const routingNumber = numbers[index].routing
 
-                      const accountData = {
-                        account_id: account.account_id,
-                        item_id: itemId,
-                        name: account.name,
-                        type: account.subtype,
-                        balance: account.balances.current,
-                        account_num: accountNumber,
-                        routing_num: routingNumber
-                      }
+                                     const accountData = {
+                                       account_id: account.account_id,
+                                       item_id: itemId,
+                                       name: account.name,
+                                       type: account.subtype,
+                                       balance: account.balances.current,
+                                       account_num: accountNumber,
+                                       routing_num: routingNumber
+                                     }
 
-                      return (
-                        <Card sx={{margin: "3rem", cursor: "pointer", borderRadius:"1rem"}} onMouseEnter={(e) =>
-                        e.currentTarget.style.boxShadow="0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
-                        onMouseLeave={(e) => e.currentTarget.style.boxShadow="0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
-                        onClick={() => setOpen(true)} key={accountData.account_id}>
-                          <CardHeader avatar={
-                            <Avatar sx={{bgcolor:"#FFD800"}}>
-                              <AccountBalanceRounded color="primary" />
-                            </Avatar>
-                          } title={accountData.name} />
-                          <CardContent>
-                            <div style={{height: 0}} className="invisible">
-                              Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
-                            </div>
-                            <div className="d-flex justify-content-between">
-                              <div>
-                                <div className="text-capitalize">{accountData.type}</div>
-                                <div>Routing number: {routingNumber}</div>
-                                <div>Account number: {accountNumber}</div>
-                              </div>
-                              <div className="d-flex align-items-center" style={{fontSize: '24px'}}>
-                                ${accountData.balance}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )
-                    })
+                                     return (
+                                       <Card sx={{margin: "3rem", cursor: "pointer", borderRadius:"1rem"}} onMouseEnter={(e) =>
+                                       e.currentTarget.style.boxShadow="0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                                       onMouseLeave={(e) => e.currentTarget.style.boxShadow="0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                                       onClick={() => {
+                                         setOpen(true)
+                                         setAccountName(accountData.name)
+                                         setAccountBalance(accountData.balance)
+                                       }} key={accountData.account_id}>
+                                         <CardHeader avatar={
+                                           <Avatar sx={{bgcolor:"#FFD800"}}>
+                                             <AccountBalanceRounded color="primary" />
+                                           </Avatar>
+                                         } title={accountData.name} />
+                                         <CardContent>
+                                           <div style={{height: 0}} className="invisible">
+                                             Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
+                                           </div>
+                                           <div className="d-flex justify-content-between">
+                                             <div>
+                                               <div className="text-capitalize">{accountData.type}</div>
+                                               <div>Routing number: {routingNumber}</div>
+                                               <div>Account number: {accountNumber}</div>
+                                             </div>
+                                             <div className="d-flex align-items-center" style={{fontSize: '24px'}}>
+                                               ${accountData.balance}
+                                             </div>
+                                           </div>
+                                         </CardContent>
+                                       </Card>
+                                     )
+                                   })
+                                  }
+                               </>
+                             : <></>
+
                   }
                 </>
           }
-          <AccountDetails open={open} setOpen={setOpen} />
+          <AccountDetails open={open} setOpen={setOpen} accountName={accountName} accountBalance={accountBalance}
+           setAccountName={setAccountName} setAccountBalance={setAccountBalance} />
 
         </Paper>
       </Zoom>
@@ -223,7 +237,7 @@ const Transition = forwardRef(function Transition(props, ref) {
   return <Slide in direction="up" timeout={1000} ref={ref} {...props} />
 })
 
-function AccountDetails({ open, setOpen }) {
+function AccountDetails({ open, setOpen, accountName, accountBalance, setAccountName, setAccountBalance }) {
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState(null)
 
@@ -248,6 +262,9 @@ function AccountDetails({ open, setOpen }) {
         setLoading(true)
         setTransactions(null)
         setOpen(false)
+
+        setAccountName(null)
+        setAccountBalance(null)
        }}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#00C169",
        color: "white", alignItems: "center", padding: "3rem 0rem"}}}>
@@ -256,7 +273,7 @@ function AccountDetails({ open, setOpen }) {
             loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
                         <h2 className={styles.font}>Fidelity Checking</h2>
                       </Skeleton>
-                    : <h2 className={styles.font}>Fidelity Checking</h2>
+                    : <h2 className={styles.font}>{accountName}</h2>
           }
         </DialogTitle>
         <DialogContent className="w-100">
@@ -266,7 +283,7 @@ function AccountDetails({ open, setOpen }) {
               loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
                           <h4 className="text-center">Current Balance</h4>
                         </Skeleton>
-                      : <h4 className="text-center">Current Balance</h4>
+                      : <h4 className="text-center">${accountBalance}</h4>
             }
           </DialogContentText>
 
@@ -352,6 +369,9 @@ function AccountDetails({ open, setOpen }) {
             setOpen(false)
             setLoading(true)
             setTransactions(null)
+
+            setAccountName(null)
+            setAccountBalance(null)
            }}>
             <div className={styles.fab}>
               <CloseRounded style={{marginRight:'0.25rem'}} />
