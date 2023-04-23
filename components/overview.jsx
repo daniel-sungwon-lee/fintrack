@@ -227,9 +227,28 @@ function AccountDetails({ open, setOpen }) {
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState(null)
 
+  useEffect(() => {
+    if(loading && open) {
+      fetch('/api/server/plaid/transactions', { method: 'GET' })
+        .then(res => res.json())
+        .then(transactions => {
+          setTransactions(transactions.latest_transactions)
+          setLoading(false)
+        })
+        .catch(error => {
+          window.alert(error)
+          console.error(error)
+        })
+    }
+  })
+
   return (
     <>
-      <Dialog open={open} TransitionComponent={Transition} onClose={() => setOpen(false)}
+      <Dialog open={open} TransitionComponent={Transition} onClose={() => {
+        setLoading(true)
+        setTransactions(null)
+        setOpen(false)
+       }}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#00C169",
        color: "white", alignItems: "center", padding: "3rem 0rem"}}}>
         <DialogTitle className="w-100 text-center">
@@ -253,7 +272,7 @@ function AccountDetails({ open, setOpen }) {
 
           <Card sx={{bgcolor: '#FFD800', borderRadius: '1rem'}} className="w-75 m-auto">
             <CardContent>
-              <h4>Transactions</h4>
+              <h4 className="text-center m-3" style={{fontWeight: 'bold'}}>Transactions</h4>
               <List>
                 {
                   loading ? <>
@@ -293,16 +312,21 @@ function AccountDetails({ open, setOpen }) {
                                 transactions ? <>
                                                  {
                                                     transactions.map(transaction => {
-                                                      const { account_id, amount, date, name } = transaction
+                                                      const { transaction_id, account_id, amount, date, name, iso_currency_code } = transaction
+                                                      const newDate = new Date(date).toLocaleDateString('en-US', {
+                                                        year: 'numeric', month: 'long', day: 'numeric'
+                                                      })
 
                                                       return (
-                                                        <ListItem key={account_id} sx={{ width: '100vw' }}>
+                                                        <ListItem key={transaction_id} secondaryAction={
+                                                          <div>{`${amount} ${iso_currency_code}`}</div>
+                                                        }>
                                                           <ListItemAvatar>
                                                             <Avatar sx={{ bgcolor: "white" }}>
                                                               <AttachMoneyRounded color="primary" />
                                                             </Avatar>
                                                           </ListItemAvatar>
-                                                          <ListItemText primary={name} secondary={amount} />
+                                                          <ListItemText primary={name} secondary={newDate} />
                                                         </ListItem>
                                                       )
                                                     })
@@ -324,7 +348,11 @@ function AccountDetails({ open, setOpen }) {
 
         </DialogContent>
         <DialogActions sx={{position:'absolute', top:"0.25rem", right:"0.25rem"}}>
-          <Fab size='medium' color='error' variant='extended' onClick={() => setOpen(false)}>
+          <Fab size='medium' color='error' variant='extended' onClick={() => {
+            setOpen(false)
+            setLoading(true)
+            setTransactions(null)
+           }}>
             <div className={styles.fab}>
               <CloseRounded style={{marginRight:'0.25rem'}} />
               Close
