@@ -210,12 +210,16 @@ const Transition = forwardRef(function Transition(props, ref) {
 })
 
 function AccountDetails({ open, setOpen, accountName, accountBalance, setAccountName, setAccountBalance }) {
+  const [end, setEnd] = useState(false)
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState(null)
 
-  useEffect(() => {
-    if(loading && open) {
-      fetch('/api/server/plaid/transactions', { method: 'GET' })
+  useEffect(async () => {
+    if(loading && open && !end) {
+
+      setEnd(true)
+
+      await fetch('/api/server/plaid/transactions', { method: 'GET' })
         .then(res => res.json())
         .then(transactions => {
           setTransactions(transactions.latest_transactions)
@@ -231,6 +235,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
   return (
     <>
       <Dialog open={open} TransitionComponent={Transition} onClose={() => {
+        setEnd(false)
         setLoading(true)
         setTransactions(null)
         setOpen(false)
@@ -338,6 +343,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
         </DialogContent>
         <DialogActions sx={{position:'absolute', top:"0.25rem", right:"0.25rem"}}>
           <Fab size='medium' color='error' variant='extended' onClick={() => {
+            setEnd(false)
             setOpen(false)
             setLoading(true)
             setTransactions(null)
