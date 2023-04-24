@@ -27,8 +27,8 @@ CREATE TABLE "accounts" (
 	"name" TEXT NOT NULL,
 	"type" TEXT NOT NULL,
 	"balance" numeric NOT NULL,
-	"account_num" numeric NOT NULL,
-	"routing_num" numeric NOT NULL,
+	"account_num" TEXT NOT NULL,
+	"routing_num" TEXT NOT NULL,
 	CONSTRAINT "accounts_pk" PRIMARY KEY ("account_id")
 ) WITH (
   OIDS=FALSE

@@ -86,15 +86,16 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
   const [accountName, setAccountName] = useState(null)
   const [accountBalance, setAccountBalance] = useState(null)
 
-  useEffect(() => {
+  useEffect(async () => {
     if (!accountsPlaceholder && loading) {
-      fetch(`/api/server/plaid/auth`, { method: "GET" })
+      await fetch(`/api/server/plaid/auth`, { method: "GET" })
         .then(res => res.json())
         .then(data => {
           setAccounts(data.accounts)
           setNumbers(data.numbers.ach)
           setLoading(false)
 
+        //client side accounts data POST
           // if(accounts !== null && numbers !== null) {
           //   accounts.map(account => {
           //     const index = numbers.map(a => a.account_id).indexOf(account.account_id)
@@ -125,7 +126,6 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
           //       })
           //   })
           // }
-
         })
         .catch(error => {
           window.alert(error)
