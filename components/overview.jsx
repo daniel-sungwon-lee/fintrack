@@ -98,38 +98,6 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
           setAccounts(data.accounts)
           setNumbers(data.numbers.ach)
           setLoading(false)
-
-        //client side accounts data POST
-          // if(accounts !== null && numbers !== null) {
-          //   accounts.map(account => {
-          //     const index = numbers.map(a => a.account_id).indexOf(account.account_id)
-          //     const accountNumber = numbers[index].account
-          //     const routingNumber = numbers[index].routing
-
-          //     const accountData = {
-          //       account_id: account.account_id,
-          //       item_id: itemId,
-          //       name: account.name,
-          //       type: account.subtype,
-          //       balance: account.balances.current,
-          //       account_num: accountNumber,
-          //       routing_num: routingNumber
-          //     }
-
-          //     fetch('/api/server/accounts', {
-          //       method: "POST",
-          //       headers: { "Content-Type": "application/json" },
-          //       body: JSON.stringify(accountData)
-          //     })
-          //       .then(() => {
-
-          //       })
-          //       .catch(err => {
-          //         window.alert(error)
-          //         console.error(error)
-          //       })
-          //   })
-          // }
         })
         .catch(error => {
           window.alert(error)
