@@ -79,6 +79,7 @@ export default function Overview({ userId }) {
 
 
 function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlaceholder }) {
+  const [end, setEnd] = useState(false)
   const [open, setOpen] = useState(false)
   const [accounts, setAccounts] = useState(null)
   const [numbers, setNumbers] = useState(null)
@@ -87,7 +88,10 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
   const [accountBalance, setAccountBalance] = useState(null)
 
   useEffect(async () => {
-    if (!accountsPlaceholder && loading) {
+    if (!accountsPlaceholder && loading && !end) {
+
+      setEnd(true)
+
       await fetch(`/api/server/plaid/auth`, { method: "GET" })
         .then(res => res.json())
         .then(data => {

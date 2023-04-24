@@ -37,35 +37,58 @@ export default function handler (request, response, next) {
         `
         db.query(check)
           .then(result => {
-            const accountIds = result.rows //array of objects containing account_id
+            if(result.rows.length === 0) {
+              const sql = `
+                insert into "accounts" ("account_id", "item_id", "name", "type", "balance",
+                "account_num", "routing_num")
+                values ($1, $2, $3, $4, $5, $6, $7)
+              `
+              const params = [accountData.account_id, accountData.item_id, accountData.name,
+              accountData.type, accountData.balance, accountData.account_num, accountData.routing_num]
 
-            accountIds.map(obj => {
-              const {account_id} = obj
+              db.query(sql, params)
+                .then(result => {
+                  //response.status(201).json(result.rows[0])
+                })
+                .catch(err => {
+                  console.error(err);
+                  // response.status(500).json({
+                  //   error: 'an unexpected error occurred'
+                  // });
+                })
+            } else {
+              const accountIds = result.rows //array of objects containing account_id
 
-              if(accountData.account_id === account_id) {
-                response.status(201).json("Account already exists")
+              accountIds.map(obj => {
+                const {account_id} = obj
 
-              } else {
-                const sql = `
-                  insert into "accounts" ("account_id", "item_id", "name", "type", "balance",
-                  "account_num", "routing_num")
-                  values ($1, $2, $3, $4, $5, $6, $7)
-                `
-                const params = [accountData.account_id, accountData.item_id, accountData.name,
-                accountData.type, accountData.balance, accountData.account_num, accountData.routing_num]
+                if(accountData.account_id === account_id) {
+                  console.log('Account already exists')
+                  //response.status(201).json("Account already exists")
 
-                db.query(sql, params)
-                  .then(result => {
-                    response.status(201).json(result.rows[0])
-                  })
-                  .catch(err => {
-                    console.error(err);
-                    response.status(500).json({
-                      error: 'an unexpected error occurred'
-                    });
-                  })
-              }
-            })
+                } else {
+                  const sql = `
+                    insert into "accounts" ("account_id", "item_id", "name", "type", "balance",
+                    "account_num", "routing_num")
+                    values ($1, $2, $3, $4, $5, $6, $7)
+                  `
+                  const params = [accountData.account_id, accountData.item_id, accountData.name,
+                  accountData.type, accountData.balance, accountData.account_num, accountData.routing_num]
+
+                  db.query(sql, params)
+                    .then(result => {
+                      //response.status(201).json(result.rows[0])
+                    })
+                    .catch(err => {
+                      console.error(err);
+                      // response.status(500).json({
+                      //   error: 'an unexpected error occurred'
+                      // });
+                    })
+                }
+              })
+            }
+
           })
           .catch(err => {
             console.error(err);
