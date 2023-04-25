@@ -15,12 +15,35 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+  transition: all 0.25s;
+}
+a:hover {
+  color: #FFD800;
 }
 
 * {
   box-sizing: border-box;
 }
 
+
+.MuiTypography-root {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+.MuiBottomNavigationAction-label {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+.MuiFormLabel-root.MuiInputLabel-root {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+.MuiInputBase-root.MuiInput-root {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
 
 #password-helper-text {
   margin-top: 1rem;

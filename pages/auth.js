@@ -4,6 +4,7 @@ import { LoadingButton } from '@mui/lab';
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { VisibilityRounded, VisibilityOffRounded } from "@mui/icons-material";
+import styles from '../styles/Home.module.css'
 
 export default function Auth ({ setUser }) {
   const [page, setPage] = useState('login')
@@ -170,7 +171,7 @@ export default function Auth ({ setUser }) {
               sx={{width: '195px'}}
             />
 
-            <LoadingButton loading={loading} type="submit" className="mb-5"
+            <LoadingButton loading={loading} type="submit" className={`mb-5 ${styles.font}`}
               variant="contained" sx={{color: 'white'}}>
               Login
             </LoadingButton>
@@ -231,7 +232,7 @@ export default function Auth ({ setUser }) {
               />
             </FormControl>
 
-            <LoadingButton loading={loading} type="submit" className="mb-5"
+            <LoadingButton loading={loading} type="submit" className={`mb-5 ${styles.font}`}
               variant="contained" sx={{color:'white'}}>
               Sign up
             </LoadingButton>

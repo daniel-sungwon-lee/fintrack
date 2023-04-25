@@ -24,7 +24,7 @@ export default function Track() {
 
                   <Fab variant="extended" size="medium" color="primary" sx={{padding:"1.5rem",
                    borderRadius:"2rem"}}>
-                    <div className={styles.fab} style={{fontSize: '18px'}}>
+                    <div className={`${styles.fab} ${styles.font}`} style={{fontSize: '18px'}}>
                       <AddchartRounded style={{marginRight: "0.5rem"}} />
                       Create new tracker
                     </div>

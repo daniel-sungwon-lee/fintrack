@@ -115,9 +115,9 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
 
           {
             loading ? <Skeleton className="mb-0 text-center m-5" variant="rectangle" sx={{borderRadius: '1rem'}}>
-                        <h2 className="mb-0" style={{fontWeight: 'bold'}}>Institution name</h2>
+                        <div className="h2 mb-0" style={{fontWeight: 'bold'}}>Institution name</div>
                       </Skeleton>
-                    : <h2 className="mb-0 text-center m-5" style={{fontWeight: 'bold'}}>{name}</h2>
+                    : <div className="h2 mb-0 text-center m-5" style={{fontWeight: 'bold'}}>{name}</div>
           }
 
           { loading
@@ -130,7 +130,7 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
                       <Avatar sx={{bgcolor:"#FFD800"}}>
                         <AccountBalanceRounded color="primary" />
                       </Avatar>
-                    } title="Bank Account" />
+                    } title="Bank Account" titleTypographyProps={{fontSize: '18px'}} />
                     <CardContent>
                       Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
                     </CardContent>
@@ -139,7 +139,7 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
               :
                 <>
                   {
-                    accounts ? <>
+                    accounts && numbers ? <>
                                   {
                                     accounts.map(account => {
                                      const index = numbers.map(a => a.account_id).indexOf(account.account_id)
@@ -169,16 +169,16 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
                                            <Avatar sx={{bgcolor:"#FFD800"}}>
                                              <AccountBalanceRounded color="primary" />
                                            </Avatar>
-                                         } title={accountData.name} />
+                                         } title={accountData.name} titleTypographyProps={{fontSize: '18px'}} />
                                          <CardContent>
                                            <div style={{height: 0}} className="invisible">
                                              Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
                                            </div>
                                            <div className="d-flex justify-content-between">
                                              <div>
-                                               <div className="text-capitalize">{accountData.type}</div>
-                                               <div>Routing number: {routingNumber}</div>
-                                               <div>Account number: {accountNumber}</div>
+                                               <div className="h6 text-capitalize">{accountData.type}</div>
+                                               <div className="h6">Routing number: {routingNumber}</div>
+                                               <div className="h6">Account number: {accountNumber}</div>
                                              </div>
                                              <div className="d-flex align-items-center" style={{fontSize: '24px'}}>
                                                ${accountData.balance}
@@ -248,9 +248,9 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
         <DialogTitle className="w-100 text-center">
           {
             loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
-                        <h2 className={styles.font}>Fidelity Checking</h2>
+                        <div className={`h2 ${styles.font}`}>Fidelity Checking</div>
                       </Skeleton>
-                    : <h2 className={styles.font}>{accountName}</h2>
+                    : <div className={`h2 ${styles.font}`}>{accountName}</div>
           }
         </DialogTitle>
         <DialogContent className="w-100">
@@ -258,15 +258,15 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
           <DialogContentText className={styles.font} sx={{marginBottom:'3rem', color:'white'}}>
             {
               loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
-                          <h4 className="text-center">Current Balance</h4>
+                          <div className="h4 text-center">Current Balance</div>
                         </Skeleton>
-                      : <h4 className="text-center">${accountBalance}</h4>
+                      : <div className="h4 text-center">${accountBalance}</div>
             }
           </DialogContentText>
 
           <Card sx={{bgcolor: '#FFD800', borderRadius: '1rem'}} className="w-75 m-auto">
             <CardContent>
-              <h4 className="text-center m-3" style={{fontWeight: 'bold'}}>Transactions</h4>
+              <div className="h4 text-center m-3" style={{fontWeight: 'bold'}}>Transactions</div>
               <List>
                 {
                   loading ? <>
@@ -335,7 +335,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
             </CardContent>
             <CardActions>
               {
-                //transactions refresh?
+                //transactions refresh? or not :)
               }
             </CardActions>
           </Card>
@@ -351,7 +351,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
             setAccountName(null)
             setAccountBalance(null)
            }}>
-            <div className={styles.fab}>
+            <div className={`${styles.fab} ${styles.font}`}>
               <CloseRounded style={{marginRight:'0.25rem'}} />
               Close
             </div>

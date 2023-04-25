@@ -129,7 +129,7 @@ export default function Home({ user, setUser }) {
                         setLogoutModal(false)
                         setPage('overview')
                        }}>
-                        <div className={styles.fab}>
+                        <div className={`${styles.fab} ${styles.font}`}>
                           <ClearRounded style={{marginRight:'0.5rem'}} />
                           No
                         </div>
@@ -137,7 +137,7 @@ export default function Home({ user, setUser }) {
 
                       <Fab size='medium' color='primary' variant='extended'
                        onClick={handleSignOut}>
-                        <div className={styles.fab}>
+                        <div className={`${styles.fab} ${styles.font}`}>
                           <LogoutRounded style={{ marginRight: '0.5rem' }} />
                           Yes
                         </div>

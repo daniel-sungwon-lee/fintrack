@@ -134,7 +134,7 @@ const Link = ({ userId, setAccountsPlaceholder, setAccountsLoading, setData, set
     //custom button (fab)
     <Fab onClick={() => open()} disabled={!ready} variant="extended" size="large"
       color="primary" sx={{ padding: '2rem', borderRadius: '2rem' }}>
-      <div className={styles.fab} style={{ fontSize: '20px' }}>
+      <div className={`${styles.fab} ${styles.font}`} style={{ fontSize: '20px' }}>
         {
           ready
             ?<>
