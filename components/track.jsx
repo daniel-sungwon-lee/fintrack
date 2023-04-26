@@ -14,7 +14,7 @@ export default function Track() {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    setLoading(false)
+    setTimeout(() => setLoading(false), 200)
   })
 
   return (
@@ -52,18 +52,20 @@ const Transition = forwardRef(function Transition(props, ref) {
 })
 const shortcutsItems = [
   {
-    label: 'This Week',
-    getValue: () => {
-      const today = dayjs();
-      return [today.startOf('week'), today.endOf('week')];
-    },
-  },
-  {
     label: 'Last Week',
     getValue: () => {
       const today = dayjs();
       const prevWeek = today.subtract(7, 'day');
       return [prevWeek.startOf('week'), prevWeek.endOf('week')];
+    },
+  },
+  {
+    label: 'Last Two Weeks',
+    getValue: () => {
+      const today = dayjs();
+      const prev2Weeks = today.subtract(14, 'day')
+      const prevWeek = today.subtract(7, 'day')
+      return [prev2Weeks.startOf('week'), prevWeek.endOf('week')];
     },
   },
   {
@@ -74,16 +76,34 @@ const shortcutsItems = [
     },
   },
   {
-    label: 'Current Month',
+    label: 'Last 14 Days',
     getValue: () => {
       const today = dayjs();
-      return [today.startOf('month'), today.endOf('month')];
+      return [today.subtract(14, 'day'), today];
     },
+  },
+  {
+    label: 'Last Month',
+    getValue: () => {
+      const today = dayjs();
+      const prevMonth = today.subtract(1, 'month')
+      return [prevMonth.startOf('month'), prevMonth.endOf('month')]
+    }
   },
   { label: 'Reset', getValue: () => [null, null] },
 ];
 
 function TrackDialog({open, setOpen}) {
+  const [firstTime, setFirstTime] = useState(true)
+  const [value, setValue] = useState([null, null])
+
+  useEffect(() => {
+    //removing watermark on Date Range Picker
+    if(open && firstTime) {
+      document.querySelector('.MuiDateRangeCalendar-root').firstChild.remove()
+      setFirstTime(false)
+    }
+  })
 
   return (
     <>
@@ -92,12 +112,11 @@ function TrackDialog({open, setOpen}) {
         <DialogTitle>Tracker</DialogTitle>
 
         <DialogContent>
-          <DialogContentText>
-            Time Range:
-          </DialogContentText>
+          <DialogContentText>Time:</DialogContentText>
 
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <StaticDateRangePicker slotProps={{
+            <StaticDateRangePicker value={value} onChange={(value) => setValue(value)}
+             slotProps={{
               shortcuts: {
                 items: shortcutsItems,
               },
