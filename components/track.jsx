@@ -4,6 +4,10 @@ import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
 import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
 import styles from '../styles/Home.module.css'
+import { StaticDateRangePicker } from "@mui/x-date-pickers-pro"
+import { LocalizationProvider } from "@mui/x-date-pickers"
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import dayjs from "dayjs"
 
 export default function Track() {
   const [loading, setLoading] = useState(true)
@@ -46,6 +50,38 @@ export default function Track() {
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide in direction="down" timeout={1000} ref={ref} {...props} />
 })
+const shortcutsItems = [
+  {
+    label: 'This Week',
+    getValue: () => {
+      const today = dayjs();
+      return [today.startOf('week'), today.endOf('week')];
+    },
+  },
+  {
+    label: 'Last Week',
+    getValue: () => {
+      const today = dayjs();
+      const prevWeek = today.subtract(7, 'day');
+      return [prevWeek.startOf('week'), prevWeek.endOf('week')];
+    },
+  },
+  {
+    label: 'Last 7 Days',
+    getValue: () => {
+      const today = dayjs();
+      return [today.subtract(7, 'day'), today];
+    },
+  },
+  {
+    label: 'Current Month',
+    getValue: () => {
+      const today = dayjs();
+      return [today.startOf('month'), today.endOf('month')];
+    },
+  },
+  { label: 'Reset', getValue: () => [null, null] },
+];
 
 function TrackDialog({open, setOpen}) {
 
@@ -59,6 +95,15 @@ function TrackDialog({open, setOpen}) {
           <DialogContentText>
             Time Range:
           </DialogContentText>
+
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <StaticDateRangePicker slotProps={{
+              shortcuts: {
+                items: shortcutsItems,
+              },
+              actionBar: { actions: [] },
+             }} calendars={2} />
+          </LocalizationProvider>
 
         </DialogContent>
 
