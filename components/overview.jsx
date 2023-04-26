@@ -314,9 +314,9 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
           <DialogContentText className={styles.font} sx={{marginBottom:'3rem', color:'white'}}>
             {
               loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
-                          <div className="h4 text-center">Current Balance</div>
+                          <span className="h4 text-center d-block">Current Balance</span>
                         </Skeleton>
-                      : <div className="h4 text-center">${accountBalance}</div>
+                      : <span className="h4 text-center d-block">${accountBalance}</span>
             }
           </DialogContentText>
 
