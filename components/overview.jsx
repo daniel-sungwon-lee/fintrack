@@ -11,7 +11,6 @@ import Link from './plaid/link.tsx'
 export default function Overview({ userId }) {
   const [loading, setLoading] = useState(true)
   const [accountsPlaceholder, setAccountsPlaceholder] = useState(false)
-  const [accountsLoading, setAccountsLoading] = useState(true)
   const [data, setData] = useState(null)
   const [newData, setNewData] = useState(false)
 
@@ -51,8 +50,7 @@ export default function Overview({ userId }) {
 
                               return (
                                 <Accounts key={item_id} itemId={item_id} accessToken={access_token}
-                                 name={name} loading={accountsLoading} setLoading={setAccountsLoading}
-                                 accountsPlaceholder={accountsPlaceholder} />
+                                 name={name} accountsPlaceholder={accountsPlaceholder} />
                               )
 
                             })
@@ -62,13 +60,12 @@ export default function Overview({ userId }) {
                 }
 
                 {
-                  accountsPlaceholder ? <Accounts loading={accountsLoading}
-                                         accountsPlaceholder={accountsPlaceholder} />
+                  accountsPlaceholder ? <Accounts accountsPlaceholder={accountsPlaceholder} />
                                       : <></>
                 }
 
                 <Link userId={userId} setAccountsPlaceholder={setAccountsPlaceholder}
-                 setAccountsLoading={setAccountsLoading} setData={setData} setNewData={setNewData} />
+                 setData={setData} setNewData={setNewData} />
 
               </div>
             </Zoom>
@@ -78,12 +75,13 @@ export default function Overview({ userId }) {
 }
 
 
-function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlaceholder }) {
+function Accounts({ itemId, accessToken, name, accountsPlaceholder }) {
+  const [loading, setLoading] = useState(true)
   const [end, setEnd] = useState(false)
-  const [open, setOpen] = useState(false)
   const [accounts, setAccounts] = useState(null)
   const [numbers, setNumbers] = useState(null)
 
+  const [open, setOpen] = useState(false)
   const [accountName, setAccountName] = useState(null)
   const [accountBalance, setAccountBalance] = useState(null)
 
@@ -92,12 +90,27 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
 
       setEnd(true)
 
-      await fetch(`/api/server/plaid/auth`, { method: "GET" })
+      await fetch(`/api/server/accounts?item_id=${itemId}`)
         .then(res => res.json())
-        .then(data => {
-          setAccounts(data.accounts)
-          setNumbers(data.numbers.ach)
-          setLoading(false)
+        .then(async data => {
+          if(data.length > 0) {
+            setAccounts(data)
+            setNumbers(null)
+            setLoading(false)
+
+          } else {
+            await fetch(`/api/server/plaid/auth`, { method: "GET" })
+              .then(res => res.json())
+              .then(data => {
+                setAccounts(data.accounts)
+                setNumbers(data.numbers.ach)
+                setLoading(false)
+              })
+              .catch(error => {
+                window.alert(error)
+                console.error(error)
+              })
+          }
         })
         .catch(error => {
           window.alert(error)
@@ -190,8 +203,51 @@ function Accounts({ itemId, accessToken, name, loading, setLoading, accountsPlac
                                    })
                                   }
                                </>
-                             : <></>
+                             : <>
+                                {
+                                  accounts && !numbers ? <>
+                                                          {
+                                                            accounts.map(account => {
+                                                              const { account_id, item_id, name, type, balance,
+                                                                      account_num, routing_num } = account
 
+                                                              return (
+                                                                <Card sx={{ margin: "3rem", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                                                                  e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                                                                  onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                                                                  onClick={() => {
+                                                                    setOpen(true)
+                                                                    setAccountName(name)
+                                                                    setAccountBalance(balance)
+                                                                  }} key={account_id}>
+                                                                  <CardHeader avatar={
+                                                                    <Avatar sx={{ bgcolor: "#FFD800" }}>
+                                                                      <AccountBalanceRounded color="primary" />
+                                                                    </Avatar>
+                                                                  } title={name} titleTypographyProps={{ fontSize: '18px' }} />
+                                                                  <CardContent>
+                                                                    <div style={{ height: 0 }} className="invisible">
+                                                                      Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
+                                                                    </div>
+                                                                    <div className="d-flex justify-content-between">
+                                                                      <div>
+                                                                        <div className="h6 text-capitalize">{type}</div>
+                                                                        <div className="h6">Routing number: {routing_num}</div>
+                                                                        <div className="h6">Account number: {account_num}</div>
+                                                                      </div>
+                                                                      <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
+                                                                        ${balance}
+                                                                      </div>
+                                                                    </div>
+                                                                  </CardContent>
+                                                                </Card>
+                                                              )
+                                                            })
+                                                          }
+                                                         </>
+                                                       : <></>
+                                }
+                               </>
                   }
                 </>
           }
