@@ -1,6 +1,6 @@
 import { AddchartRounded, CloseRounded } from "@mui/icons-material"
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-         Fab, Slide, Zoom } from "@mui/material"
+import { Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText,
+         DialogTitle, Fab, List, ListItem, Skeleton, Slide, Zoom } from "@mui/material"
 import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
 import styles from '../styles/Home.module.css'
@@ -108,7 +108,10 @@ function TrackDialog({open, setOpen}) {
   return (
     <>
       <Dialog fullScreen closeAfterTransition keepMounted open={open}
-       onClose={() => setOpen(false)} TransitionComponent={Transition}>
+       onClose={() => {
+        setOpen(false)
+        setValue([null, null])
+       }} TransitionComponent={Transition}>
         <DialogTitle>Tracker</DialogTitle>
 
         <DialogContent>
@@ -121,14 +124,20 @@ function TrackDialog({open, setOpen}) {
                 items: shortcutsItems,
               },
               actionBar: { actions: [] },
-             }} calendars={2} />
+             }} calendars={2} defaultCalendarMonth={dayjs().subtract(1,'month')} />
           </LocalizationProvider>
+
+          {
+            value.every(i => i!==null) ? <Transactions value={value} />
+                                       : <></>
+          }
 
         </DialogContent>
 
         <DialogActions sx={{ position: 'absolute', top: "0.25rem", right: "0.25rem" }}>
           <Fab size='medium' color='error' variant='extended' onClick={() => {
             setOpen(false)
+            setValue([null, null])
            }}>
             <div className={`${styles.fab} ${styles.font}`}>
               <CloseRounded style={{marginRight:'0.25rem'}} />
@@ -137,6 +146,45 @@ function TrackDialog({open, setOpen}) {
           </Fab>
         </DialogActions>
       </Dialog>
+    </>
+  )
+}
+
+
+function Transactions({value}) {
+  const [loading, setLoading] = useState(true)
+  const [transactions, setTransactions] = useState([])
+
+  useEffect(() => {
+    console.log(value)
+    //call Plaid transactions api here
+    //setLoading(false)
+  })
+
+  return (
+    <>
+      <p className="mt-2">Transactions:</p>
+      {
+        loading ? <Skeleton variant="rectangle" sx={{borderRadius: '1rem'}}>
+                    <div className="p-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Doloribus nulla eos accusantium sit inventore ab dolorem hic repellendus accusamus ad, aliquid ipsum explicabo quis rerum dolor incidunt aut, sed sequi!</div>
+                  </Skeleton>
+                : <Card>
+                    <CardContent>
+                      <List>
+                        {
+                          transactions.map(transaction => {
+
+                            return (
+                              <ListItem>
+
+                              </ListItem>
+                            )
+                          })
+                        }
+                      </List>
+                    </CardContent>
+                  </Card>
+      }
     </>
   )
 }
