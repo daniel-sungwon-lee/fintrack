@@ -1,6 +1,6 @@
 import { AddchartRounded, CloseRounded } from "@mui/icons-material"
 import { Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText,
-         DialogTitle, Fab, List, ListItem, Skeleton, Slide, Zoom } from "@mui/material"
+         DialogTitle, Fab, List, ListItem, ListItemText, Skeleton, Slide, Zoom } from "@mui/material"
 import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
 import styles from '../styles/Home.module.css'
@@ -96,6 +96,7 @@ const shortcutsItems = [
 function TrackDialog({open, setOpen}) {
   const [firstTime, setFirstTime] = useState(true)
   const [value, setValue] = useState([null, null])
+  const [reload, setReload] = useState(false)
 
   useEffect(() => {
     //removing watermark on Date Range Picker
@@ -118,7 +119,10 @@ function TrackDialog({open, setOpen}) {
           <DialogContentText>Time:</DialogContentText>
 
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <StaticDateRangePicker value={value} onChange={(value) => setValue(value)}
+            <StaticDateRangePicker value={value} onChange={(value) => {
+              setValue(value)
+              setReload(true)
+             }}
              slotProps={{
               shortcuts: {
                 items: shortcutsItems,
@@ -128,7 +132,8 @@ function TrackDialog({open, setOpen}) {
           </LocalizationProvider>
 
           {
-            value.every(i => i!==null) ? <Transactions value={value} />
+            value.every(i => i!==null) ? <Transactions value={value} reload={reload}
+                                                    setReload={setReload} />
                                        : <></>
           }
 
@@ -151,14 +156,42 @@ function TrackDialog({open, setOpen}) {
 }
 
 
-function Transactions({value}) {
+function Transactions({value, reload, setReload}) {
+  const [end, setEnd] = useState(false)
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
 
-  useEffect(() => {
-    console.log(value)
-    //call Plaid transactions api here
-    //setLoading(false)
+  useEffect(async () => {
+    let start_date = dayjs(value[0].$d).format('YYYY-MM-DD')
+    let end_date = dayjs(value[1].$d).format('YYYY-MM-DD')
+
+    console.log(`${start_date} to ${end_date}`)
+
+    if(reload) {
+      setEnd(false)
+      setLoading(true)
+    }
+
+    if(!end && loading) {
+      setEnd(true)
+      setReload(false)
+
+      const reqBody = { start_date, end_date }
+      await fetch('/api/server/plaid/transactions_get', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reqBody)
+      })
+        .then(res => res.json())
+        .then(data => {
+          setTransactions(data.transactions)
+          setLoading(false)
+        })
+        .catch(error => {
+          window.alert(error)
+          console.error(error)
+        })
+    }
   })
 
   return (
@@ -168,20 +201,32 @@ function Transactions({value}) {
         loading ? <Skeleton variant="rectangle" sx={{borderRadius: '1rem'}}>
                     <div className="p-5">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Doloribus nulla eos accusantium sit inventore ab dolorem hic repellendus accusamus ad, aliquid ipsum explicabo quis rerum dolor incidunt aut, sed sequi!</div>
                   </Skeleton>
-                : <Card>
+                : <Card sx={{borderRadius: '8px', backgroundColor: '#FFD800'}}>
                     <CardContent>
-                      <List>
-                        {
-                          transactions.map(transaction => {
+                      {
+                        transactions.length > 0 ? <List>
+                                                    {
+                                                      transactions.map(transaction => {
+                                                        const {account_id, amount, category, date, iso_currency_code,
+                                                              name, transaction_id, transaction_type} = transaction
 
-                            return (
-                              <ListItem>
-
-                              </ListItem>
-                            )
-                          })
-                        }
-                      </List>
+                                                        return (
+                                                          <ListItem key={transaction_id} secondaryAction={
+                                                            <div>{`${amount} ${iso_currency_code}`}</div>
+                                                           } sx={{
+                                                            background: 'white', borderRadius: '1rem', marginBottom: '0.5rem',
+                                                            boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'
+                                                           }}>
+                                                            <ListItemText primary={name} secondary={date} />
+                                                          </ListItem>
+                                                        )
+                                                      })
+                                                    }
+                                                  </List>
+                                                : <>
+                                                    <div className="h6 mb-1" style={{opacity: '0.7'}}>No transactions in given date range...</div>
+                                                  </>
+                      }
                     </CardContent>
                   </Card>
       }
