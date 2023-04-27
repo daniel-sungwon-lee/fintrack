@@ -165,8 +165,6 @@ function Transactions({value, reload, setReload}) {
     let start_date = dayjs(value[0].$d).format('YYYY-MM-DD')
     let end_date = dayjs(value[1].$d).format('YYYY-MM-DD')
 
-    console.log(`${start_date} to ${end_date}`)
-
     if(reload) {
       setEnd(false)
       setLoading(true)
