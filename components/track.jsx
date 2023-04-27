@@ -112,7 +112,7 @@ function TrackDialog({open, setOpen}) {
         setOpen(false)
         setValue([null, null])
        }} TransitionComponent={Transition}>
-        <DialogTitle>Tracker</DialogTitle>
+        <DialogTitle>Create Tracker</DialogTitle>
 
         <DialogContent>
           <DialogContentText>Time:</DialogContentText>
@@ -166,7 +166,7 @@ function Transactions({value}) {
       <p className="mt-2">Transactions:</p>
       {
         loading ? <Skeleton variant="rectangle" sx={{borderRadius: '1rem'}}>
-                    <div className="p-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Doloribus nulla eos accusantium sit inventore ab dolorem hic repellendus accusamus ad, aliquid ipsum explicabo quis rerum dolor incidunt aut, sed sequi!</div>
+                    <div className="p-5">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Doloribus nulla eos accusantium sit inventore ab dolorem hic repellendus accusamus ad, aliquid ipsum explicabo quis rerum dolor incidunt aut, sed sequi!</div>
                   </Skeleton>
                 : <Card>
                     <CardContent>
