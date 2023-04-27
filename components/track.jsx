@@ -1,7 +1,8 @@
 import { AddchartRounded, CloseRounded } from "@mui/icons-material"
-import { Card, CardContent, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText,
-         DialogTitle, Fab, List, ListItem, ListItemButton, ListItemIcon, ListItemText,
-         Skeleton, Slide, Zoom } from "@mui/material"
+import { Avatar, Card, CardContent, CardHeader, Checkbox, Dialog, DialogActions,
+         DialogContent, DialogContentText, DialogTitle, Fab, List, ListItem,
+         ListItemButton, ListItemIcon, ListItemText, Paper, Skeleton, Slide,
+         Zoom } from "@mui/material"
 import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
 import styles from '../styles/Home.module.css'
@@ -14,6 +15,8 @@ export default function Track() {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
 
+  const [trackers, setTrackers] = useState(null)
+
   useEffect(() => {
     setTimeout(() => setLoading(false), 200)
   })
@@ -25,9 +28,14 @@ export default function Track() {
           ? <Placeholder />
           :
             <Zoom in timeout={300}>
-              <div className="d-flex justify-content-center align-items-center my-5" style={{minHeight: '50vh'}}>
+              <div className="d-flex justify-content-center align-items-center"
+               style={{minHeight: '50vh', marginBottom: '7rem'}}>
                 <div className="text-center">
-                  <h2 className="mb-3" style={{opacity: '0.7'}}>Such empty...</h2>
+
+                  {
+                    trackers ? <Trackers />
+                             : <h2 className="mb-3" style={{opacity: '0.7'}}>Such empty...</h2>
+                  }
 
                   <Fab variant="extended" size="medium" color="primary" sx={{padding:"1.5rem",
                    borderRadius:"2rem"}} onClick={() => setOpen(true)}>
@@ -44,6 +52,59 @@ export default function Track() {
             </Zoom>
       }
     </>
+  )
+}
+
+
+function Trackers({}) {
+  const [loading, setLoading] = useState(true)
+  const [open, setOpen] = useState(false)
+
+  return (
+    <Paper className="d-flex flex-column align-items-center" sx={
+      { minWidth: "80%", margin: "5rem 1rem", bgcolor: "#00C169", borderRadius: "8px" }}
+      elevation={3}>
+      {
+        loading ? <>
+                    <Skeleton className="mb-0 text-center m-5" variant="rectangle" sx={{ borderRadius: '1rem' }}>
+                      <div className="h2 mb-0" style={{ fontWeight: 'bold' }}>Tracker name</div>
+                    </Skeleton>
+
+                    <Skeleton variant="rectangle" sx={{ borderRadius: '1rem', margin: '3rem' }}>
+                      <Card sx={{ margin: "", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                        e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                        onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                        onClick={() => setOpen(true)}>
+                        <CardHeader avatar={
+                          <Avatar sx={{ bgcolor: "#00C169" }}>
+                            <AddchartRounded color="secondary" />
+                          </Avatar>
+                          } title="Groceries and Gas" titleTypographyProps={{ fontSize: '18px' }} />
+                        <CardContent>
+                          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
+                        </CardContent>
+                      </Card>
+                    </Skeleton>
+                  </>
+                : <>
+                    <div className="h2 mb-0 text-center m-5" style={{fontWeight: 'bold'}}>Tracker name</div>
+
+                    <Card sx={{ margin: "3rem", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                      e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                      onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                      onClick={() => setOpen(true)}>
+                      <CardHeader avatar={
+                        <Avatar sx={{ bgcolor: "#00C169" }}>
+                          <AddchartRounded color="secondary" />
+                        </Avatar>
+                        } title="Groceries and Gas" titleTypographyProps={{ fontSize: '18px' }} />
+                      <CardContent>
+                        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
+                      </CardContent>
+                    </Card>
+                  </>
+      }
+    </Paper>
   )
 }
 
