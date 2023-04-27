@@ -65,3 +65,7 @@ a:hover {
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   background-color: #FFD800;
 }
+
+.track-transactions-list .MuiListItemButton-root {
+  border-radius: 1rem;
+}

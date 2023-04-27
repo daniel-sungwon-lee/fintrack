@@ -1,6 +1,7 @@
 import { AddchartRounded, CloseRounded } from "@mui/icons-material"
-import { Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText,
-         DialogTitle, Fab, List, ListItem, ListItemText, Skeleton, Slide, Zoom } from "@mui/material"
+import { Card, CardContent, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText,
+         DialogTitle, Fab, List, ListItem, ListItemButton, ListItemIcon, ListItemText,
+         Skeleton, Slide, Zoom } from "@mui/material"
 import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
 import styles from '../styles/Home.module.css'
@@ -160,6 +161,7 @@ function Transactions({value, reload, setReload}) {
   const [end, setEnd] = useState(false)
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
+  const [checked, setChecked] = useState([])
 
   useEffect(async () => {
     let start_date = dayjs(value[0].$d).format('YYYY-MM-DD')
@@ -192,6 +194,19 @@ function Transactions({value, reload, setReload}) {
     }
   })
 
+  const handleCheckbox = (transaction_id) => {
+    const currentIndex = checked.indexOf(transaction_id)
+    const newChecked = [...checked]
+
+    if(currentIndex === -1) {
+      newChecked.push(transaction_id)
+    } else {
+      newChecked.splice(currentIndex, 1)
+    }
+
+    setChecked(newChecked)
+  }
+
   return (
     <>
       <p className="mt-2">Transactions:</p>
@@ -202,11 +217,11 @@ function Transactions({value, reload, setReload}) {
                 : <Card sx={{borderRadius: '8px', backgroundColor: '#FFD800'}}>
                     <CardContent>
                       {
-                        transactions.length > 0 ? <List>
+                        transactions.length > 0 ? <List className="track-transactions-list">
                                                     {
                                                       transactions.map(transaction => {
                                                         const {account_id, amount, category, date, iso_currency_code,
-                                                              name, transaction_id, transaction_type} = transaction
+                                                              name, transaction_id} = transaction
 
                                                         return (
                                                           <ListItem key={transaction_id} secondaryAction={
@@ -214,8 +229,14 @@ function Transactions({value, reload, setReload}) {
                                                            } sx={{
                                                             background: 'white', borderRadius: '1rem', marginBottom: '0.5rem',
                                                             boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'
-                                                           }}>
-                                                            <ListItemText primary={name} secondary={date} />
+                                                           }} disablePadding>
+                                                            <ListItemButton onClick={() => handleCheckbox(transaction_id)}>
+                                                              <ListItemIcon>
+                                                                <Checkbox edge='start' checked={checked.indexOf(transaction_id) !== -1}
+                                                                 disableRipple />
+                                                              </ListItemIcon>
+                                                              <ListItemText primary={name} secondary={date} />
+                                                            </ListItemButton>
                                                           </ListItem>
                                                         )
                                                       })
