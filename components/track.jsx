@@ -297,7 +297,7 @@ function Transactions({userId, value, reload, setReload}) {
     setAmounts(newAmounts)
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
 
@@ -308,6 +308,59 @@ function Transactions({userId, value, reload, setReload}) {
       fromDate: dayjs(value[0].$d).format('MM-DD-YYYY'),
       toDate: dayjs(value[1].$d).format('MM-DD-YYYY')
     }
+
+    await fetch('/api/server/trackers', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(reqBody)
+    })
+      .then(async () => {
+        await fetch(`/api/server/trackers/${userId}?postPost=true`)
+          .then(res => res.json())
+          .then(data => {
+            const { trackerId } = data
+
+            checked.map(id => {
+              transactions.map(async transaction => {
+                const {transaction_id} = transaction
+
+                if(transaction_id === id){
+
+                  const reqBody = {
+                    transaction_id,
+                    trackerId,
+                    account_id: transaction.account_id,
+                    amount: transaction.amount,
+                    category: transaction.category,
+                    date: transaction.date,
+                    iso_currency_code: transaction.iso_currency_code
+                  }
+
+                  await fetch(`/api/server/transactions`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(reqBody)
+                  })
+                    .then(() => {
+                      return
+                    })
+                    .catch(error => {
+                      window.alert(error)
+                      console.error(error)
+                    })
+                }
+              })
+            })
+          })
+          .catch(error => {
+            window.alert(error)
+            console.error(error)
+          })
+      })
+      .catch(error => {
+        window.alert(error)
+        console.error(error)
+      })
   }
 
   return (
