@@ -12,7 +12,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import dayjs from "dayjs"
 import { LoadingButton } from "@mui/lab"
 
-export default function Track() {
+export default function Track({userId}) {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
 
@@ -47,7 +47,7 @@ export default function Track() {
                     </div>
                   </Fab>
 
-                  <TrackDialog open={open} setOpen={setOpen} />
+                  <TrackDialog userId={userId} open={open} setOpen={setOpen} />
 
                 </div>
               </div>
@@ -120,7 +120,7 @@ const Transition = forwardRef(function Transition(props, ref) {
 })
 const shortcutsItems = [
   {
-    label: 'Last Week',
+    label: 'Last week',
     getValue: () => {
       const today = dayjs();
       const prevWeek = today.subtract(7, 'day');
@@ -128,7 +128,7 @@ const shortcutsItems = [
     },
   },
   {
-    label: 'Last Two Weeks',
+    label: 'Last two weeks',
     getValue: () => {
       const today = dayjs();
       const prev2Weeks = today.subtract(14, 'day')
@@ -137,21 +137,21 @@ const shortcutsItems = [
     },
   },
   {
-    label: 'Last 7 Days',
+    label: 'Last 7 days',
     getValue: () => {
       const today = dayjs();
       return [today.subtract(7, 'day'), today];
     },
   },
   {
-    label: 'Last 14 Days',
+    label: 'Last 14 days',
     getValue: () => {
       const today = dayjs();
       return [today.subtract(14, 'day'), today];
     },
   },
   {
-    label: 'Last Month',
+    label: 'Last month',
     getValue: () => {
       const today = dayjs();
       const prevMonth = today.subtract(1, 'month')
@@ -161,7 +161,7 @@ const shortcutsItems = [
   { label: 'Reset', getValue: () => [null, null] },
 ];
 
-function TrackDialog({open, setOpen}) {
+function TrackDialog({userId, open, setOpen}) {
   const [firstTime, setFirstTime] = useState(true)
   const [value, setValue] = useState([null, null])
   const [reload, setReload] = useState(false)
@@ -181,7 +181,7 @@ function TrackDialog({open, setOpen}) {
         setOpen(false)
         setValue([null, null])
        }} TransitionComponent={Transition} scroll="body">
-        <DialogTitle>Create Tracker</DialogTitle>
+        <DialogTitle>Create tracker</DialogTitle>
 
         <DialogContent>
           <DialogContentText>Time:</DialogContentText>
@@ -200,7 +200,7 @@ function TrackDialog({open, setOpen}) {
           </LocalizationProvider>
 
           {
-            value.every(i => i!==null) ? <Transactions value={value} reload={reload}
+            value.every(i => i!==null) ? <Transactions userId={userId} value={value} reload={reload}
                                                     setReload={setReload} />
                                        : <></>
           }
@@ -224,15 +224,17 @@ function TrackDialog({open, setOpen}) {
 }
 
 
-function Transactions({value, reload, setReload}) {
+function Transactions({userId, value, reload, setReload}) {
   const [end, setEnd] = useState(false)
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
   const [checked, setChecked] = useState([])
+  const [amounts, setAmounts] = useState([])
 
   const [expand, setExpand] = useState(false)
   const [trackerName, setTrackerName] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState(false)
 
   useEffect(async () => {
     let start_date = dayjs(value[0].$d).format('YYYY-MM-DD')
@@ -246,6 +248,8 @@ function Transactions({value, reload, setReload}) {
     if(!end && loading) {
       setEnd(true)
       setReload(false)
+      setChecked([])
+      setAmounts([])
 
       const reqBody = { start_date, end_date }
       await fetch('/api/server/plaid/transactions_get', {
@@ -271,7 +275,7 @@ function Transactions({value, reload, setReload}) {
     }
   })
 
-  const handleCheckbox = (transaction_id) => {
+  const handleCheckbox = (transaction_id, amount) => {
     const currentIndex = checked.indexOf(transaction_id)
     const newChecked = [...checked]
 
@@ -280,13 +284,30 @@ function Transactions({value, reload, setReload}) {
     } else {
       newChecked.splice(currentIndex, 1)
     }
-
     setChecked(newChecked)
+
+    const amountIndex = amounts.indexOf(amount)
+    const newAmounts = [...amounts]
+
+    if(amountIndex === -1) {
+      newAmounts.push(amount)
+    } else {
+      newAmounts.splice(amountIndex, 1)
+    }
+    setAmounts(newAmounts)
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
     setSubmitting(true)
+
+    const reqBody = {
+      userId: userId,
+      name: trackerName,
+      total: amounts.reduce((a,c) => a + c),
+      fromDate: dayjs(value[0].$d).format('MM-DD-YYYY'),
+      toDate: dayjs(value[1].$d).format('MM-DD-YYYY')
+    }
   }
 
   return (
@@ -312,7 +333,7 @@ function Transactions({value, reload, setReload}) {
                                                             background: 'white', borderRadius: '1rem', marginBottom: '0.5rem',
                                                             boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'
                                                            }} disablePadding>
-                                                            <ListItemButton onClick={() => handleCheckbox(transaction_id)}>
+                                                            <ListItemButton onClick={() => handleCheckbox(transaction_id, amount)}>
                                                               <ListItemIcon>
                                                                 <Checkbox edge='start' checked={checked.indexOf(transaction_id) !== -1}
                                                                  disableRipple />
@@ -334,8 +355,9 @@ function Transactions({value, reload, setReload}) {
                       <CardContent>
                         <form className="d-flex flex-column align-items-center" onSubmit={handleSubmit}>
                           <TextField value={trackerName} type="name" className="mb-3" id="name" required
-                            variant="standard" label="Name of Tracker" onChange={(e)=>setTrackerName(e.target.value)}
-                            InputLabelProps={{ required: false }} sx={{ width: '195px' }} helperText="Ex: Groceries" />
+                            variant="standard" label="Name of tracker" onChange={(e)=>setTrackerName(e.target.value)}
+                            InputLabelProps={{ required: false }} sx={{ width: '195px' }}
+                            helperText={error ? 'Please try again' : 'Ex: Groceries'} error={error} />
 
                           <LoadingButton loading={submitting} type="submit" className={`mb-5 ${styles.font}`}
                             variant="contained" sx={{ color: 'white' }} loadingPosition="start"
