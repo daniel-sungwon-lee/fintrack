@@ -1,8 +1,8 @@
-import { AddchartRounded, CloseRounded } from "@mui/icons-material"
-import { Avatar, Card, CardContent, CardHeader, Checkbox, Dialog, DialogActions,
-         DialogContent, DialogContentText, DialogTitle, Fab, List, ListItem,
-         ListItemButton, ListItemIcon, ListItemText, Paper, Skeleton, Slide,
-         Zoom } from "@mui/material"
+import { AddRounded, AddchartRounded, BarChartRounded, CloseRounded } from "@mui/icons-material"
+import { Avatar, Card, CardContent, CardHeader, Checkbox, Collapse,
+         Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+         Fab, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper,
+         Skeleton, Slide, TextField, Zoom } from "@mui/material"
 import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
 import styles from '../styles/Home.module.css'
@@ -10,6 +10,7 @@ import { StaticDateRangePicker } from "@mui/x-date-pickers-pro"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import dayjs from "dayjs"
+import { LoadingButton } from "@mui/lab"
 
 export default function Track() {
   const [loading, setLoading] = useState(true)
@@ -18,6 +19,7 @@ export default function Track() {
   const [trackers, setTrackers] = useState(null)
 
   useEffect(() => {
+    //fetch trackers here
     setTimeout(() => setLoading(false), 200)
   })
 
@@ -33,7 +35,7 @@ export default function Track() {
                 <div className="text-center">
 
                   {
-                    trackers ? <Trackers />
+                    trackers ? <Trackers data={trackers} />
                              : <h2 className="mb-3" style={{opacity: '0.7'}}>Such empty...</h2>
                   }
 
@@ -56,9 +58,13 @@ export default function Track() {
 }
 
 
-function Trackers({}) {
+function Trackers({data}) {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    //fetch transactions here?
+  })
 
   return (
     <Paper className="d-flex flex-column align-items-center" sx={
@@ -77,7 +83,7 @@ function Trackers({}) {
                         onClick={() => setOpen(true)}>
                         <CardHeader avatar={
                           <Avatar sx={{ bgcolor: "#00C169" }}>
-                            <AddchartRounded color="secondary" />
+                            <BarChartRounded color="secondary" />
                           </Avatar>
                           } title="Groceries and Gas" titleTypographyProps={{ fontSize: '18px' }} />
                         <CardContent>
@@ -95,7 +101,7 @@ function Trackers({}) {
                       onClick={() => setOpen(true)}>
                       <CardHeader avatar={
                         <Avatar sx={{ bgcolor: "#00C169" }}>
-                          <AddchartRounded color="secondary" />
+                          <BarChartRounded color="secondary" />
                         </Avatar>
                         } title="Groceries and Gas" titleTypographyProps={{ fontSize: '18px' }} />
                       <CardContent>
@@ -174,7 +180,7 @@ function TrackDialog({open, setOpen}) {
        onClose={() => {
         setOpen(false)
         setValue([null, null])
-       }} TransitionComponent={Transition}>
+       }} TransitionComponent={Transition} scroll="body">
         <DialogTitle>Create Tracker</DialogTitle>
 
         <DialogContent>
@@ -224,6 +230,10 @@ function Transactions({value, reload, setReload}) {
   const [transactions, setTransactions] = useState([])
   const [checked, setChecked] = useState([])
 
+  const [expand, setExpand] = useState(false)
+  const [trackerName, setTrackerName] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
   useEffect(async () => {
     let start_date = dayjs(value[0].$d).format('YYYY-MM-DD')
     let end_date = dayjs(value[1].$d).format('YYYY-MM-DD')
@@ -253,6 +263,12 @@ function Transactions({value, reload, setReload}) {
           console.error(error)
         })
     }
+
+    if(checked.length > 0) {
+      setExpand(true)
+    } else if(checked.length === 0) {
+      setExpand(false)
+    }
   })
 
   const handleCheckbox = (transaction_id) => {
@@ -266,6 +282,11 @@ function Transactions({value, reload, setReload}) {
     }
 
     setChecked(newChecked)
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setSubmitting(true)
   }
 
   return (
@@ -308,6 +329,22 @@ function Transactions({value, reload, setReload}) {
                                                   </>
                       }
                     </CardContent>
+
+                    <Collapse in={expand} timeout='auto'>
+                      <CardContent>
+                        <form className="d-flex flex-column align-items-center" onSubmit={handleSubmit}>
+                          <TextField value={trackerName} type="name" className="mb-3" id="name" required
+                            variant="standard" label="Name of Tracker" onChange={(e)=>setTrackerName(e.target.value)}
+                            InputLabelProps={{ required: false }} sx={{ width: '195px' }} helperText="Ex: Groceries" />
+
+                          <LoadingButton loading={submitting} type="submit" className={`mb-5 ${styles.font}`}
+                            variant="contained" sx={{ color: 'white' }} loadingPosition="start"
+                            startIcon={<AddRounded />}>
+                              Add
+                          </LoadingButton>
+                        </form>
+                      </CardContent>
+                    </Collapse>
                   </Card>
       }
     </>

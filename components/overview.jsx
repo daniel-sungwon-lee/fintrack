@@ -300,7 +300,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
         setAccountBalance(null)
        }}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#00C169",
-       color: "white", alignItems: "center", padding: "3rem 0rem"}}}>
+       color: "white", alignItems: "center", padding: "3rem 0rem"}}} scroll="body">
         <DialogTitle className="w-100 text-center">
           {
             loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
