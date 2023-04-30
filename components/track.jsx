@@ -1,9 +1,9 @@
-import { AddRounded, AddchartRounded, BarChartRounded, CloseRounded,
+import { AddRounded, AddchartRounded, AttachMoneyRounded, BarChartRounded, CloseRounded,
          ReceiptLongRounded } from "@mui/icons-material"
 import { Alert, Avatar, Card, CardContent, CardHeader, Checkbox, Collapse,
          Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-         Fab, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper,
-         Skeleton, Slide, Snackbar, TextField, Zoom } from "@mui/material"
+         Fab, Grow, List, ListItem, ListItemAvatar, ListItemButton, ListItemIcon,
+         ListItemText, Paper, Skeleton, Slide, Snackbar, TextField, Zoom } from "@mui/material"
 import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
 import styles from '../styles/Home.module.css'
@@ -75,6 +75,9 @@ export default function Track({userId}) {
 function Trackers({data}) {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
+  const [trackerId, setTrackerId] = useState(null)
+  const [trackerName, setTrackerName] = useState(null)
+  const [total, setTotal] = useState(null)
 
   useEffect(() => {
     if(data) {
@@ -119,7 +122,12 @@ function Trackers({data}) {
                           <Card key={trackerId} sx={{ margin: "3rem", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
                             e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
                             onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
-                            onClick={() => setOpen(true)}>
+                            onClick={() => {
+                              setTrackerId(trackerId)
+                              setTrackerName(name)
+                              setTotal(total)
+                              setOpen(true)
+                            }}>
                             <CardHeader avatar={
                               <Avatar sx={{ bgcolor: "#00C169" }}>
                                 <BarChartRounded color="secondary" />
@@ -146,7 +154,162 @@ function Trackers({data}) {
                     }
                   </>
       }
+      <TrackerDetails open={open} setOpen={setOpen} trackerId={trackerId}
+       setTrackerId={setTrackerId} trackerName={trackerName} setTrackerName={setTrackerName}
+       total={total} setTotal={setTotal} />
     </Paper>
+  )
+}
+
+
+const Transition2 = forwardRef(function Transition(props, ref) {
+  return <Grow in timeout='auto' ref={ref} {...props} />
+})
+
+function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, setTrackerName, total, setTotal }) {
+  const [loading, setLoading] = useState(true)
+  const [transactions, setTransactions] = useState([])
+  const [end, setEnd] = useState(false)
+
+  useEffect(async () => {
+    if(loading && !end && trackerId) {
+      setEnd(true)
+
+      await fetch(`/api/server/transactions/${trackerId}`)
+        .then(res => res.json())
+        .then(data => {
+          setTransactions(data)
+          setLoading(false)
+        })
+        .catch(error => {
+          window.alert(error)
+          console.error(error)
+        })
+    }
+  })
+
+  return (
+    <>
+      <Dialog open={open} TransitionComponent={Transition2} onClose={() => {
+        setLoading(true)
+        setEnd(false)
+        setTransactions(null)
+        setTrackerId(null)
+        setTrackerName(null)
+        setTotal(null)
+        setOpen(false)
+       }}
+       closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#FFD800",
+       alignItems: "center", padding: "3rem 0rem"}}} scroll="body">
+        <DialogTitle className="w-100 text-center">
+          {
+            loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
+                        <div className={`h2 ${styles.font}`}>Groceries and Gas</div>
+                      </Skeleton>
+                    : <div className={`h2 ${styles.font}`}>{trackerName}</div>
+          }
+        </DialogTitle>
+        <DialogContent className="w-100">
+
+          <DialogContentText className={styles.font} sx={{marginBottom:'3rem', color:'black'}}>
+            {
+              loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
+                          <span className="h4 text-center d-block">Total expenditure</span>
+                        </Skeleton>
+                      : <span className="h4 text-center d-block">${total}</span>
+            }
+          </DialogContentText>
+
+          <Card sx={{bgcolor: '#00C169', borderRadius: '1rem'}} className="w-75 m-auto">
+            <CardContent>
+              <div className="h4 text-center m-3" style={{fontWeight: 'bold', color: 'white'}}>
+                Transactions
+              </div>
+              <List>
+                {
+                  loading ? <>
+                              <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
+                                <ListItem sx={{width: '100vw'}}>
+                                  <ListItemAvatar>
+                                    <Avatar sx={{ bgcolor: "white" }}>
+                                      <AttachMoneyRounded color="primary" />
+                                    </Avatar>
+                                  </ListItemAvatar>
+                                  <ListItemText primary="$420.69" secondary="June 6th, 2023" />
+                                </ListItem>
+                              </Skeleton>
+                              <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
+                                <ListItem sx={{width: '100vw'}}>
+                                  <ListItemAvatar>
+                                    <Avatar sx={{ bgcolor: "white" }}>
+                                      <AttachMoneyRounded color="primary" />
+                                    </Avatar>
+                                  </ListItemAvatar>
+                                  <ListItemText primary="$3.33" secondary="April 20th, 2023" />
+                                </ListItem>
+                              </Skeleton>
+                              <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
+                                <ListItem sx={{width: '100vw'}}>
+                                  <ListItemAvatar>
+                                    <Avatar sx={{ bgcolor: "white" }}>
+                                      <AttachMoneyRounded color="primary" />
+                                    </Avatar>
+                                  </ListItemAvatar>
+                                  <ListItemText primary="$69.42" secondary="May 4th, 2023" />
+                                </ListItem>
+                              </Skeleton>
+                            </>
+                          : <>
+                              {
+                                transactions ? <>
+                                                 {
+                                                    transactions.map(transaction => {
+                                                      const { transaction_id, account_id, amount, category,
+                                                              date, iso_currency_code, /*name*/ } = transaction
+
+                                                      return (
+                                                        <ListItem key={transaction_id} secondaryAction={
+                                                          <div>{`${amount} ${iso_currency_code}`}</div>
+                                                         } sx={{background:'white', borderRadius:'1rem', marginBottom:'0.5rem',
+                                                         boxShadow:'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'}}>
+                                                          <ListItemAvatar>
+                                                            <Avatar sx={{ bgcolor: "white" }}>
+                                                              <AttachMoneyRounded color="primary" />
+                                                            </Avatar>
+                                                          </ListItemAvatar>
+                                                          <ListItemText primary={/*name*/'Name here'} secondary={dayjs(date).format('MMMM D, YYYY')} />
+                                                        </ListItem>
+                                                      )
+                                                    })
+                                                 }
+                                               </>
+                                             : <></>
+
+                              }
+                            </>
+                }
+              </List>
+            </CardContent>
+          </Card>
+        </DialogContent>
+        <DialogActions sx={{position:'absolute', top:"0.25rem", right:"0.25rem"}}>
+          <Fab size='medium' color='error' variant='extended' onClick={() => {
+            setLoading(true)
+            setEnd(false)
+            setTransactions(null)
+            setTrackerId(null)
+            setTrackerName(null)
+            setTotal(null)
+            setOpen(false)
+           }}>
+            <div className={`${styles.fab} ${styles.font}`}>
+              <CloseRounded style={{marginRight:'0.25rem'}} />
+              Close
+            </div>
+          </Fab>
+        </DialogActions>
+      </Dialog>
+    </>
   )
 }
 
