@@ -102,7 +102,7 @@ export default function Home({ user, setUser }) {
         break;
 
       case 'track':
-        return <Track />
+        return <Track userId={user.userId} />
         break;
 
       case 'logout':

@@ -3,7 +3,8 @@ import { Button, CircularProgress, Collapse, Zoom, Link, TextField, FormControl,
 import { LoadingButton } from '@mui/lab';
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { VisibilityRounded, VisibilityOffRounded } from "@mui/icons-material";
+import { VisibilityRounded, VisibilityOffRounded, PersonAddRounded,
+         LoginRounded } from "@mui/icons-material";
 import styles from '../styles/Home.module.css'
 
 export default function Auth ({ setUser }) {
@@ -172,7 +173,8 @@ export default function Auth ({ setUser }) {
             />
 
             <LoadingButton loading={loading} type="submit" className={`mb-5 ${styles.font}`}
-              variant="contained" sx={{color: 'white'}}>
+              variant="contained" sx={{color: 'white'}} loadingPosition="start"
+              startIcon={<LoginRounded />}>
               Login
             </LoadingButton>
           </form>
@@ -233,7 +235,8 @@ export default function Auth ({ setUser }) {
             </FormControl>
 
             <LoadingButton loading={loading} type="submit" className={`mb-5 ${styles.font}`}
-              variant="contained" sx={{color:'white'}}>
+              variant="contained" sx={{color:'white'}} loadingPosition="start"
+              startIcon={<PersonAddRounded />}>
               Sign up
             </LoadingButton>
           </form>

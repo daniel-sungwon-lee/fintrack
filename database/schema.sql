@@ -36,7 +36,40 @@ CREATE TABLE "accounts" (
 
 
 
+CREATE TABLE "trackers" (
+	"trackerId" serial NOT NULL,
+	"userId" integer NOT NULL,
+	"name" TEXT NOT NULL,
+	"total" numeric NOT NULL,
+	"fromDate" TEXT NOT NULL,
+	"toDate" TEXT NOT NULL,
+	CONSTRAINT "trackers_pk" PRIMARY KEY ("trackerId")
+) WITH (
+  OIDS=FALSE
+);
+
+
+
+CREATE TABLE "transactions" (
+	"transaction_id" TEXT NOT NULL,
+	"trackerId" integer NOT NULL,
+	"account_id" TEXT NOT NULL,
+	"amount" numeric NOT NULL,
+	"category" TEXT NOT NULL,
+	"date" TEXT NOT NULL,
+	"iso_currency_code" TEXT NOT NULL,
+	"name" TEXT NOT NULL
+) WITH (
+  OIDS=FALSE
+);
+
+
+
 
 ALTER TABLE "institutions" ADD CONSTRAINT "institutions_fk0" FOREIGN KEY ("userId") REFERENCES "users"("userId");
 
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_fk0" FOREIGN KEY ("item_id") REFERENCES "institutions"("item_id");
+
+ALTER TABLE "trackers" ADD CONSTRAINT "trackers_fk0" FOREIGN KEY ("userId") REFERENCES "users"("userId");
+
+ALTER TABLE "transactions" ADD CONSTRAINT "transactions_fk0" FOREIGN KEY ("trackerId") REFERENCES "trackers"("trackerId");

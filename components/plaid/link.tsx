@@ -11,14 +11,13 @@ import { Products } from "plaid";
 //custom styles
 import styles from '../../styles/Home.module.css'
 
-const Link = ({ userId, setAccountsPlaceholder, setAccountsLoading, setData, setNewData }) => {
+const Link = ({ userId, setAccountsPlaceholder, setData, setNewData }) => {
   const { linkToken, isPaymentInitiation, dispatch } = useContext(Context);
 
   const onSuccess = React.useCallback(
     (public_token: string) => {
 
       setAccountsPlaceholder(true)
-      setAccountsLoading(true)
       setData(null)
       setNewData(true)
 

@@ -35,9 +35,9 @@ export default function handler (request, response, next) {
         prettyPrintResponse(response);
       }
 
-      const compareTxnsByDateAscending = (a, b) => (a.date > b.date) - (a.date < b.date);
-      // Return the 8 most recent transactions
-      const recently_added = [...added].sort(compareTxnsByDateAscending).slice(-8);
+      const compareTxnsByDateDescending = (a, b) => (a.date < b.date) - (a.date > b.date);
+      // Return the 100 most recent transactions
+      const recently_added = [...added].sort(compareTxnsByDateDescending).slice(-100);
       response.json({ latest_transactions: recently_added });
     })
     .catch(next);
