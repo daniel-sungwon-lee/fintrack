@@ -1,8 +1,8 @@
 import { AddRounded, AddchartRounded, BarChartRounded, CloseRounded } from "@mui/icons-material"
-import { Avatar, Card, CardContent, CardHeader, Checkbox, Collapse,
+import { Alert, Avatar, Card, CardContent, CardHeader, Checkbox, Collapse,
          Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
          Fab, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper,
-         Skeleton, Slide, TextField, Zoom } from "@mui/material"
+         Skeleton, Slide, Snackbar, TextField, Zoom } from "@mui/material"
 import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
 import styles from '../styles/Home.module.css'
@@ -160,11 +160,15 @@ const shortcutsItems = [
   },
   { label: 'Reset', getValue: () => [null, null] },
 ];
+const TransitionLeft = (props) => {
+  return <Slide {...props} direction="right" />
+}
 
 function TrackDialog({userId, open, setOpen}) {
   const [firstTime, setFirstTime] = useState(true)
   const [value, setValue] = useState([null, null])
   const [reload, setReload] = useState(false)
+  const [openSnack, setOpenSnack] = useState(false)
 
   useEffect(() => {
     //removing watermark on Date Range Picker
@@ -173,6 +177,13 @@ function TrackDialog({userId, open, setOpen}) {
       setFirstTime(false)
     }
   })
+
+  const handleSnackClose = (e, reason) => {
+    if(reason === 'clickaway') {
+      return
+    }
+    setOpenSnack(false)
+  }
 
   return (
     <>
@@ -200,8 +211,9 @@ function TrackDialog({userId, open, setOpen}) {
           </LocalizationProvider>
 
           {
-            value.every(i => i!==null) ? <Transactions userId={userId} value={value} reload={reload}
-                                                    setReload={setReload} />
+            value.every(i => i!==null) ? <Transactions userId={userId} value={value} setValue={setValue}
+                                           reload={reload} setReload={setReload} setOpen={setOpen}
+                                           setOpenSnack={setOpenSnack} />
                                        : <></>
           }
 
@@ -218,13 +230,21 @@ function TrackDialog({userId, open, setOpen}) {
             </div>
           </Fab>
         </DialogActions>
+
+        <Snackbar open={openSnack} autoHideDuration={3333} onClose={handleSnackClose}
+         TransitionComponent={TransitionLeft}>
+          <Alert variant="filled" color="primary" sx={{width:'100%', color:'white'}}
+           onClose={handleSnackClose}>
+            Tracker created!
+          </Alert>
+        </Snackbar>
       </Dialog>
     </>
   )
 }
 
 
-function Transactions({userId, value, reload, setReload}) {
+function Transactions({userId, value, setValue, reload, setReload, setOpen, setOpenSnack}) {
   const [end, setEnd] = useState(false)
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
@@ -341,10 +361,19 @@ function Transactions({userId, value, reload, setReload}) {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(reqBody)
                   })
-                    .then(() => {
-                      return
+                    .then(res => {
+                      if(res.status === 201){
+                        setOpenSnack(true)
+                        setValue([null, null])
+
+                      } else {
+                        setError(true)
+                        setSubmitting(false)
+                      }
                     })
                     .catch(error => {
+                      setError(true) //doesn't fire on 500 server error
+                      setSubmitting(false)
                       window.alert(error)
                       console.error(error)
                     })
@@ -353,11 +382,15 @@ function Transactions({userId, value, reload, setReload}) {
             })
           })
           .catch(error => {
+            setError(true)
+            setSubmitting(false)
             window.alert(error)
             console.error(error)
           })
       })
       .catch(error => {
+        setError(true)
+        setSubmitting(false)
         window.alert(error)
         console.error(error)
       })
