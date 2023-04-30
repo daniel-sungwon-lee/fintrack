@@ -58,7 +58,7 @@ CREATE TABLE "transactions" (
 	"category" TEXT NOT NULL,
 	"date" TEXT NOT NULL,
 	"iso_currency_code" TEXT NOT NULL,
-	CONSTRAINT "transactions_pk" PRIMARY KEY ("transaction_id")
+	"name" TEXT NOT NULL
 ) WITH (
   OIDS=FALSE
 );

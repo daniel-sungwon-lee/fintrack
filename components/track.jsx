@@ -27,8 +27,14 @@ export default function Track({userId}) {
       await fetch(`/api/server/trackers/${userId}`)
         .then(res => res.json())
         .then(data => {
-          setTrackers(data)
-          setLoading(false)
+          if(data.length > 0) {
+            setTrackers(data)
+            setLoading(false)
+
+          } else {
+            setTrackers(null)
+            setLoading(false)
+          }
         })
         .catch(error => {
           window.alert(error)
@@ -61,7 +67,8 @@ export default function Track({userId}) {
                     </div>
                   </Fab>
 
-                  <TrackDialog userId={userId} open={open} setOpen={setOpen} />
+                  <TrackDialog userId={userId} open={open} setOpen={setOpen} setTrackLoading={setLoading}
+                   setTrackEnd={setEnd} />
 
                 </div>
               </div>
@@ -81,7 +88,7 @@ function Trackers({data}) {
 
   useEffect(() => {
     if(data) {
-      setLoading(false)
+      setLoading(false) //timeout here?
     }
   })
 
@@ -216,7 +223,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
               loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
                           <span className="h4 text-center d-block">Total expenditure</span>
                         </Skeleton>
-                      : <span className="h4 text-center d-block">${total}</span>
+                      : <span className="h4 text-center d-block">{total} dollars</span>
             }
           </DialogContentText>
 
@@ -265,7 +272,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                                  {
                                                     transactions.map(transaction => {
                                                       const { transaction_id, account_id, amount, category,
-                                                              date, iso_currency_code, /*name*/ } = transaction
+                                                              date, iso_currency_code, name } = transaction
 
                                                       return (
                                                         <ListItem key={transaction_id} secondaryAction={
@@ -277,7 +284,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                                               <AttachMoneyRounded color="primary" />
                                                             </Avatar>
                                                           </ListItemAvatar>
-                                                          <ListItemText primary={/*name*/'Name here'} secondary={dayjs(date).format('MMMM D, YYYY')} />
+                                                          <ListItemText primary={name} secondary={dayjs(date).format('MMMM D, YYYY')} />
                                                         </ListItem>
                                                       )
                                                     })
@@ -363,7 +370,7 @@ const TransitionLeft = (props) => {
   return <Slide {...props} direction="right" />
 }
 
-function TrackDialog({userId, open, setOpen}) {
+function TrackDialog({userId, open, setOpen, setTrackLoading, setTrackEnd}) {
   const [firstTime, setFirstTime] = useState(true)
   const [value, setValue] = useState([null, null])
   const [reload, setReload] = useState(false)
@@ -390,6 +397,8 @@ function TrackDialog({userId, open, setOpen}) {
        onClose={() => {
         setOpen(false)
         setValue([null, null])
+        setTrackLoading(true)
+        setTrackEnd(false)
        }} TransitionComponent={Transition} scroll="body">
         <DialogTitle>Create tracker</DialogTitle>
 
@@ -422,6 +431,8 @@ function TrackDialog({userId, open, setOpen}) {
           <Fab size='medium' color='error' variant='extended' onClick={() => {
             setOpen(false)
             setValue([null, null])
+            setTrackLoading(true)
+            setTrackEnd(false)
            }}>
             <div className={`${styles.fab} ${styles.font}`}>
               <CloseRounded style={{marginRight:'0.25rem'}} />
@@ -443,7 +454,7 @@ function TrackDialog({userId, open, setOpen}) {
 }
 
 
-function Transactions({userId, value, setValue, reload, setReload, setOpen, setOpenSnack}) {
+function Transactions({ userId, value, setValue, reload, setReload, setOpen, setOpenSnack }) {
   const [end, setEnd] = useState(false)
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
@@ -552,7 +563,8 @@ function Transactions({userId, value, setValue, reload, setReload, setOpen, setO
                     amount: transaction.amount,
                     category: transaction.category,
                     date: transaction.date,
-                    iso_currency_code: transaction.iso_currency_code
+                    iso_currency_code: transaction.iso_currency_code,
+                    name: transaction.name
                   }
 
                   await fetch(`/api/server/transactions`, {
@@ -571,7 +583,7 @@ function Transactions({userId, value, setValue, reload, setReload, setOpen, setO
                       }
                     })
                     .catch(error => {
-                      setError(true) //doesn't fire on 500 server error
+                      setError(true) //doesn't fire on 500 server error (fyi)
                       setSubmitting(false)
                       window.alert(error)
                       console.error(error)

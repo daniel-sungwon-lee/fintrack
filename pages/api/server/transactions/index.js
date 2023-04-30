@@ -2,15 +2,15 @@ import db from '../index'
 
 export default function handler(req, res) {
   const { transaction_id, trackerId, account_id, amount, category,
-          date, iso_currency_code } = req.body
+          date, iso_currency_code, name } = req.body
 
   const sql = `
   insert into "transactions" ("transaction_id", "trackerId", "account_id",
-  "amount", "category", "date", "iso_currency_code")
-  values ($1, $2, $3, $4, $5, $6, $7)
+  "amount", "category", "date", "iso_currency_code", "name")
+  values ($1, $2, $3, $4, $5, $6, $7, $8)
 `
   const params = [transaction_id, trackerId, account_id, amount, category,
-                  date, iso_currency_code]
+                  date, iso_currency_code, name]
 
   db.query(sql, params)
     .then(result => {
