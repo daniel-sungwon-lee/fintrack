@@ -1,4 +1,5 @@
-import { AddRounded, AddchartRounded, BarChartRounded, CloseRounded } from "@mui/icons-material"
+import { AddRounded, AddchartRounded, BarChartRounded, CloseRounded,
+         ReceiptLongRounded } from "@mui/icons-material"
 import { Alert, Avatar, Card, CardContent, CardHeader, Checkbox, Collapse,
          Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
          Fab, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper,
@@ -17,10 +18,23 @@ export default function Track({userId}) {
   const [open, setOpen] = useState(false)
 
   const [trackers, setTrackers] = useState(null)
+  const [end, setEnd] = useState(false)
 
-  useEffect(() => {
-    //fetch trackers here
-    setTimeout(() => setLoading(false), 200)
+  useEffect(async () => {
+    if(loading && !end) {
+      setEnd(true)
+
+      await fetch(`/api/server/trackers/${userId}`)
+        .then(res => res.json())
+        .then(data => {
+          setTrackers(data)
+          setLoading(false)
+        })
+        .catch(error => {
+          window.alert(error)
+          console.error(error)
+        })
+    }
   })
 
   return (
@@ -63,7 +77,9 @@ function Trackers({data}) {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    //fetch transactions here?
+    if(data) {
+      setLoading(false)
+    }
   })
 
   return (
@@ -93,21 +109,41 @@ function Trackers({data}) {
                     </Skeleton>
                   </>
                 : <>
-                    <div className="h2 mb-0 text-center m-5" style={{fontWeight: 'bold'}}>Tracker name</div>
+                    <div className="h2 mb-0 text-center m-5" style={{ fontWeight: 'bold' }}>Trackers</div>
 
-                    <Card sx={{ margin: "3rem", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
-                      e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
-                      onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
-                      onClick={() => setOpen(true)}>
-                      <CardHeader avatar={
-                        <Avatar sx={{ bgcolor: "#00C169" }}>
-                          <BarChartRounded color="secondary" />
-                        </Avatar>
-                        } title="Groceries and Gas" titleTypographyProps={{ fontSize: '18px' }} />
-                      <CardContent>
-                        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
-                      </CardContent>
-                    </Card>
+                    {
+                      data.map(tracker => {
+                        const { trackerId, name, total, fromDate, toDate } = tracker
+
+                        return (
+                          <Card key={trackerId} sx={{ margin: "3rem", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                            e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                            onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                            onClick={() => setOpen(true)}>
+                            <CardHeader avatar={
+                              <Avatar sx={{ bgcolor: "#00C169" }}>
+                                <BarChartRounded color="secondary" />
+                              </Avatar>
+                              } title={name} titleTypographyProps={{ fontSize: '18px' }} />
+                            <CardContent>
+                              <div style={{ height: 0 }} className="invisible">
+                                Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
+                              </div>
+                              <div className="d-flex justify-content-between">
+                                <div className="d-flex flex-column align-items-start">
+                                  <div className="h6">From: {dayjs(fromDate).format('MMMM D, YYYY')}</div>
+                                  <div className="h6">To: {dayjs(toDate).format('MMMM D, YYYY')}</div>
+                                </div>
+                                <ReceiptLongRounded color="secondary" fontSize="large" />
+                                <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
+                                  Total: {total} dollars
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )
+                      })
+                    }
                   </>
       }
     </Paper>
