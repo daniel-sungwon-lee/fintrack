@@ -84,3 +84,7 @@ a:hover {
 .track-transactions-list .MuiListItemButton-root {
   border-radius: 1rem;
 }
+
+.MuiSpeedDial-root .MuiSpeedDial-actions {
+  padding-top: 25px;
+}

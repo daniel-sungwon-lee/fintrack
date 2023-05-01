@@ -1,9 +1,10 @@
 import { AddRounded, AddchartRounded, AttachMoneyRounded, BarChartRounded, CloseRounded,
-         ReceiptLongRounded } from "@mui/icons-material"
+         DeleteRounded, EditRounded, MoreVertRounded, ReceiptLongRounded } from "@mui/icons-material"
 import { Alert, Avatar, Card, CardContent, CardHeader, Checkbox, Collapse,
          Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-         Fab, Grow, List, ListItem, ListItemAvatar, ListItemButton, ListItemIcon,
-         ListItemText, Paper, Skeleton, Slide, Snackbar, TextField, Zoom } from "@mui/material"
+         Fab, Grow, IconButton, List, ListItem, ListItemAvatar, ListItemButton,
+         ListItemIcon, ListItemText, Paper, Skeleton, Slide, Snackbar, SpeedDial,
+         SpeedDialAction, SpeedDialIcon, TextField, Zoom } from "@mui/material"
 import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
 import styles from '../styles/Home.module.css'
@@ -139,7 +140,17 @@ function Trackers({data}) {
                               <Avatar sx={{ bgcolor: "#00C169" }}>
                                 <BarChartRounded color="secondary" />
                               </Avatar>
-                              } title={name} titleTypographyProps={{ fontSize: '18px' }} />
+                              } title={name} titleTypographyProps={{ fontSize: '18px' }} action={
+
+                                <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                 openIcon={<CloseRounded />} />} sx={{ position:'absolute', right:0, top:'6px' }}
+                                 FabProps={{sx:{ boxShadow:'none !important', background:'transparent !important' }, disableRipple:true}}
+                                 direction="down">
+                                  <SpeedDialAction tooltipTitle='Delete' icon={<DeleteRounded color="error" />} />
+                                  <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />} />
+                                </SpeedDial>
+
+                              } sx={{position:'relative'}} />
                             <CardContent>
                               <div style={{ height: 0 }} className="invisible">
                                 Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
