@@ -1,6 +1,6 @@
 import { AddRounded, AddchartRounded, AttachMoneyRounded, BarChartRounded, CloseRounded,
          DeleteRounded, EditRounded, MoreVertRounded, ReceiptLongRounded } from "@mui/icons-material"
-import { Alert, Avatar, Card, CardContent, CardHeader, Checkbox, Collapse,
+import { Alert, Avatar, Card, CardContent, CardHeader, Checkbox, CircularProgress, Collapse,
          Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
          Fab, Grow, IconButton, List, ListItem, ListItemAvatar, ListItemButton,
          ListItemIcon, ListItemText, Paper, Skeleton, Slide, Snackbar, SpeedDial,
@@ -42,6 +42,10 @@ export default function Track({userId}) {
           console.error(error)
         })
     }
+
+    if(trackers && trackers.length===0) {
+      //setTrackers(null) //edge case when user deletes all trackers, need to make sure trackers array will be empty
+    }
   })
 
   return (
@@ -56,7 +60,7 @@ export default function Track({userId}) {
                 <div className="text-center">
 
                   {
-                    trackers ? <Trackers data={trackers} />
+                    trackers ? <Trackers data={trackers} userId={userId} />
                              : <h2 className="mb-3" style={{opacity: '0.7'}}>Such empty...</h2>
                   }
 
@@ -80,18 +84,67 @@ export default function Track({userId}) {
 }
 
 
-function Trackers({data}) {
+const TransitionLeft = (props) => {
+  return <Slide {...props} direction="right" />
+}
+
+function Trackers({data, userId}) {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   const [trackerId, setTrackerId] = useState(null)
   const [trackerName, setTrackerName] = useState(null)
   const [total, setTotal] = useState(null)
+  const [openSnack, setOpenSnack] = useState(false)
+  const [speedDialLoading, setSpeedDialLoading] = useState(false)
 
   useEffect(() => {
     if(data) {
       setLoading(false) //timeout here?
     }
   })
+
+  const handleSpeedDial= async (type, trackerId) => {
+    setSpeedDialLoading(true)
+
+    if(type === 'delete'){
+      await fetch(`/api/server/transactions/${trackerId}`, {
+        method: 'DELETE',
+        headers: { "Content-Type": "application/json" }
+      })
+        .then(async () => {
+          await fetch(`/api/server/trackers/${userId}/${trackerId}`, {
+            method: 'DELETE',
+            headers: { "Content-Type": "application/json" }
+          })
+            .then(() => {
+              document.getElementById(trackerId).remove()
+              //tooltip from speeddial doesn't get removed (bug)
+              setSpeedDialLoading(false)
+              setOpenSnack(true)
+            })
+            .catch(error => {
+              setSpeedDialLoading(false)
+              window.alert(error)
+              console.error(error)
+            })
+        })
+        .catch(error => {
+          setSpeedDialLoading(false)
+          window.alert(error)
+          console.error(error)
+        })
+
+    } else {
+
+    }
+  }
+
+  const handleSnackClose = (e, reason) => {
+    if(reason === 'clickaway') {
+      return
+    }
+    setOpenSnack(false)
+  }
 
   return (
     <Paper className="d-flex flex-column align-items-center" sx={
@@ -127,46 +180,47 @@ function Trackers({data}) {
                         const { trackerId, name, total, fromDate, toDate } = tracker
 
                         return (
-                          <Card key={trackerId} sx={{ margin: "3rem", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
-                            e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
-                            onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
-                            onClick={() => {
-                              setTrackerId(trackerId)
-                              setTrackerName(name)
-                              setTotal(total)
-                              setOpen(true)
-                            }}>
-                            <CardHeader avatar={
-                              <Avatar sx={{ bgcolor: "#00C169" }}>
-                                <BarChartRounded color="secondary" />
-                              </Avatar>
-                              } title={name} titleTypographyProps={{ fontSize: '18px' }} action={
+                          <div key={trackerId} id={trackerId} style={{position: 'relative'}}>
+                            <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                             openIcon={<CloseRounded />} />} sx={{ position:'absolute', right:'3rem', top:'3.4rem' }}
+                             FabProps={{sx:{ boxShadow:'none !important', background:'transparent !important' }, disableRipple:true}}
+                             direction="down">
+                              <SpeedDialAction tooltipTitle='Delete' icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
+                               onClick={() => handleSpeedDial('delete', trackerId)} FabProps={{disabled:speedDialLoading}} />
+                              <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />} onClick={() => handleSpeedDial('edit', trackerId)} />
+                            </SpeedDial>
 
-                                <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
-                                 openIcon={<CloseRounded />} />} sx={{ position:'absolute', right:0, top:'6px' }}
-                                 FabProps={{sx:{ boxShadow:'none !important', background:'transparent !important' }, disableRipple:true}}
-                                 direction="down">
-                                  <SpeedDialAction tooltipTitle='Delete' icon={<DeleteRounded color="error" />} />
-                                  <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />} />
-                                </SpeedDial>
-
-                              } sx={{position:'relative'}} />
-                            <CardContent>
-                              <div style={{ height: 0 }} className="invisible">
-                                Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
-                              </div>
-                              <div className="d-flex justify-content-between">
-                                <div className="d-flex flex-column align-items-start">
-                                  <div className="h6">From: {dayjs(fromDate).format('MMMM D, YYYY')}</div>
-                                  <div className="h6">To: {dayjs(toDate).format('MMMM D, YYYY')}</div>
+                            <Card sx={{ margin: "3rem", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                              e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                              onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                              onClick={() => {
+                                setTrackerId(trackerId)
+                                setTrackerName(name)
+                                setTotal(total)
+                                setOpen(true)
+                              }}>
+                              <CardHeader avatar={
+                                <Avatar sx={{ bgcolor: "#00C169" }}>
+                                  <BarChartRounded color="secondary" />
+                                </Avatar>
+                                } title={name} titleTypographyProps={{ fontSize: '18px' }} />
+                              <CardContent>
+                                <div style={{ height: 0 }} className="invisible">
+                                  Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
                                 </div>
-                                <ReceiptLongRounded color="secondary" fontSize="large" />
-                                <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
-                                  Total: {total} dollars
+                                <div className="d-flex justify-content-between">
+                                  <div className="d-flex flex-column align-items-start">
+                                    <div className="h6">From: {dayjs(fromDate).format('MMMM D, YYYY')}</div>
+                                    <div className="h6">To: {dayjs(toDate).format('MMMM D, YYYY')}</div>
+                                  </div>
+                                  <ReceiptLongRounded color="secondary" fontSize="large" />
+                                  <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
+                                    Total: {total} dollars
+                                  </div>
                                 </div>
-                              </div>
-                            </CardContent>
-                          </Card>
+                              </CardContent>
+                            </Card>
+                          </div>
                         )
                       })
                     }
@@ -175,6 +229,14 @@ function Trackers({data}) {
       <TrackerDetails open={open} setOpen={setOpen} trackerId={trackerId}
        setTrackerId={setTrackerId} trackerName={trackerName} setTrackerName={setTrackerName}
        total={total} setTotal={setTotal} />
+
+      <Snackbar open={openSnack} autoHideDuration={3333} onClose={handleSnackClose}
+        TransitionComponent={TransitionLeft}>
+        <Alert variant="filled" color="secondary" sx={{ width: '100%', color: 'black' }}
+         onClose={handleSnackClose}>
+          Tracker deleted
+        </Alert>
+      </Snackbar>
     </Paper>
   )
 }
@@ -377,9 +439,6 @@ const shortcutsItems = [
   },
   { label: 'Reset', getValue: () => [null, null] },
 ];
-const TransitionLeft = (props) => {
-  return <Slide {...props} direction="right" />
-}
 
 function TrackDialog({userId, open, setOpen, setTrackLoading, setTrackEnd}) {
   const [firstTime, setFirstTime] = useState(true)
