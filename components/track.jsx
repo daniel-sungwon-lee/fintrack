@@ -658,7 +658,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
                       }
                     })
                     .catch(error => {
-                      setError(true) //doesn't fire on 500 server error (fyi)
+                      setError(true)
                       setSubmitting(false)
                       window.alert(error)
                       console.error(error)
@@ -705,7 +705,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
                                                             background: 'white', borderRadius: '1rem', marginBottom: '0.5rem',
                                                             boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'
                                                            }} disablePadding>
-                                                            <ListItemButton onClick={() => handleCheckbox(transaction_id, amount)}>
+                                                            <ListItemButton disabled={submitting} onClick={() => handleCheckbox(transaction_id, amount)}>
                                                               <ListItemIcon>
                                                                 <Checkbox edge='start' checked={checked.indexOf(transaction_id) !== -1}
                                                                  disableRipple />
