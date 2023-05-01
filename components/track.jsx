@@ -14,12 +14,17 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import dayjs from "dayjs"
 import { LoadingButton } from "@mui/lab"
 
+const TransitionLeft = (props) => {
+  return <Slide {...props} direction="right" />
+}
+
 export default function Track({userId}) {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
 
   const [trackers, setTrackers] = useState(null)
   const [end, setEnd] = useState(false)
+  const [openSnack, setOpenSnack] = useState(false)
 
   useEffect(async () => {
     if(loading && !end) {
@@ -44,9 +49,16 @@ export default function Track({userId}) {
     }
 
     if(trackers && trackers.length===0) {
-      //setTrackers(null) //edge case when user deletes all trackers, need to make sure trackers array will be empty
+      setTrackers(null)
     }
   })
+
+  const handleSnackClose = (e, reason) => {
+    if(reason === 'clickaway') {
+      return
+    }
+    setOpenSnack(false)
+  }
 
   return (
     <>
@@ -60,7 +72,8 @@ export default function Track({userId}) {
                 <div className="text-center">
 
                   {
-                    trackers ? <Trackers data={trackers} userId={userId} />
+                    trackers ? <Trackers data={trackers} setData={setTrackers} userId={userId}
+                                setOpenSnack={setOpenSnack} />
                              : <h2 className="mb-3" style={{opacity: '0.7'}}>Such empty...</h2>
                   }
 
@@ -75,6 +88,14 @@ export default function Track({userId}) {
                   <TrackDialog userId={userId} open={open} setOpen={setOpen} setTrackLoading={setLoading}
                    setTrackEnd={setEnd} />
 
+                  <Snackbar open={openSnack} autoHideDuration={3333} onClose={handleSnackClose}
+                    TransitionComponent={TransitionLeft}>
+                    <Alert variant="filled" color="secondary" sx={{ width: '100%', color: 'black' }}
+                      onClose={handleSnackClose}>
+                      Tracker deleted
+                    </Alert>
+                  </Snackbar>
+
                 </div>
               </div>
             </Zoom>
@@ -84,17 +105,12 @@ export default function Track({userId}) {
 }
 
 
-const TransitionLeft = (props) => {
-  return <Slide {...props} direction="right" />
-}
-
-function Trackers({data, userId}) {
+function Trackers({data, setData, userId, setOpenSnack}) {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   const [trackerId, setTrackerId] = useState(null)
   const [trackerName, setTrackerName] = useState(null)
   const [total, setTotal] = useState(null)
-  const [openSnack, setOpenSnack] = useState(false)
   const [speedDialLoading, setSpeedDialLoading] = useState(false)
 
   useEffect(() => {
@@ -104,9 +120,9 @@ function Trackers({data, userId}) {
   })
 
   const handleSpeedDial= async (type, trackerId) => {
-    setSpeedDialLoading(true)
-
     if(type === 'delete'){
+      setSpeedDialLoading(true)
+
       await fetch(`/api/server/transactions/${trackerId}`, {
         method: 'DELETE',
         headers: { "Content-Type": "application/json" }
@@ -117,8 +133,11 @@ function Trackers({data, userId}) {
             headers: { "Content-Type": "application/json" }
           })
             .then(() => {
-              document.getElementById(trackerId).remove()
-              //tooltip from speeddial doesn't get removed (bug)
+              const trackerIds = data.map(tracker => tracker.trackerId)
+              const idIndex = trackerIds.indexOf(trackerId)
+              const newData = data.toSpliced(idIndex, 1)
+              setData(newData)
+
               setSpeedDialLoading(false)
               setOpenSnack(true)
             })
@@ -137,13 +156,6 @@ function Trackers({data, userId}) {
     } else {
 
     }
-  }
-
-  const handleSnackClose = (e, reason) => {
-    if(reason === 'clickaway') {
-      return
-    }
-    setOpenSnack(false)
   }
 
   return (
@@ -230,13 +242,6 @@ function Trackers({data, userId}) {
        setTrackerId={setTrackerId} trackerName={trackerName} setTrackerName={setTrackerName}
        total={total} setTotal={setTotal} />
 
-      <Snackbar open={openSnack} autoHideDuration={3333} onClose={handleSnackClose}
-        TransitionComponent={TransitionLeft}>
-        <Alert variant="filled" color="secondary" sx={{ width: '100%', color: 'black' }}
-         onClose={handleSnackClose}>
-          Tracker deleted
-        </Alert>
-      </Snackbar>
     </Paper>
   )
 }
