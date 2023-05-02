@@ -99,7 +99,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder }) {
             setLoading(false)
 
           } else {
-            await fetch(`/api/server/plaid/auth`, { method: "GET" })
+            await fetch(`/api/server/plaid/auth?accessToken=${accessToken}`, { method: "GET" })
               .then(res => res.json())
               .then(data => {
                 setAccounts(data.accounts)
@@ -252,7 +252,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder }) {
                 </>
           }
           <AccountDetails open={open} setOpen={setOpen} accountName={accountName} accountBalance={accountBalance}
-           setAccountName={setAccountName} setAccountBalance={setAccountBalance} />
+           setAccountName={setAccountName} setAccountBalance={setAccountBalance} accessToken={accessToken} />
 
         </Paper>
       </Zoom>
@@ -265,7 +265,7 @@ const Transition = forwardRef(function Transition(props, ref) {
   return <Slide in direction="up" timeout={1000} ref={ref} {...props} />
 })
 
-function AccountDetails({ open, setOpen, accountName, accountBalance, setAccountName, setAccountBalance }) {
+function AccountDetails({ open, setOpen, accountName, accountBalance, setAccountName, setAccountBalance, accessToken }) {
   const [end, setEnd] = useState(false)
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState(null)
@@ -275,7 +275,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
 
       setEnd(true)
 
-      await fetch('/api/server/plaid/transactions', { method: 'GET' })
+      await fetch(`/api/server/plaid/transactions?accessToken=${accessToken}`, { method: 'GET' })
         .then(res => res.json())
         .then(transactions => {
           setTransactions(transactions.latest_transactions)

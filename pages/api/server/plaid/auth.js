@@ -8,10 +8,12 @@ import { ACCESS_TOKEN } from './set_access_token';
 import db from '../index'
 
 export default function handler (request, response, next) {
+  const { accessToken } = request.query
+
   Promise.resolve()
     .then(async function () {
       const authResponse = await client.authGet({
-        access_token: ACCESS_TOKEN,
+        access_token: accessToken,
       });
       prettyPrintResponse(authResponse);
       response.json(authResponse.data);

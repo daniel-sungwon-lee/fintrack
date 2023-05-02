@@ -33,6 +33,7 @@ export const PLAID_ANDROID_PACKAGE_NAME = process.env.PLAID_ANDROID_PACKAGE_NAME
 
 // We store the access_token in memory - in production, store it in a secure
 // persistent data store
+//moved below 3 values to set_access_token.js
 //export let ACCESS_TOKEN = null;
 //export let PUBLIC_TOKEN = null;
 //export let ITEM_ID = null;

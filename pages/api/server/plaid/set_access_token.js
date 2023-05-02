@@ -8,8 +8,7 @@ export let ACCESS_TOKEN = null
 let PUBLIC_TOKEN = null
 export let ITEM_ID = null
 
-ACCESS_TOKEN ='access-development-395a8597-18dc-443a-81d6-053ff05105e3'
-ITEM_ID = '4meLa8RXJxHZjVr5qVEaH7kgAvwnq5sk8gnDE'
+//problem with ACCESS_TOKEN here is that it is not saved and reverts back to null
 
 export default function handler (request, response, next) {
   PUBLIC_TOKEN = request.body.public_token;

@@ -6,6 +6,8 @@ import {
 import { ACCESS_TOKEN } from './set_access_token';
 
 export default function handler (request, response, next) {
+  const { accessToken } = request.query
+
   Promise.resolve()
     .then(async function () {
       // Set cursor to empty to receive all historical updates
@@ -20,7 +22,7 @@ export default function handler (request, response, next) {
       // Iterate through each page of new transaction updates for item
       while (hasMore) {
         const request = {
-          access_token: ACCESS_TOKEN,
+          access_token: accessToken,
           cursor: cursor,
         };
         const response = await client.transactionsSync(request)

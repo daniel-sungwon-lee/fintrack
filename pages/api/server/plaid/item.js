@@ -6,12 +6,14 @@ import {
 import { ACCESS_TOKEN } from "./set_access_token";
 
 export default function handler (request, response, next) {
+  const { accessToken } = request.query
+
   Promise.resolve()
     .then(async function () {
       // Pull the Item - this includes information about available products,
       // billed products, webhook information, and more.
       const itemResponse = await client.itemGet({
-        access_token: ACCESS_TOKEN,
+        access_token: accessToken,
       });
       // Also pull information about the institution
       const configs = {

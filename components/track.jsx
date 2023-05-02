@@ -1,5 +1,6 @@
 import { AddRounded, AddchartRounded, AttachMoneyRounded, BarChartRounded, CloseRounded,
-         DeleteRounded, EditRounded, MoreVertRounded, ReceiptLongRounded } from "@mui/icons-material"
+         DeleteRounded, EditRounded, LockRounded, MoreVertRounded, ReceiptLongRounded }
+        from "@mui/icons-material"
 import { Alert, Avatar, Card, CardContent, CardHeader, Checkbox, CircularProgress, Collapse,
          Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
          Fab, Grow, IconButton, List, ListItem, ListItemAvatar, ListItemButton,
@@ -20,6 +21,7 @@ const TransitionLeft = (props) => {
 
 export default function Track({userId}) {
   const [loading, setLoading] = useState(true)
+  const [tokens, setTokens] = useState(null)
   const [open, setOpen] = useState(false)
 
   const [trackers, setTrackers] = useState(null)
@@ -40,6 +42,25 @@ export default function Track({userId}) {
           } else {
             setTrackers(null)
             setLoading(false)
+          }
+        })
+        .catch(error => {
+          window.alert(error)
+          console.error(error)
+        })
+
+      await fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
+        .then(res => res.json())
+        .then(data => {
+          if(data.length > 0) {
+            const tokenArr = data.map(institution => {
+              const {access_token} = institution
+              return access_token
+            })
+            setTokens(tokenArr)
+
+          } else {
+            setTokens(null)
           }
         })
         .catch(error => {
@@ -78,15 +99,25 @@ export default function Track({userId}) {
                   }
 
                   <Fab variant="extended" size="medium" color="primary" sx={{padding:"1.5rem",
-                   borderRadius:"2rem"}} onClick={() => setOpen(true)}>
+                   borderRadius:"2rem"}} onClick={() => setOpen(true)} disabled={!tokens}>
                     <div className={`${styles.fab} ${styles.font}`} style={{fontSize: '18px'}}>
-                      <AddchartRounded style={{marginRight: "0.5rem"}} />
-                      Create new tracker
+                      {
+                        tokens
+                          ? <>
+                              <AddchartRounded style={{ marginRight: "0.5rem" }} />
+                              Create new tracker
+                            </>
+                          : <>
+                              <LockRounded color="inherit" size={30} sx={{ marginRight: '0.5rem' }}
+                                thickness={5} />
+                              Connect bank to create tracker
+                            </>
+                      }
                     </div>
                   </Fab>
 
                   <TrackDialog userId={userId} open={open} setOpen={setOpen} setTrackLoading={setLoading}
-                   setTrackEnd={setEnd} />
+                   setTrackEnd={setEnd} tokens={tokens} />
 
                   <Snackbar open={openSnack} autoHideDuration={3333} onClose={handleSnackClose}
                     TransitionComponent={TransitionLeft}>
@@ -445,7 +476,7 @@ const shortcutsItems = [
   { label: 'Reset', getValue: () => [null, null] },
 ];
 
-function TrackDialog({userId, open, setOpen, setTrackLoading, setTrackEnd}) {
+function TrackDialog({userId, open, setOpen, setTrackLoading, setTrackEnd, tokens}) {
   const [firstTime, setFirstTime] = useState(true)
   const [value, setValue] = useState([null, null])
   const [reload, setReload] = useState(false)
@@ -496,7 +527,7 @@ function TrackDialog({userId, open, setOpen, setTrackLoading, setTrackEnd}) {
           {
             value.every(i => i!==null) ? <Transactions userId={userId} value={value} setValue={setValue}
                                            reload={reload} setReload={setReload} setOpen={setOpen}
-                                           setOpenSnack={setOpenSnack} />
+                                           setOpenSnack={setOpenSnack} tokens={tokens} />
                                        : <></>
           }
 
@@ -529,7 +560,7 @@ function TrackDialog({userId, open, setOpen, setTrackLoading, setTrackEnd}) {
 }
 
 
-function Transactions({ userId, value, setValue, reload, setReload, setOpen, setOpenSnack }) {
+function Transactions({ userId, value, setValue, reload, setReload, setOpen, setOpenSnack, tokens }) {
   const [end, setEnd] = useState(false)
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
@@ -556,21 +587,25 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
       setChecked([])
       setAmounts([])
 
-      const reqBody = { start_date, end_date }
-      await fetch('/api/server/plaid/transactions_get', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reqBody)
+      const transactionsArr = []
+      tokens.map(async accessToken => {
+        const reqBody = { start_date, end_date }
+        await fetch(`/api/server/plaid/transactions_get?accessToken=${accessToken}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(reqBody)
+        })
+          .then(res => res.json())
+          .then(data => {
+            data.transactions.map(transaction => transactionsArr.push(transaction))
+            setTransactions(transactionsArr)
+            setLoading(false)
+          })
+          .catch(error => {
+            window.alert(error)
+            console.error(error)
+          })
       })
-        .then(res => res.json())
-        .then(data => {
-          setTransactions(data.transactions)
-          setLoading(false)
-        })
-        .catch(error => {
-          window.alert(error)
-          console.error(error)
-        })
     }
 
     if(checked.length > 0) {

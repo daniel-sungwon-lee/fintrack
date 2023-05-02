@@ -6,13 +6,14 @@ import {
 import { ACCESS_TOKEN } from './set_access_token';
 
 export default function handler (request, response, next) {
+  const { accessToken } = request.query
   let start_date = request.body.start_date
   let end_date = request.body.end_date
 
   Promise.resolve()
     .then(async () => {
       const request = {
-        access_token: ACCESS_TOKEN,
+        access_token: accessToken,
         start_date: start_date,
         end_date: end_date
       };
@@ -24,9 +25,9 @@ export default function handler (request, response, next) {
       // transactions and retrieve all available data
       while (transactions.length < total_transactions) {
         const paginatedRequest = {
-          access_token: ACCESS_TOKEN,
-          start_date: '2020-01-01',
-          end_date: '2023-02-01',
+          access_token: accessToken,
+          start_date: start_date,
+          end_date: end_date,
           options: {
             offset: transactions.length,
           },
