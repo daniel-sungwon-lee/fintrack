@@ -588,6 +588,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
       setAmounts([])
 
       const transactionsArr = []
+      //perhaps add a expand transctions button when token.length > 1?
       tokens.map(async accessToken => {
         const reqBody = { start_date, end_date }
         await fetch(`/api/server/plaid/transactions_get?accessToken=${accessToken}`, {

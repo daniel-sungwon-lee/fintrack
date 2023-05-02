@@ -46,9 +46,10 @@ const Link = ({ userId, setAccountsPlaceholder, setData, setNewData }) => {
         //access_token and item_id data object here, when successfully connected to new account(s)
         //ready to be stored to context (changes when a new account is connected)
 
+        //getting name of institution
         await fetch(`/api/server/plaid/item?accessToken=${data.access_token}`, { method: "GET" })
           .then(res => res.json())
-          .then(result => {
+          .then(async result => {
             const newData = {
               item_id: data.item_id,
               access_token: data.access_token,
@@ -56,28 +57,62 @@ const Link = ({ userId, setAccountsPlaceholder, setData, setNewData }) => {
               name: result.institution.name
             }
 
-            fetch("/api/server/institutions", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(newData)
-            })
-              .then(() => {
-
-                fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
-                  .then(res => res.json())
-                  .then(data => {
-                    setData(data)
-                    setAccountsPlaceholder(false)
+            //checking if new institution(name) exists in current institutions table to prevent duplicates
+            await fetch(`/api/server/institutions/${userId}?name=${newData.name}`)
+              .then(res => res.json())
+              .then(async result => {
+                if(result.action === 'patch') {
+                  //updating existing institution access_token/item_id with new one (PATCH)
+                  await fetch(`/api/server/institutions?userId=${userId}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(newData)
                   })
-                  .catch(error => {
-                    window.alert(error)
-                    console.error(error)
-                  })
+                    .then(async () => {
+                      //getting back the freshly posted institution data for client-side render
+                      await fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
+                        .then(res => res.json())
+                        .then(data => {
+                          //done!
+                          setData(data)
+                          setAccountsPlaceholder(false)
+                        })
+                        .catch(error => {
+                          window.alert(error)
+                          console.error(error)
+                        })
+                    })
+                    .catch(error => {
+                      window.alert(error)
+                      console.error(error)
+                    })
 
-              })
-              .catch((error) => {
-                window.alert(error)
-                console.error(error)
+                } else {
+                  //posting institution data to institutions table in database
+                  await fetch("/api/server/institutions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(newData)
+                  })
+                    .then(async () => {
+                      //getting back the freshly posted institution data for client-side render
+                      await fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
+                        .then(res => res.json())
+                        .then(data => {
+                          //done!
+                          setData(data)
+                          setAccountsPlaceholder(false)
+                        })
+                        .catch(error => {
+                          window.alert(error)
+                          console.error(error)
+                        })
+                    })
+                    .catch((error) => {
+                      window.alert(error)
+                      console.error(error)
+                    })
+                }
               })
           })
           .catch((error) => {
