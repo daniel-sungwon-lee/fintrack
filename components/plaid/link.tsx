@@ -157,7 +157,7 @@ const Link = ({ userId, setAccountsPlaceholder, setData, setNewData }) => {
       dispatch({ type: "SET_STATE", state: { linkSuccess: true } });
       window.history.pushState("", "", "/");
     },
-    [dispatch]
+    [dispatch, isPaymentInitiation, setAccountsPlaceholder, setData, setNewData, userId]
   );
 
   let isOauth = false;

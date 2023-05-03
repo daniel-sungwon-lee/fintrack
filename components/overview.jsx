@@ -37,7 +37,7 @@ export default function Overview({ userId }) {
           console.error(error)
         })
     }
-  },[])
+  },[newData, userId])
 
   const handleSnackClose = (e, reason) => {
     if(reason === 'clickaway') {
@@ -110,38 +110,42 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
   const [rmOpen, setRmOpen] = useState(false)
   const [rmLoading, setRmLoading] = useState(false)
 
-  useEffect(async () => {
-    if (!accountsPlaceholder && loading && !end) {
+  useEffect(() => {
+    const fetchData = async () => {
 
-      setEnd(true)
+      if (!accountsPlaceholder && loading && !end) {
 
-      await fetch(`/api/server/accounts?item_id=${itemId}`)
-        .then(res => res.json())
-        .then(async data => {
-          if(data.length > 0) {
-            setAccounts(data)
-            setNumbers(null)
-            setLoading(false)
+        setEnd(true)
 
-          } else {
-            await fetch(`/api/server/plaid/auth?accessToken=${accessToken}`, { method: "GET" })
-              .then(res => res.json())
-              .then(data => {
-                setAccounts(data.accounts)
-                setNumbers(data.numbers.ach)
-                setLoading(false)
-              })
-              .catch(error => {
-                window.alert(error)
-                console.error(error)
-              })
-          }
-        })
-        .catch(error => {
-          window.alert(error)
-          console.error(error)
-        })
+        await fetch(`/api/server/accounts?item_id=${itemId}`)
+          .then(res => res.json())
+          .then(async data => {
+            if(data.length > 0) {
+              setAccounts(data)
+              setNumbers(null)
+              setLoading(false)
+
+            } else {
+              await fetch(`/api/server/plaid/auth?accessToken=${accessToken}`, { method: "GET" })
+                .then(res => res.json())
+                .then(data => {
+                  setAccounts(data.accounts)
+                  setNumbers(data.numbers.ach)
+                  setLoading(false)
+                })
+                .catch(error => {
+                  window.alert(error)
+                  console.error(error)
+                })
+            }
+          })
+          .catch(error => {
+            window.alert(error)
+            console.error(error)
+          })
+      }
     }
+    fetchData()
   })
 
   const handleRemove = async () => {
@@ -371,12 +375,12 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState(null)
 
-  useEffect(async () => {
+  useEffect(() => {
     if(loading && open && !end) {
 
       setEnd(true)
 
-      await fetch(`/api/server/plaid/transactions?accessToken=${accessToken}`, { method: 'GET' })
+      fetch(`/api/server/plaid/transactions?accessToken=${accessToken}`, { method: 'GET' })
         .then(res => res.json())
         .then(transactions => {
           setTransactions(transactions.latest_transactions)
@@ -387,7 +391,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
           console.error(error)
         })
     }
-  })
+  },[loading, open, end, accessToken])
 
   return (
     <>

@@ -29,53 +29,57 @@ export default function Track({userId}) {
   const [end, setEnd] = useState(false)
   const [openSnack, setOpenSnack] = useState(false)
 
-  useEffect(async () => {
-    if(loading && !end) {
-      setEnd(true)
+  useEffect(() => {
+    const fetchData = async () => {
 
-      await fetch(`/api/server/trackers/${userId}`)
-        .then(res => res.json())
-        .then(data => {
-          if(data.length > 0) {
-            setTrackers(data)
-            setLoading(false)
+      if(loading && !end) {
+        setEnd(true)
 
-          } else {
-            setTrackers(null)
-            setLoading(false)
-          }
-        })
-        .catch(error => {
-          window.alert(error)
-          console.error(error)
-        })
+        await fetch(`/api/server/trackers/${userId}`)
+          .then(res => res.json())
+          .then(data => {
+            if(data.length > 0) {
+              setTrackers(data)
+              setLoading(false)
 
-      await fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
-        .then(res => res.json())
-        .then(data => {
-          if(data.length > 0) {
-            const tokenArr = data.map(institution => {
-              const {access_token} = institution
-              return access_token
-            })
-            setTokens(tokenArr)
-            setReady(true)
+            } else {
+              setTrackers(null)
+              setLoading(false)
+            }
+          })
+          .catch(error => {
+            window.alert(error)
+            console.error(error)
+          })
 
-          } else {
-            setTokens(null)
-            setReady(true)
-          }
-        })
-        .catch(error => {
-          window.alert(error)
-          console.error(error)
-        })
+        await fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
+          .then(res => res.json())
+          .then(data => {
+            if(data.length > 0) {
+              const tokenArr = data.map(institution => {
+                const {access_token} = institution
+                return access_token
+              })
+              setTokens(tokenArr)
+              setReady(true)
+
+            } else {
+              setTokens(null)
+              setReady(true)
+            }
+          })
+          .catch(error => {
+            window.alert(error)
+            console.error(error)
+          })
+      }
     }
+    fetchData()
 
     if(trackers && trackers.length===0) {
       setTrackers(null)
     }
-  })
+  },[loading, end, trackers, userId])
 
   const handleSnackClose = (e, reason) => {
     if(reason === 'clickaway') {
@@ -161,7 +165,7 @@ function Trackers({data, setData, userId, setOpenSnack}) {
     if(data) {
       setLoading(false) //timeout here?
     }
-  })
+  },[data])
 
   const handleSpeedDial= async (type, trackerId) => {
     if(type === 'delete'){
@@ -300,22 +304,26 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
   const [transactions, setTransactions] = useState([])
   const [end, setEnd] = useState(false)
 
-  useEffect(async () => {
-    if(loading && !end && trackerId) {
-      setEnd(true)
+  useEffect(() => {
+    const fetchData = async () => {
 
-      await fetch(`/api/server/transactions/${trackerId}`)
-        .then(res => res.json())
-        .then(data => {
-          setTransactions(data)
-          setLoading(false)
-        })
-        .catch(error => {
-          window.alert(error)
-          console.error(error)
-        })
+      if(loading && !end && trackerId) {
+        setEnd(true)
+
+        await fetch(`/api/server/transactions/${trackerId}`)
+          .then(res => res.json())
+          .then(data => {
+            setTransactions(data)
+            setLoading(false)
+          })
+          .catch(error => {
+            window.alert(error)
+            console.error(error)
+          })
+      }
     }
-  })
+    fetchData()
+  },[loading, end, trackerId])
 
   return (
     <>
@@ -501,7 +509,7 @@ function TrackDialog({userId, open, setOpen, setTrackLoading, setTrackEnd, token
       document.querySelector('.MuiDateRangeCalendar-root').firstChild.remove()
       setFirstTime(false)
     }
-  })
+  },[open, firstTime])
 
   const handleSnackClose = (e, reason) => {
     if(reason === 'clickaway') {
@@ -585,49 +593,53 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(false)
 
-  useEffect(async () => {
-    let start_date = dayjs(value[0].$d).format('YYYY-MM-DD')
-    let end_date = dayjs(value[1].$d).format('YYYY-MM-DD')
+  useEffect(() => {
+    const fetchData = async () => {
 
-    if(reload) {
-      setEnd(false)
-      setLoading(true)
-    }
+      let start_date = dayjs(value[0].$d).format('YYYY-MM-DD')
+      let end_date = dayjs(value[1].$d).format('YYYY-MM-DD')
 
-    if(!end && loading) {
-      setEnd(true)
-      setReload(false)
-      setChecked([])
-      setAmounts([])
+      if(reload) {
+        setEnd(false)
+        setLoading(true)
+      }
 
-      const transactionsArr = []
-      //perhaps add a expand transctions button when token.length > 1?
-      tokens.map(async accessToken => {
-        const reqBody = { start_date, end_date }
-        await fetch(`/api/server/plaid/transactions_get?accessToken=${accessToken}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(reqBody)
+      if(!end && loading) {
+        setEnd(true)
+        setReload(false)
+        setChecked([])
+        setAmounts([])
+
+        const transactionsArr = []
+        //perhaps add a expand transctions button when token.length > 1?
+        tokens.map(async accessToken => {
+          const reqBody = { start_date, end_date }
+          await fetch(`/api/server/plaid/transactions_get?accessToken=${accessToken}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(reqBody)
+          })
+            .then(res => res.json())
+            .then(data => {
+              data.transactions.map(transaction => transactionsArr.push(transaction))
+              setTransactions(transactionsArr)
+              setLoading(false)
+            })
+            .catch(error => {
+              window.alert(error)
+              console.error(error)
+            })
         })
-          .then(res => res.json())
-          .then(data => {
-            data.transactions.map(transaction => transactionsArr.push(transaction))
-            setTransactions(transactionsArr)
-            setLoading(false)
-          })
-          .catch(error => {
-            window.alert(error)
-            console.error(error)
-          })
-      })
+      }
     }
+    fetchData()
 
     if(checked.length > 0) {
       setExpand(true)
     } else if(checked.length === 0) {
       setExpand(false)
     }
-  })
+  },[reload, end, loading, checked.length, tokens, value, setReload])
 
   const handleCheckbox = (transaction_id, amount) => {
     const currentIndex = checked.indexOf(transaction_id)

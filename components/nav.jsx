@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 export default function Nav({ page, setPage }) {
   const [value, setValue] = useState(page || 'overview')
 
-  useEffect(() => setValue(page))
+  useEffect(() => setValue(page),[page])
 
   return (
     <BottomNavigation sx={{ justifyContent: "space-around", height: '75px',
