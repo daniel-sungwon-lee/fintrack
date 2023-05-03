@@ -102,6 +102,8 @@ export default function Track({userId}) {
                    borderRadius:"2rem"}} onClick={() => setOpen(true)} disabled={!tokens}>
                     <div className={`${styles.fab} ${styles.font}`} style={{fontSize: '18px'}}>
                       {
+                        //add loading state of fab here?
+
                         tokens
                           ? <>
                               <AddchartRounded style={{ marginRight: "0.5rem" }} />
@@ -627,7 +629,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
     }
     setChecked(newChecked)
 
-    const amountIndex = amounts.indexOf(amount)
+    const amountIndex = amounts.indexOf(amount) //bug here~
     const newAmounts = [...amounts]
 
     if(amountIndex === -1) {

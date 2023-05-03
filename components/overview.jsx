@@ -1,18 +1,25 @@
 import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent,
          DialogContentText, DialogTitle, Fab, Slide, Paper, Zoom, Skeleton,
-         CardActions, List, ListItem, ListItemAvatar, ListItemText} from "@mui/material"
-import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded } from "@mui/icons-material"
+         CardActions, List, ListItem, ListItemAvatar, ListItemText,
+         IconButton, Snackbar, Alert, CircularProgress } from "@mui/material"
+import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded,
+         RecommendRounded, RemoveCircleRounded, ThumbUpRounded } from "@mui/icons-material"
 import { useEffect, useState, forwardRef } from "react"
 import Placeholder from "./placeholder"
 import styles from '../styles/Home.module.css'
 
 import Link from './plaid/link.tsx'
 
+const TransitionLeft = (props) => {
+  return <Slide {...props} direction="right" />
+}
+
 export default function Overview({ userId }) {
   const [loading, setLoading] = useState(true)
   const [accountsPlaceholder, setAccountsPlaceholder] = useState(false)
   const [data, setData] = useState(null)
   const [newData, setNewData] = useState(false)
+  const [openSnack, setOpenSnack] = useState(false)
 
   useEffect(() => {
     if(!newData) {
@@ -32,6 +39,13 @@ export default function Overview({ userId }) {
     }
   },[])
 
+  const handleSnackClose = (e, reason) => {
+    if(reason === 'clickaway') {
+      return
+    }
+    setOpenSnack(false)
+  }
+
   return (
     <>
       {
@@ -50,7 +64,8 @@ export default function Overview({ userId }) {
 
                               return (
                                 <Accounts key={item_id} itemId={item_id} accessToken={access_token}
-                                 name={name} accountsPlaceholder={accountsPlaceholder} />
+                                 name={name} accountsPlaceholder={accountsPlaceholder} institutions={data}
+                                 setInstitutions={setData} setOpenSnack={setOpenSnack} />
                               )
 
                             })
@@ -67,6 +82,14 @@ export default function Overview({ userId }) {
                 <Link userId={userId} setAccountsPlaceholder={setAccountsPlaceholder}
                  setData={setData} setNewData={setNewData} />
 
+                <Snackbar open={openSnack} autoHideDuration={3333} onClose={handleSnackClose}
+                  TransitionComponent={TransitionLeft}>
+                  <Alert variant="filled" color="secondary" sx={{ width: '100%', color: 'black' }}
+                    onClose={handleSnackClose}>
+                    Bank removed
+                  </Alert>
+                </Snackbar>
+
               </div>
             </Zoom>
       }
@@ -75,7 +98,7 @@ export default function Overview({ userId }) {
 }
 
 
-function Accounts({ itemId, accessToken, name, accountsPlaceholder }) {
+function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions, setInstitutions, setOpenSnack }) {
   const [loading, setLoading] = useState(true)
   const [end, setEnd] = useState(false)
   const [accounts, setAccounts] = useState(null)
@@ -84,6 +107,8 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder }) {
   const [open, setOpen] = useState(false)
   const [accountName, setAccountName] = useState(null)
   const [accountBalance, setAccountBalance] = useState(null)
+  const [rmOpen, setRmOpen] = useState(false)
+  const [rmLoading, setRmLoading] = useState(false)
 
   useEffect(async () => {
     if (!accountsPlaceholder && loading && !end) {
@@ -119,18 +144,59 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder }) {
     }
   })
 
+  const handleRemove = async () => {
+    setRmLoading(true)
+
+    await fetch(`/api/server/accounts?item_id=${itemId}`, {
+      method: 'DELETE',
+      headers: { "Content-Type": "application/json" }
+    })
+      .then(async () => {
+        await fetch(`/api/server/institutions?item_id=${itemId}`, {
+          method: 'DELETE',
+          headers: { "Content-Type": "application/json" }
+        })
+          .then(() => {
+            const itemIds = institutions.map(institution => institution.item_id)
+            const idIndex = itemIds.indexOf(itemId)
+            const newInstitutions = institutions.toSpliced(idIndex, 1)
+            setInstitutions(newInstitutions)
+
+            setRmOpen(false)
+            setRmLoading(false)
+            setOpenSnack(true)
+          })
+          .catch(error => {
+            setRmLoading(false)
+            window.alert(error)
+            console.error(error)
+          })
+      })
+      .catch(error => {
+        setRmLoading(false)
+        window.alert(error)
+        console.error(error)
+      })
+  }
+
   return (
     <>
       <Zoom in>
-        <Paper className="d-flex flex-column align-items-center" sx={
-         {minWidth: "80%", margin:"5rem 1rem", bgcolor:"#FFD800", borderRadius:"8px"}}
-         elevation={3}>
+        <Paper className="d-flex flex-column align-items-center" sx={{
+         minWidth: "80%", margin:"5rem 1rem", bgcolor:"#FFD800", borderRadius:"8px",
+         position: "relative"}} elevation={3}>
 
           {
             loading ? <Skeleton className="mb-0 text-center m-5" variant="rectangle" sx={{borderRadius: '1rem'}}>
                         <div className="h2 mb-0" style={{fontWeight: 'bold'}}>Institution name</div>
                       </Skeleton>
-                    : <div className="h2 mb-0 text-center m-5" style={{fontWeight: 'bold'}}>{name}</div>
+                    : <>
+                        <IconButton color="error" sx={{position:'absolute', top:'0.25rem', right:'0.25rem'}}
+                         onClick={() => setRmOpen(true)}>
+                          <RemoveCircleRounded fontSize="large" />
+                        </IconButton>
+                        <div className="h2 mb-0 text-center m-5" style={{fontWeight: 'bold'}}>{name}</div>
+                      </>
           }
 
           { loading
@@ -254,6 +320,38 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder }) {
           <AccountDetails open={open} setOpen={setOpen} accountName={accountName} accountBalance={accountBalance}
            setAccountName={setAccountName} setAccountBalance={setAccountBalance} accessToken={accessToken} />
 
+          <Dialog open={rmOpen} PaperProps={{style: {borderRadius: '1rem', padding: '1rem 2rem'}}}
+           keepMounted onClose={(e,reason) => {
+            if(reason === "backdropClick" || reason === 'escapeKeyDown') {
+              return
+            }
+            setRmOpen(false)
+           }}>
+            <DialogTitle>Remove connected bank?</DialogTitle>
+            <DialogContent></DialogContent>
+            <DialogActions sx={{justifyContent: 'space-between'}}>
+              <Fab size='medium' color='error' variant='extended'
+                onClick={() => {
+                  setRmOpen(false)
+                }}>
+                <div className={`${styles.fab} ${styles.font}`}>
+                  <CloseRounded style={{ marginRight: '0.5rem' }} />
+                  No
+                </div>
+              </Fab>
+              <Fab size='medium' color='secondary' variant='extended' onClick={handleRemove}
+               disabled={rmLoading}>
+                <div style={{color: 'black'}} className={`${styles.fab} ${styles.font}`}>
+                  {
+                    rmLoading ? <CircularProgress color="inherit" size={20} thickness={5}
+                                 sx={{marginRight: '0.5rem', color: 'rgba(0, 0, 0, 0.26)'}} />
+                              : <ThumbUpRounded style={{ marginRight: '0.5rem' }} />
+                  }
+                  Absolutely
+                </div>
+              </Fab>
+            </DialogActions>
+          </Dialog>
         </Paper>
       </Zoom>
     </>

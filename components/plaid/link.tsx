@@ -46,6 +46,7 @@ const Link = ({ userId, setAccountsPlaceholder, setData, setNewData }) => {
         //access_token and item_id data object here, when successfully connected to new account(s)
         //ready to be stored to context (changes when a new account is connected)
 
+
         //getting name of institution
         await fetch(`/api/server/plaid/item?accessToken=${data.access_token}`, { method: "GET" })
           .then(res => res.json())
@@ -119,6 +120,7 @@ const Link = ({ userId, setAccountsPlaceholder, setData, setNewData }) => {
             window.alert(error)
             console.error(error)
           })
+
 
         dispatch({
           type: "SET_STATE",
