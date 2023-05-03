@@ -47,8 +47,7 @@ export default function handler(req, res) {
 
     const sql = `
       update "institutions"
-      set "access_token" = $1
-      and "item_id" = $2
+      set "access_token" = $1, "item_id" = $2
       where "userId" = $3
       and "name" = $4
     `

@@ -640,7 +640,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
     }
     setChecked(newChecked)
 
-    const amountIndex = amounts.indexOf(amount) //bug here~
+    const amountIndex = amounts.indexOf(amount) //bug here~ shouldn't do amounts as target
     const newAmounts = [...amounts]
 
     if(amountIndex === -1) {

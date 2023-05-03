@@ -63,20 +63,31 @@ const Link = ({ userId, setAccountsPlaceholder, setData, setNewData }) => {
               .then(res => res.json())
               .then(async result => {
                 if(result.action === 'patch') {
-                  //updating existing institution access_token/item_id with new one (PATCH)
-                  await fetch(`/api/server/institutions?userId=${userId}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(newData)
+                  //deleting current (now old) accounts info since it is referenced before PATCH
+                  await fetch(`/api/server/accounts?item_id=${result.itemId}`, {
+                    method: 'DELETE',
+                    headers: { "Content-Type": "application/json" }
                   })
                     .then(async () => {
-                      //getting back the freshly posted institution data for client-side render
-                      await fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
-                        .then(res => res.json())
-                        .then(data => {
-                          //done!
-                          setData(data)
-                          setAccountsPlaceholder(false)
+                      //updating existing institution access_token/item_id with new one (PATCH)
+                      await fetch(`/api/server/institutions?userId=${userId}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(newData)
+                      })
+                        .then(async () => {
+                          //getting back the freshly posted institution data for client-side render
+                          await fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
+                            .then(res => res.json())
+                            .then(data => {
+                              //done!
+                              setData(data)
+                              setAccountsPlaceholder(false)
+                            })
+                            .catch(error => {
+                              window.alert(error)
+                              console.error(error)
+                            })
                         })
                         .catch(error => {
                           window.alert(error)
@@ -114,6 +125,10 @@ const Link = ({ userId, setAccountsPlaceholder, setData, setNewData }) => {
                       console.error(error)
                     })
                 }
+              })
+              .catch((error) => {
+                window.alert(error)
+                console.error(error)
               })
           })
           .catch((error) => {

@@ -5,7 +5,7 @@ export default function handler(req, res) {
   const userId = parseInt(params[0]) //userId will always be the first paramter value in URL
 
   const sql = `
-      select "name" from "institutions"
+      select "name", "item_id" from "institutions"
       where "userId" = $1
     `
   const param = [userId]
@@ -19,7 +19,8 @@ export default function handler(req, res) {
         if (index === -1) {
           res.status(200).json({action: 'post'})
         } else {
-          res.status(200).json({action: 'patch'})
+          const itemId = result.rows[index].item_id
+          res.status(200).json({action: 'patch', itemId: itemId})
         }
 
       } else {
