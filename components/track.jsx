@@ -21,6 +21,7 @@ const TransitionLeft = (props) => {
 
 export default function Track({userId}) {
   const [loading, setLoading] = useState(true)
+  const [ready, setReady] = useState(false)
   const [tokens, setTokens] = useState(null)
   const [open, setOpen] = useState(false)
 
@@ -58,9 +59,11 @@ export default function Track({userId}) {
               return access_token
             })
             setTokens(tokenArr)
+            setReady(true)
 
           } else {
             setTokens(null)
+            setReady(true)
           }
         })
         .catch(error => {
@@ -102,18 +105,26 @@ export default function Track({userId}) {
                    borderRadius:"2rem"}} onClick={() => setOpen(true)} disabled={!tokens}>
                     <div className={`${styles.fab} ${styles.font}`} style={{fontSize: '18px'}}>
                       {
-                        //add loading state of fab here?
+                        ready ? <>
+                                  {
+                                    tokens ? <>
+                                               <AddchartRounded style={{ marginRight: "0.5rem" }} />
+                                               Create new tracker
+                                             </>
+                                           : <>
+                                               <LockRounded color="inherit" size={30} sx={{ marginRight: '0.5rem' }}
+                                                thickness={5} />
+                                               Connect bank to create tracker
+                                             </>
+                                  }
+                                </>
+                              : <>
+                                  <CircularProgress color="inherit" size={30} sx={{ marginRight: '1rem' }}
+                                    thickness={5} />
+                                  Loading...
+                                </>
 
-                        tokens
-                          ? <>
-                              <AddchartRounded style={{ marginRight: "0.5rem" }} />
-                              Create new tracker
-                            </>
-                          : <>
-                              <LockRounded color="inherit" size={30} sx={{ marginRight: '0.5rem' }}
-                                thickness={5} />
-                              Connect bank to create tracker
-                            </>
+
                       }
                     </div>
                   </Fab>
