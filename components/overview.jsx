@@ -22,7 +22,7 @@ export default function Overview({ userId }) {
   const [openSnack, setOpenSnack] = useState(false)
 
   useEffect(() => {
-    if(!newData) {
+    if(!newData && userId) {
       fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
         .then(res => res.json())
         .then(data => {
