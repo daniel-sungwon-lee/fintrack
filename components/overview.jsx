@@ -1,7 +1,7 @@
 import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent,
          DialogContentText, DialogTitle, Fab, Slide, Paper, Zoom, Skeleton,
          CardActions, List, ListItem, ListItemAvatar, ListItemText,
-         IconButton, Snackbar, Alert, CircularProgress } from "@mui/material"
+         IconButton, Snackbar, Alert, CircularProgress, Tooltip } from "@mui/material"
 import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded,
          RecommendRounded, RemoveCircleRounded, ThumbUpRounded } from "@mui/icons-material"
 import { useEffect, useState, forwardRef } from "react"
@@ -191,10 +191,13 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                         <div className="h2 mb-0" style={{fontWeight: 'bold'}}>Institution name</div>
                       </Skeleton>
                     : <>
-                        <IconButton color="error" sx={{position:'absolute', top:'0.25rem', right:'0.25rem'}}
-                         onClick={() => setRmOpen(true)}>
-                          <RemoveCircleRounded fontSize="large" />
-                        </IconButton>
+                        <Tooltip title="Remove" componentsProps={{tooltip:{sx:{bgcolor:"#d32f2f",
+                         fontFamily:'Inter'}}}} placement="left">
+                          <IconButton color="error" sx={{position:'absolute', top:'0.25rem', right:'0.25rem'}}
+                          onClick={() => setRmOpen(true)}>
+                            <RemoveCircleRounded fontSize="large" />
+                          </IconButton>
+                        </Tooltip>
                         <div className="h2 mb-0 text-center m-5" style={{fontWeight: 'bold'}}>{name}</div>
                       </>
           }
