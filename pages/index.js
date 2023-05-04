@@ -10,10 +10,7 @@ const Track = dynamic(() => import('../components/track'), { loading: () => <Ske
 import { Box, Collapse, Fab, Modal, Paper, Skeleton, Slide } from '@mui/material';
 import { ClearRounded, LogoutRounded } from '@mui/icons-material';
 
-//plaid context
-import Context from './context.tsx';
-
-export default function Home({ user, setUser }) {
+export default function Home({ user, setUser, Context }) {
   const [show, setShow] = useState(false)
   const [page, setPage] = useState('overview')
   const [logoutModal, setLogoutModal] = useState(true)
@@ -100,7 +97,7 @@ export default function Home({ user, setUser }) {
   const handleSwitch = (page) => {
     switch(page) {
       case 'overview':
-        return <Overview userId={user.userId} />
+        return <Overview userId={user.userId} Context={Context} />
         break;
 
       case 'track':
@@ -158,7 +155,7 @@ export default function Home({ user, setUser }) {
         break;
 
       default:
-        return <Overview userId={user.userId} />
+        return <Overview userId={user.userId} Context={Context} />
     }
   }
 

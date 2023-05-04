@@ -5,10 +5,7 @@ import { usePlaidLink } from "react-plaid-link";
 import { Fab, CircularProgress, Box } from "@mui/material";
 import { AccountBalanceRounded } from "@mui/icons-material"
 
-import Context from "../../pages/context.tsx";
-import { Products } from "plaid";
-
-const Link = ({ userId, setAccountsPlaceholder, setData, setNewData }) => {
+const Link = ({ userId, setAccountsPlaceholder, setData, setNewData, Context }) => {
   const { linkToken, isPaymentInitiation, dispatch } = useContext(Context);
 
   const onSuccess = React.useCallback(

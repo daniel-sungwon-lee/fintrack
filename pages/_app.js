@@ -5,7 +5,43 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useState, useEffect } from 'react';
 
 //plaid context
-import { QuickstartProvider } from './context.tsx';
+import React from "react";
+import { createContext, useReducer } from "react";
+
+const initialState = {
+  linkSuccess: false,
+  isItemAccess: true,
+  isPaymentInitiation: false,
+  linkToken: "", // Don't set to null or error message will show up briefly when site loads
+  accessToken: null,
+  itemId: null,
+  isError: false,
+  backend: true,
+  products: ["transactions"],
+  linkTokenError: {
+    error_type: "",
+    error_code: "",
+    error_message: "",
+  },
+};
+
+const Context = createContext(initialState);
+
+const { Provider } = Context;
+const PlaidContextProvider = (props) => {
+  const reducer = (state, action) => {
+    switch (action.type) {
+      case "SET_STATE":
+        return { ...state, ...action.state };
+      default:
+        return { ...state };
+    }
+  };
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  return <Provider value={{ ...state, dispatch }}>{props.children}</Provider>;
+};
+
 
 const theme = createTheme({
   palette: {
@@ -53,9 +89,9 @@ function MyApp({ Component, pageProps }) {
       <Script src='https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js' integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous" />
 
       <ThemeProvider theme={theme}>
-        <QuickstartProvider>
-          <Component user={user} setUser={setUser} {...pageProps} />
-        </QuickstartProvider>
+        <PlaidContextProvider>
+          <Component user={user} setUser={setUser} Context={Context} {...pageProps} />
+        </PlaidContextProvider>
       </ThemeProvider>
     </>
   )
