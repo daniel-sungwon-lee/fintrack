@@ -1,15 +1,14 @@
 import { AddRounded, AddchartRounded, AttachMoneyRounded, BarChartRounded, CloseRounded,
          DeleteRounded, EditRounded, LockRounded, MoreVertRounded, ReceiptLongRounded }
         from "@mui/icons-material"
-import { Alert, Avatar, Card, CardContent, CardHeader, Checkbox, CircularProgress, Collapse,
-         Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+import { Alert, Avatar, Box, Card, CardContent, CardHeader, Checkbox, CircularProgress,
+         Collapse, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
          Fab, Grow, IconButton, List, ListItem, ListItemAvatar, ListItemButton,
          ListItemIcon, ListItemText, Paper, Skeleton, Slide, Snackbar, SpeedDial,
          SpeedDialAction, SpeedDialIcon, TextField, Zoom } from "@mui/material"
 import { useEffect, useState, forwardRef } from "react"
 import dynamic from 'next/dynamic'
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
-import styles from '../styles/Home.module.css'
 import { StaticDateRangePicker } from "@mui/x-date-pickers-pro"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
@@ -108,7 +107,8 @@ export default function Track({userId}) {
 
                   <Fab variant="extended" size="medium" color="primary" sx={{padding:"1.5rem",
                    borderRadius:"2rem"}} onClick={() => setOpen(true)} disabled={!tokens}>
-                    <div className={`${styles.fab} ${styles.font}`} style={{fontSize: '18px'}}>
+                    <Box className='d-flex align-items-center' sx={{fontSize: '18px', fontFamily: 'Inter !important',
+                     color: 'white', textTransform: 'none', lineHeight: 1}}>
                       {
                         ready ? <>
                                   {
@@ -131,7 +131,7 @@ export default function Track({userId}) {
 
 
                       }
-                    </div>
+                    </Box>
                   </Fab>
 
                   <TrackDialog userId={userId} open={open} setOpen={setOpen} setTrackLoading={setLoading}
@@ -342,14 +342,14 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
         <DialogTitle className="w-100 text-center">
           {
             loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
-                        <div className={`h2 ${styles.font}`}>Groceries and Gas</div>
+                        <div className='h2'>Groceries and Gas</div>
                       </Skeleton>
-                    : <div className={`h2 ${styles.font}`}>{trackerName}</div>
+                    : <div className='h2'>{trackerName}</div>
           }
         </DialogTitle>
         <DialogContent className="w-100">
 
-          <DialogContentText className={styles.font} sx={{marginBottom:'3rem', color:'black'}}>
+          <DialogContentText sx={{marginBottom:'3rem', color:'black'}}>
             {
               loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
                           <span className="h4 text-center d-block">Total expenditure</span>
@@ -440,10 +440,11 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
             setTotal(null)
             setOpen(false)
            }}>
-            <div className={`${styles.fab} ${styles.font}`}>
+            <Box className='d-flex align-items-center' sx={{fontFamily: 'Inter !important',
+             color: 'white', textTransform: 'none', lineHeight: 1}}>
               <CloseRounded style={{marginRight:'0.25rem'}} />
               Close
-            </div>
+            </Box>
           </Fab>
         </DialogActions>
       </Dialog>
@@ -562,10 +563,11 @@ function TrackDialog({userId, open, setOpen, setTrackLoading, setTrackEnd, token
             setTrackLoading(true)
             setTrackEnd(false)
            }}>
-            <div className={`${styles.fab} ${styles.font}`}>
+            <Box className='d-flex align-items-center' sx={{fontFamily: 'Inter !important',
+             color: 'white', textTransform: 'none', lineHeight: 1}}>
               <CloseRounded style={{marginRight:'0.25rem'}} />
               Close
-            </div>
+            </Box>
           </Fab>
         </DialogActions>
 
@@ -793,8 +795,9 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
                             InputLabelProps={{ required: false }} sx={{ width: '195px' }}
                             helperText={error ? 'Please try again' : 'Ex: Groceries'} error={error} />
 
-                          <LoadingButton loading={submitting} type="submit" className={`mb-5 ${styles.font}`}
-                            variant="contained" sx={{ color: 'white' }} loadingPosition="start"
+                          <LoadingButton loading={submitting} type="submit" className='mb-5'
+                            variant="contained" sx={{ color: 'white', textTransform: 'none',
+                            fontFamily: 'Inter !important' }} loadingPosition="start"
                             startIcon={<AddRounded />}>
                               Add
                           </LoadingButton>

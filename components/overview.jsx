@@ -1,13 +1,12 @@
 import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent,
          DialogContentText, DialogTitle, Fab, Slide, Paper, Zoom, Skeleton,
          CardActions, List, ListItem, ListItemAvatar, ListItemText,
-         IconButton, Snackbar, Alert, CircularProgress, Tooltip } from "@mui/material"
+         IconButton, Snackbar, Alert, CircularProgress, Tooltip, Box } from "@mui/material"
 import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded,
          RecommendRounded, RemoveCircleRounded, ThumbUpRounded } from "@mui/icons-material"
 import { useEffect, useState, forwardRef } from "react"
 import dynamic from 'next/dynamic'
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
-import styles from '../styles/Home.module.css'
 
 const Link = dynamic(() => import('./plaid/link'), { ssr: false })
 
@@ -342,21 +341,23 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                 onClick={() => {
                   setRmOpen(false)
                 }}>
-                <div className={`${styles.fab} ${styles.font}`}>
+                <Box className='d-flex align-items-center' sx={{fontFamily: 'Inter !important',
+                 color: 'white', textTransform: 'none', lineHeight: 1}}>
                   <CloseRounded style={{ marginRight: '0.5rem' }} />
                   No
-                </div>
+                </Box>
               </Fab>
               <Fab size='medium' color='secondary' variant='extended' onClick={handleRemove}
                disabled={rmLoading}>
-                <div style={{color: 'black'}} className={`${styles.fab} ${styles.font}`}>
+                <Box className='d-flex align-items-center' sx={{color: 'black',
+                 fontFamily: 'Inter !important', textTransform: 'none', lineHeight: 1}}>
                   {
                     rmLoading ? <CircularProgress color="inherit" size={20} thickness={5}
                                  sx={{marginRight: '0.5rem', color: 'rgba(0, 0, 0, 0.26)'}} />
                               : <ThumbUpRounded style={{ marginRight: '0.5rem' }} />
                   }
                   Absolutely
-                </div>
+                </Box>
               </Fab>
             </DialogActions>
           </Dialog>
@@ -410,14 +411,14 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
         <DialogTitle className="w-100 text-center">
           {
             loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
-                        <div className={`h2 ${styles.font}`}>Fidelity Checking</div>
+                        <div className='h2'>Fidelity Checking</div>
                       </Skeleton>
-                    : <div className={`h2 ${styles.font}`}>{accountName}</div>
+                    : <div className='h2'>{accountName}</div>
           }
         </DialogTitle>
         <DialogContent className="w-100">
 
-          <DialogContentText className={styles.font} sx={{marginBottom:'3rem', color:'white'}}>
+          <DialogContentText sx={{marginBottom:'3rem', color:'white'}}>
             {
               loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
                           <span className="h4 text-center d-block">Current Balance</span>
@@ -514,10 +515,11 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
             setAccountName(null)
             setAccountBalance(null)
            }}>
-            <div className={`${styles.fab} ${styles.font}`}>
+            <Box className='d-flex align-items-center' sx={{fontFamily: 'Inter !important',
+             color: 'white', textTransform: 'none', lineHeight: 1}}>
               <CloseRounded style={{marginRight:'0.25rem'}} />
               Close
-            </div>
+            </Box>
           </Fab>
         </DialogActions>
       </Dialog>

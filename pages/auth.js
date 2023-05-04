@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { VisibilityRounded, VisibilityOffRounded, PersonAddRounded,
          LoginRounded } from "@mui/icons-material";
-import styles from '../styles/Home.module.css'
 
 export default function Auth ({ setUser }) {
   const [page, setPage] = useState('login')
@@ -172,8 +171,9 @@ export default function Auth ({ setUser }) {
               sx={{width: '195px'}}
             />
 
-            <LoadingButton loading={loading} type="submit" className={`mb-5 ${styles.font}`}
-              variant="contained" sx={{color: 'white'}} loadingPosition="start"
+            <LoadingButton loading={loading} type="submit" className='mb-5'
+              variant="contained" sx={{color: 'white', textTransform: 'none',
+              fontFamily: 'Inter !important'}} loadingPosition="start"
               startIcon={<LoginRounded />}>
               Login
             </LoadingButton>
@@ -234,8 +234,9 @@ export default function Auth ({ setUser }) {
               />
             </FormControl>
 
-            <LoadingButton loading={loading} type="submit" className={`mb-5 ${styles.font}`}
-              variant="contained" sx={{color:'white'}} loadingPosition="start"
+            <LoadingButton loading={loading} type="submit" className='mb-5'
+              variant="contained" sx={{color:'white', textTransform:'none',
+              fontFamily:'Inter !important'}} loadingPosition="start"
               startIcon={<PersonAddRounded />}>
               Sign up
             </LoadingButton>

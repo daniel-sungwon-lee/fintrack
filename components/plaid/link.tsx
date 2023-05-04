@@ -2,14 +2,11 @@ import React, { useEffect, useContext } from "react";
 import { usePlaidLink } from "react-plaid-link";
 
 //added custom button
-import { Fab, CircularProgress } from "@mui/material";
+import { Fab, CircularProgress, Box } from "@mui/material";
 import { AccountBalanceRounded } from "@mui/icons-material"
 
 import Context from "../../pages/context.tsx";
 import { Products } from "plaid";
-
-//custom styles
-import styles from '../../styles/Home.module.css'
 
 const Link = ({ userId, setAccountsPlaceholder, setData, setNewData }) => {
   const { linkToken, isPaymentInitiation, dispatch } = useContext(Context);
@@ -185,7 +182,9 @@ const Link = ({ userId, setAccountsPlaceholder, setData, setNewData }) => {
     //custom button (fab)
     <Fab onClick={() => open()} disabled={!ready} variant="extended" size="large"
       color="primary" sx={{ padding: '2rem', borderRadius: '2rem' }}>
-      <div className={`${styles.fab} ${styles.font}`} style={{ fontSize: '20px' }}>
+      <Box className='d-flex align-items-center' sx={{ fontSize: '20px',
+       fontFamily: 'Inter !important', color: 'white', textTransform: 'none',
+       lineHeight: 1 }}>
         {
           ready
             ?<>
@@ -198,7 +197,7 @@ const Link = ({ userId, setAccountsPlaceholder, setData, setNewData }) => {
               Loading...
              </>
         }
-      </div>
+      </Box>
     </Fab>
   );
 };

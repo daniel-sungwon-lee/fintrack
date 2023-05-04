@@ -9,7 +9,6 @@ const Overview = dynamic(() => import('../components/overview'), { loading: () =
 const Track = dynamic(() => import('../components/track'), { loading: () => <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} width="100%"><div style={{ height: '69vh' }}></div></Skeleton>, ssr: false })
 import { Box, Collapse, Fab, Modal, Paper, Skeleton, Slide } from '@mui/material';
 import { ClearRounded, LogoutRounded } from '@mui/icons-material';
-import styles from '../styles/Home.module.css'
 
 //plaid context
 import Context from './context.tsx';
@@ -132,18 +131,21 @@ export default function Home({ user, setUser }) {
                         setLogoutModal(false)
                         setPage('overview')
                        }}>
-                        <div className={`${styles.fab} ${styles.font}`}>
+                        <Box className="d-flex align-items-center" sx={{
+                         fontFamily: 'Inter !important', color: 'white', textTransform: 'none',
+                         lineHeight: 1 }}>
                           <ClearRounded style={{marginRight:'0.5rem'}} />
                           No
-                        </div>
+                        </Box>
                       </Fab>
 
                       <Fab size='medium' color='primary' variant='extended'
                        onClick={handleSignOut}>
-                        <div className={`${styles.fab} ${styles.font}`}>
+                        <Box className="d-flex align-items-center" sx={{fontFamily: 'Inter !important',
+                         color: 'white', textTransform: 'none', lineHeight: 1}}>
                           <LogoutRounded style={{ marginRight: '0.5rem' }} />
                           Yes
-                        </div>
+                        </Box>
                       </Fab>
                     </div>
 
