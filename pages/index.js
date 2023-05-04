@@ -1,10 +1,13 @@
 import Image from 'next/image'
-import Auth from './auth'
+import dynamic from 'next/dynamic'
 import { useState, useEffect, useContext, useCallback } from 'react';
-import Nav from '../components/nav';
-import Overview from '../components/overview';
-import { Box, Collapse, Fab, Modal, Paper, Slide } from '@mui/material';
-import Track from '../components/track';
+const Auth = dynamic(() => import('./auth'), { ssr: false })
+const Nav = dynamic(() => import('../components/nav'), {ssr: false})
+// eslint-disable-next-line react/display-name
+const Overview = dynamic(() => import('../components/overview'), { loading: () => <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} width="100%"><div style={{ height: '69vh' }}></div></Skeleton>, ssr: false })
+// eslint-disable-next-line react/display-name
+const Track = dynamic(() => import('../components/track'), { loading: () => <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} width="100%"><div style={{ height: '69vh' }}></div></Skeleton>, ssr: false })
+import { Box, Collapse, Fab, Modal, Paper, Skeleton, Slide } from '@mui/material';
 import { ClearRounded, LogoutRounded } from '@mui/icons-material';
 import styles from '../styles/Home.module.css'
 

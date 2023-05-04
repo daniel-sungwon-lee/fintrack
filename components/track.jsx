@@ -7,7 +7,8 @@ import { Alert, Avatar, Card, CardContent, CardHeader, Checkbox, CircularProgres
          ListItemIcon, ListItemText, Paper, Skeleton, Slide, Snackbar, SpeedDial,
          SpeedDialAction, SpeedDialIcon, TextField, Zoom } from "@mui/material"
 import { useEffect, useState, forwardRef } from "react"
-import Placeholder from "./placeholder"
+import dynamic from 'next/dynamic'
+const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
 import styles from '../styles/Home.module.css'
 import { StaticDateRangePicker } from "@mui/x-date-pickers-pro"
 import { LocalizationProvider } from "@mui/x-date-pickers"
@@ -123,7 +124,7 @@ export default function Track({userId}) {
                                   }
                                 </>
                               : <>
-                                  <CircularProgress color="inherit" size={30} sx={{ marginRight: '1rem' }}
+                                  <CircularProgress color="inherit" size={25} sx={{ marginRight: '1rem' }}
                                     thickness={5} />
                                   Loading...
                                 </>

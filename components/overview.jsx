@@ -5,10 +5,11 @@ import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogCon
 import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded,
          RecommendRounded, RemoveCircleRounded, ThumbUpRounded } from "@mui/icons-material"
 import { useEffect, useState, forwardRef } from "react"
-import Placeholder from "./placeholder"
+import dynamic from 'next/dynamic'
+const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
 import styles from '../styles/Home.module.css'
 
-import Link from './plaid/link.tsx'
+const Link = dynamic(() => import('./plaid/link'), { ssr: false })
 
 const TransitionLeft = (props) => {
   return <Slide {...props} direction="right" />
