@@ -1,12 +1,11 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect } from "react";
 import { usePlaidLink } from "react-plaid-link";
 
 //added custom button
 import { Fab, CircularProgress, Box } from "@mui/material";
 import { AccountBalanceRounded } from "@mui/icons-material"
 
-const Link = ({ userId, setAccountsPlaceholder, setData, setNewData, Context }) => {
-  const { linkToken, isPaymentInitiation, dispatch } = useContext(Context);
+const Link = ({ userId, setAccountsPlaceholder, setData, setNewData, dispatch, isPaymentInitiation, linkToken }) => {
 
   const onSuccess = React.useCallback(
     (public_token: string) => {

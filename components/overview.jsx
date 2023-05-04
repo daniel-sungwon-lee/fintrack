@@ -14,7 +14,7 @@ const TransitionLeft = (props) => {
   return <Slide {...props} direction="right" />
 }
 
-export default function Overview({ userId, Context }) {
+export default function Overview({ userId, dispatch, isPaymentInitiation, linkToken }) {
   const [loading, setLoading] = useState(true)
   const [accountsPlaceholder, setAccountsPlaceholder] = useState(false)
   const [data, setData] = useState(null)
@@ -80,7 +80,8 @@ export default function Overview({ userId, Context }) {
                 }
 
                 <Link userId={userId} setAccountsPlaceholder={setAccountsPlaceholder}
-                 setData={setData} setNewData={setNewData} Context={Context} />
+                 setData={setData} setNewData={setNewData} dispatch={dispatch}
+                 isPaymentInitiation={isPaymentInitiation} linkToken={linkToken} />
 
                 <Snackbar open={openSnack} autoHideDuration={3333} onClose={handleSnackClose}
                   TransitionComponent={TransitionLeft}>

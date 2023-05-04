@@ -16,7 +16,7 @@ export default function Home({ user, setUser, Context }) {
   const [logoutModal, setLogoutModal] = useState(true)
 
   //plaid context
-  const { linkSuccess, isItemAccess, isPaymentInitiation, dispatch } = useContext(Context);
+  const { linkSuccess, linkToken, isItemAccess, isPaymentInitiation, dispatch } = useContext(Context);
   //plaid info
   const getInfo = useCallback(async () => {
     const response = await fetch("/api/server/plaid/info" /*changed path here*/, { method: "POST" });
@@ -97,7 +97,8 @@ export default function Home({ user, setUser, Context }) {
   const handleSwitch = (page) => {
     switch(page) {
       case 'overview':
-        return <Overview userId={user.userId} Context={Context} />
+        return <Overview userId={user.userId} dispatch={dispatch}
+                isPaymentInitiation={isPaymentInitiation} linkToken={linkToken} />
         break;
 
       case 'track':
@@ -155,7 +156,8 @@ export default function Home({ user, setUser, Context }) {
         break;
 
       default:
-        return <Overview userId={user.userId} Context={Context} />
+        return <Overview userId={user.userId} dispatch={dispatch}
+                isPaymentInitiation={isPaymentInitiation} linkToken={linkToken} />
     }
   }
 
