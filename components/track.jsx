@@ -107,7 +107,7 @@ export default function Track({userId}) {
 
                   <Fab variant="extended" size="medium" color="primary" sx={{padding:"1.5rem",
                    borderRadius:"2rem"}} onClick={() => setOpen(true)} disabled={!tokens}>
-                    <Box className='d-flex align-items-center' sx={{fontSize: '18px', fontFamily: 'Inter !important',
+                    <Box className='d-flex align-items-center' sx={{fontSize: '18px',
                      color: 'white', textTransform: 'none', lineHeight: 1}}>
                       {
                         ready ? <>
@@ -440,7 +440,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
             setTotal(null)
             setOpen(false)
            }}>
-            <Box className='d-flex align-items-center' sx={{fontFamily: 'Inter !important',
+            <Box className='d-flex align-items-center' sx={{
              color: 'white', textTransform: 'none', lineHeight: 1}}>
               <CloseRounded style={{marginRight:'0.25rem'}} />
               Close
@@ -563,7 +563,7 @@ function TrackDialog({userId, open, setOpen, setTrackLoading, setTrackEnd, token
             setTrackLoading(true)
             setTrackEnd(false)
            }}>
-            <Box className='d-flex align-items-center' sx={{fontFamily: 'Inter !important',
+            <Box className='d-flex align-items-center' sx={{
              color: 'white', textTransform: 'none', lineHeight: 1}}>
               <CloseRounded style={{marginRight:'0.25rem'}} />
               Close
@@ -797,7 +797,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
 
                           <LoadingButton loading={submitting} type="submit" className='mb-5'
                             variant="contained" sx={{ color: 'white', textTransform: 'none',
-                            fontFamily: 'Inter !important' }} loadingPosition="start"
+                            }} loadingPosition="start"
                             startIcon={<AddRounded />}>
                               Add
                           </LoadingButton>

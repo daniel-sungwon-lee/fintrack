@@ -196,8 +196,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                         <div className="h2 mb-0" style={{fontWeight: 'bold'}}>Institution name</div>
                       </Skeleton>
                     : <>
-                        <Tooltip title="Remove" componentsProps={{tooltip:{sx:{bgcolor:"#d32f2f",
-                         fontFamily:'Inter'}}}} placement="left">
+                        <Tooltip title="Remove" componentsProps={{tooltip:{sx:{bgcolor:"#d32f2f"}}}} placement="left">
                           <IconButton color="error" sx={{position:'absolute', top:'0.25rem', right:'0.25rem'}}
                           onClick={() => setRmOpen(true)}>
                             <RemoveCircleRounded fontSize="large" />
@@ -342,7 +341,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                 onClick={() => {
                   setRmOpen(false)
                 }}>
-                <Box className='d-flex align-items-center' sx={{fontFamily: 'Inter !important',
+                <Box className='d-flex align-items-center' sx={{
                  color: 'white', textTransform: 'none', lineHeight: 1}}>
                   <CloseRounded style={{ marginRight: '0.5rem' }} />
                   No
@@ -351,7 +350,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
               <Fab size='medium' color='secondary' variant='extended' onClick={handleRemove}
                disabled={rmLoading}>
                 <Box className='d-flex align-items-center' sx={{color: 'black',
-                 fontFamily: 'Inter !important', textTransform: 'none', lineHeight: 1}}>
+                 textTransform: 'none', lineHeight: 1}}>
                   {
                     rmLoading ? <CircularProgress color="inherit" size={20} thickness={5}
                                  sx={{marginRight: '0.5rem', color: 'rgba(0, 0, 0, 0.26)'}} />
@@ -516,7 +515,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
             setAccountName(null)
             setAccountBalance(null)
            }}>
-            <Box className='d-flex align-items-center' sx={{fontFamily: 'Inter !important',
+            <Box className='d-flex align-items-center' sx={{
              color: 'white', textTransform: 'none', lineHeight: 1}}>
               <CloseRounded style={{marginRight:'0.25rem'}} />
               Close

@@ -1,4 +1,4 @@
-import '../styles/globals.css';
+import localFont from 'next/font/local'
 import Head from 'next/head';
 import Script from 'next/script';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -54,6 +54,104 @@ const theme = createTheme({
   }
 })
 
+const Inter = localFont({ src: '../public/fonts/Inter-Regular.ttf' })
+
+const globalCss = `
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: ${Inter.style.fontFamily} !important;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.25s;
+}
+a:hover {
+  color: #FFD800;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #b4b4b4;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #868686;
+}
+
+
+.MuiTypography-root {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+
+.MuiBottomNavigationAction-label {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+
+.MuiFormLabel-root.MuiInputLabel-root {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+.MuiInputBase-root.MuiInput-root {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+
+#password-helper-text {
+  margin-top: 1rem;
+  margin-bottom: -2.6rem;
+  text-align: center;
+  font-size: 16px;
+  font-family: ${Inter.style.fontFamily} !important;
+}
+
+.MuiFormHelperText-root {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+
+.MuiButtonBase-root.MuiFab-root {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+
+.MuiButtonBase-root.MuiLoadingButton-root {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+
+.MuiPickersLayout-root {
+  overflow-x: auto !important;
+}
+.MuiButtonBase-root.MuiPickersDay-root.MuiDateRangePickerDay-day {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+.MuiButtonBase-root.MuiChip-root {
+  font-family: ${Inter.style.fontFamily} !important;
+  background-color: #FFD800;
+}
+
+.track-transactions-list .MuiListItemButton-root {
+  border-radius: 1rem;
+}
+
+.MuiSpeedDial-root .MuiSpeedDial-actions {
+  padding-top: 25px !important;
+}
+
+.MuiPaper-root.MuiAlert-root .MuiAlert-message {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+`
+
 function decodeToken(token) {
   const [, encodedData] = token.split('.');
   const decodedPayload = atob(encodedData);
@@ -90,7 +188,10 @@ function MyApp({ Component, pageProps }) {
 
       <ThemeProvider theme={theme}>
         <PlaidContextProvider>
-          <Component user={user} setUser={setUser} Context={Context} {...pageProps} />
+          <main className={Inter.className}>
+            <Component user={user} setUser={setUser} Context={Context} {...pageProps} />
+            <style jsx>{globalCss}</style>
+          </main>
         </PlaidContextProvider>
       </ThemeProvider>
     </>

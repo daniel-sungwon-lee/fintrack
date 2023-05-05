@@ -179,7 +179,7 @@ const Link = ({ userId, setAccountsPlaceholder, setData, setNewData, dispatch, i
     <Fab onClick={() => open()} disabled={!ready} variant="extended" size="large"
       color="primary" sx={{ padding: '2rem', borderRadius: '2rem' }}>
       <Box className='d-flex align-items-center' sx={{ fontSize: '20px',
-       fontFamily: 'Inter !important', color: 'white', textTransform: 'none',
+       color: 'white', textTransform: 'none',
        lineHeight: 1 }}>
         {
           ready

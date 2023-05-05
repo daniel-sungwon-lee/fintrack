@@ -130,8 +130,7 @@ export default function Home({ user, setUser, Context }) {
                         setPage('overview')
                        }}>
                         <Box className="d-flex align-items-center" sx={{
-                         fontFamily: 'Inter !important', color: 'white', textTransform: 'none',
-                         lineHeight: 1 }}>
+                         color: 'white', textTransform: 'none', lineHeight: 1 }}>
                           <ClearRounded style={{marginRight:'0.5rem'}} />
                           No
                         </Box>
@@ -139,7 +138,7 @@ export default function Home({ user, setUser, Context }) {
 
                       <Fab size='medium' color='primary' variant='extended'
                        onClick={handleSignOut}>
-                        <Box className="d-flex align-items-center" sx={{fontFamily: 'Inter !important',
+                        <Box className="d-flex align-items-center" sx={{
                          color: 'white', textTransform: 'none', lineHeight: 1}}>
                           <LogoutRounded style={{ marginRight: '0.5rem' }} />
                           Yes

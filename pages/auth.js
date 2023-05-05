@@ -173,7 +173,7 @@ export default function Auth ({ setUser }) {
 
             <LoadingButton loading={loading} type="submit" className='mb-5'
               variant="contained" sx={{color: 'white', textTransform: 'none',
-              fontFamily: 'Inter !important'}} loadingPosition="start"
+              }} loadingPosition="start"
               startIcon={<LoginRounded />}>
               Login
             </LoadingButton>
@@ -236,7 +236,7 @@ export default function Auth ({ setUser }) {
 
             <LoadingButton loading={loading} type="submit" className='mb-5'
               variant="contained" sx={{color:'white', textTransform:'none',
-              fontFamily:'Inter !important'}} loadingPosition="start"
+              }} loadingPosition="start"
               startIcon={<PersonAddRounded />}>
               Sign up
             </LoadingButton>
