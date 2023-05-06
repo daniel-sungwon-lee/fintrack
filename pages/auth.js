@@ -128,7 +128,7 @@ export default function Auth ({ setUser }) {
   if(page==="login") {
     return (
       <Collapse in={showLogin} collapsedSize={0}>
-        <div className="container">
+        <div className="container" style={{marginBottom: '4rem'}}>
 
           <div className="d-flex flex-column align-items-center m-5 text-center">
             <h1 className="mb-2">
@@ -192,8 +192,8 @@ export default function Auth ({ setUser }) {
     )
   } else {
     return (
-      <Zoom in timeout={300}>
-        <div className="container">
+      <>
+        <div className="container" style={{marginBottom: '4rem'}}>
 
           <div className="d-flex flex-column align-items-center m-5">
             <h1 className="mb-2">
@@ -249,7 +249,7 @@ export default function Auth ({ setUser }) {
           </div>
 
         </div>
-      </Zoom>
+      </>
     )
   }
 

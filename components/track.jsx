@@ -641,6 +641,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
       setExpand(true)
     } else if(checked.length === 0) {
       setExpand(false)
+      setTrackerName('')
     }
   },[reload, end, loading, checked.length, tokens, value, setReload])
 

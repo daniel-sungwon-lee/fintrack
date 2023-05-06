@@ -138,6 +138,9 @@ a:hover {
   font-family: ${Inter.style.fontFamily} !important;
   background-color: #FFD800;
 }
+.MuiButtonBase-root.MuiChip-root:hover {
+  background-color: #00C169;
+}
 
 .track-transactions-list .MuiListItemButton-root {
   border-radius: 1rem;
@@ -149,6 +152,13 @@ a:hover {
 
 .MuiPaper-root.MuiAlert-root .MuiAlert-message {
   font-family: ${Inter.style.fontFamily} !important;
+}
+
+.MuiPopper-root.MuiTooltip-popper, .MuiTooltip-tooltip {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+#OptionsSpeedDial-action-0 .MuiTooltip-tooltip {
+  background-color: #d32f2f;
 }
 `
 
