@@ -208,16 +208,16 @@ function Trackers({data, setData, userId, setOpenSnack}) {
   }
 
   return (
-    <Paper className="d-flex flex-column align-items-center" sx={
-      { minWidth: "80%", margin: "5rem 1rem", bgcolor: "#00C169", borderRadius: "8px" }}
-      elevation={3}>
+    <Paper className="d-flex flex-column align-items-center" sx={{
+     minWidth: "80%", margin: "5rem 1rem", bgcolor: "#00C169", borderRadius: "8px",
+     paddingBottom: '3.5rem' }} elevation={3}>
       {
         loading ? <>
                     <Skeleton className="mb-0 text-center m-5" variant="rectangle" sx={{ borderRadius: '1rem' }}>
                       <div className="h2 mb-0" style={{ fontWeight: 'bold' }}>Tracker name</div>
                     </Skeleton>
 
-                    <Skeleton variant="rectangle" sx={{ borderRadius: '1rem', margin: '3rem' }}>
+                    <Skeleton variant="rectangle" sx={{ borderRadius: '1rem', margin: '2rem' }}>
                       <Card sx={{ margin: "", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
                         e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
                         onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
@@ -234,7 +234,7 @@ function Trackers({data, setData, userId, setOpenSnack}) {
                     </Skeleton>
                   </>
                 : <>
-                    <div className="h2 mb-0 text-center m-5" style={{ fontWeight: 'bold' }}>Trackers</div>
+                    <div className="h2 mb-0 text-center m-5" style={{ fontWeight: 'bold', color: 'white' }}>Trackers</div>
 
                     {
                       data.map(tracker => {
@@ -243,7 +243,7 @@ function Trackers({data, setData, userId, setOpenSnack}) {
                         return (
                           <div key={trackerId} id={trackerId} style={{position: 'relative'}}>
                             <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
-                             openIcon={<CloseRounded />} />} sx={{ position:'absolute', right:'3rem', top:'3.4rem' }}
+                             openIcon={<CloseRounded />} />} sx={{ position:'absolute', right:'2rem', top:'2.4rem' }}
                              FabProps={{sx:{ boxShadow:'none !important', background:'transparent !important' }, disableRipple:true}}
                              direction="down">
                               <SpeedDialAction tooltipTitle='Delete' icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
@@ -251,7 +251,7 @@ function Trackers({data, setData, userId, setOpenSnack}) {
                               <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />} onClick={() => handleSpeedDial('edit', trackerId)} />
                             </SpeedDial>
 
-                            <Card sx={{ margin: "3rem", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                            <Card sx={{ margin: "2rem", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
                               e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
                               onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
                               onClick={() => {
@@ -264,7 +264,11 @@ function Trackers({data, setData, userId, setOpenSnack}) {
                                 <Avatar sx={{ bgcolor: "#00C169" }}>
                                   <BarChartRounded color="secondary" />
                                 </Avatar>
-                                } title={name} titleTypographyProps={{ fontSize: '18px' }} />
+                                } title={name} titleTypographyProps={{ fontSize: '18px' }} action={
+                                  <Avatar sx={{ bgcolor: "#00C169", visibility: 'hidden', marginLeft: '24px' }}>
+                                    <BarChartRounded color="secondary" />
+                                  </Avatar>
+                                } />
                               <CardContent>
                                 <div style={{ height: 0 }} className="invisible">
                                   Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
@@ -358,7 +362,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
             }
           </DialogContentText>
 
-          <Card sx={{bgcolor: '#00C169', borderRadius: '1rem'}} className="w-75 m-auto">
+          <Card sx={{bgcolor: '#00C169', borderRadius: '1rem', maxWidth: '1000px'}} className="m-auto">
             <CardContent>
               <div className="h4 text-center m-3" style={{fontWeight: 'bold', color: 'white'}}>
                 Transactions
