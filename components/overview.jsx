@@ -2,7 +2,7 @@ import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogCon
          DialogContentText, DialogTitle, Fab, Slide, Paper, Zoom, Skeleton,
          CardActions, List, ListItem, ListItemAvatar, ListItemText,
          IconButton, Snackbar, Alert, CircularProgress, Tooltip, Box, TextField,
-         InputAdornment } from "@mui/material"
+         } from "@mui/material"
 import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded,
          RecommendRounded, RemoveCircleRounded, ThumbUpRounded, VisibilityOffRounded,
          VisibilityRounded } from "@mui/icons-material"
@@ -200,6 +200,15 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                         <div className="h2 mb-0" style={{fontWeight: 'bold'}}>Institution name</div>
                       </Skeleton>
                     : <>
+                        <Tooltip title='Toggle visibility' placement="right">
+                          <IconButton sx={{position:'absolute', top:'0.5rem', left:'0.5rem'}}
+                            onClick={() => {
+                              setShowPassword(!showPassword)
+                            }}
+                          >
+                            {showPassword ? <VisibilityOffRounded fontSize="large" /> : <VisibilityRounded fontSize="large" />}
+                          </IconButton>
+                        </Tooltip>
                         <Tooltip title="Remove" componentsProps={{tooltip:{sx:{bgcolor:"#d32f2f"}}}} placement="left">
                           <IconButton color="error" sx={{position:'absolute', top:'0.25rem', right:'0.25rem'}}
                           onClick={() => setRmOpen(true)}>
@@ -250,15 +259,11 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                        <Card sx={{margin: "3rem 2rem 0", cursor: "pointer", borderRadius:"1rem"}} onMouseEnter={(e) =>
                                        e.currentTarget.style.boxShadow="0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
                                        onMouseLeave={(e) => e.currentTarget.style.boxShadow="0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
-                                       onClick={(e) => {
-                                         if(e.target.tagName === 'BUTTON' || e.target.tagName === 'svg' || e.target.tagName === 'path') {
-                                           setOpen(false)
-                                         } else {
-                                           setOpen(true)
-                                           setAccountId(accountData.account_id)
-                                           setAccountName(accountData.name)
-                                           setAccountBalance(accountData.balance)
-                                         }
+                                       onClick={() => {
+                                        setOpen(true)
+                                        setAccountId(accountData.account_id)
+                                        setAccountName(accountData.name)
+                                        setAccountBalance(accountData.balance)
                                        }} key={accountData.account_id}>
                                          <CardHeader avatar={
                                            <Avatar sx={{bgcolor:"#FFD800"}}>
@@ -278,22 +283,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                  type={showPassword ? 'text' : 'password'}
                                                  value={accountNumber}
                                                  disabled
-                                                 InputProps={
-                                                   {
-                                                     endAdornment: (
-                                                       <InputAdornment position="start">
-                                                         <IconButton
-                                                           onClick={() => {
-                                                             setShowPassword(!showPassword)
-                                                           }}
-                                                         >
-                                                           {showPassword ? <VisibilityOffRounded /> : <VisibilityRounded />}
-                                                         </IconButton>
-                                                       </InputAdornment>
-                                                     ),
-                                                     disableUnderline: true
-                                                   }
-                                                 }
+                                                 InputProps={{disableUnderline: true}}
                                                  variant="standard"
                                                  size="small"
                                                />
@@ -320,15 +310,11 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                                 <Card sx={{ margin: "3rem 2rem 0", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
                                                                   e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
                                                                   onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
-                                                                  onClick={(e) => {
-                                                                    if(e.target.tagName === 'BUTTON' || e.target.tagName === 'svg' || e.target.tagName === 'path'){
-                                                                      setOpen(false)
-                                                                    } else {
-                                                                      setOpen(true)
-                                                                      setAccountId(account_id)
-                                                                      setAccountName(name)
-                                                                      setAccountBalance(balance)
-                                                                    }
+                                                                  onClick={() => {
+                                                                    setOpen(true)
+                                                                    setAccountId(account_id)
+                                                                    setAccountName(name)
+                                                                    setAccountBalance(balance)
                                                                   }} key={account_id}>
                                                                   <CardHeader avatar={
                                                                     <Avatar sx={{ bgcolor: "#FFD800" }}>
@@ -348,22 +334,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                                           type={showPassword ? 'text' : 'password'}
                                                                           value={account_num}
                                                                           disabled
-                                                                          InputProps={
-                                                                            {
-                                                                              endAdornment: (
-                                                                                <InputAdornment position="start">
-                                                                                  <IconButton
-                                                                                    onClick={() => {
-                                                                                      setShowPassword(!showPassword)
-                                                                                    }}
-                                                                                  >
-                                                                                    {showPassword ? <VisibilityOffRounded /> : <VisibilityRounded />}
-                                                                                  </IconButton>
-                                                                                </InputAdornment>
-                                                                              ),
-                                                                              disableUnderline: true
-                                                                            }
-                                                                          }
+                                                                          InputProps={{disableUnderline: true}}
                                                                           variant="standard"
                                                                           size="small"
                                                                         />

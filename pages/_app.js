@@ -163,6 +163,7 @@ a:hover {
 
 .MuiInputBase-input.MuiInput-input.Mui-disabled {
   -webkit-text-fill-color: black;
+  cursor: pointer;
 }
 `
 
