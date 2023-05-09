@@ -1,9 +1,11 @@
 import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent,
          DialogContentText, DialogTitle, Fab, Slide, Paper, Zoom, Skeleton,
          CardActions, List, ListItem, ListItemAvatar, ListItemText,
-         IconButton, Snackbar, Alert, CircularProgress, Tooltip, Box } from "@mui/material"
+         IconButton, Snackbar, Alert, CircularProgress, Tooltip, Box, TextField,
+         InputAdornment } from "@mui/material"
 import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded,
-         RecommendRounded, RemoveCircleRounded, ThumbUpRounded } from "@mui/icons-material"
+         RecommendRounded, RemoveCircleRounded, ThumbUpRounded, VisibilityOffRounded,
+         VisibilityRounded } from "@mui/icons-material"
 import { useEffect, useState, forwardRef } from "react"
 import dynamic from 'next/dynamic'
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
@@ -104,8 +106,10 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
   const [end, setEnd] = useState(false)
   const [accounts, setAccounts] = useState(null)
   const [numbers, setNumbers] = useState(null)
+  const [showPassword, setShowPassword] = useState(false)
 
   const [open, setOpen] = useState(false)
+  const [accountId, setAccountId] = useState(null)
   const [accountName, setAccountName] = useState(null)
   const [accountBalance, setAccountBalance] = useState(null)
   const [rmOpen, setRmOpen] = useState(false)
@@ -189,7 +193,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
       <Zoom in>
         <Paper className="d-flex flex-column align-items-center" sx={{
          minWidth: "80%", margin:"5rem 1rem", bgcolor:"#FFD800", borderRadius:"8px",
-         position: "relative"}} elevation={3}>
+         position: "relative", paddingBottom: '5rem'}} elevation={3}>
 
           {
             loading ? <Skeleton className="mb-0 text-center m-5" variant="rectangle" sx={{borderRadius: '1rem'}}>
@@ -207,7 +211,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
           }
 
           { loading
-              ? <Skeleton variant="rectangle" sx={{borderRadius: '1rem', margin: '3rem 2rem'}}>
+              ? <Skeleton variant="rectangle" sx={{borderRadius: '1rem', margin: '3rem 2rem 0'}}>
                   <Card sx={{margin: "", cursor: "pointer", borderRadius:"1rem"}} onMouseEnter={(e) =>
                    e.currentTarget.style.boxShadow="0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
                    onMouseLeave={(e) => e.currentTarget.style.boxShadow="0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
@@ -243,13 +247,18 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                      }
 
                                      return (
-                                       <Card sx={{margin: "3rem 2rem", cursor: "pointer", borderRadius:"1rem"}} onMouseEnter={(e) =>
+                                       <Card sx={{margin: "3rem 2rem 0", cursor: "pointer", borderRadius:"1rem"}} onMouseEnter={(e) =>
                                        e.currentTarget.style.boxShadow="0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
                                        onMouseLeave={(e) => e.currentTarget.style.boxShadow="0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
-                                       onClick={() => {
-                                         setOpen(true)
-                                         setAccountName(accountData.name)
-                                         setAccountBalance(accountData.balance)
+                                       onClick={(e) => {
+                                         if(e.target.tagName === 'BUTTON' || e.target.tagName === 'svg' || e.target.tagName === 'path') {
+                                           setOpen(false)
+                                         } else {
+                                           setOpen(true)
+                                           setAccountId(accountData.account_id)
+                                           setAccountName(accountData.name)
+                                           setAccountBalance(accountData.balance)
+                                         }
                                        }} key={accountData.account_id}>
                                          <CardHeader avatar={
                                            <Avatar sx={{bgcolor:"#FFD800"}}>
@@ -264,7 +273,30 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                              <div>
                                                <div className="h6 text-capitalize">{accountData.type}</div>
                                                <div className="h6">Routing number: {routingNumber}</div>
-                                               <div className="h6">Account number: {accountNumber}</div>
+                                               <div className="h6 mb-0">Account number:</div>
+                                               <TextField
+                                                 type={showPassword ? 'text' : 'password'}
+                                                 value={accountNumber}
+                                                 disabled
+                                                 InputProps={
+                                                   {
+                                                     endAdornment: (
+                                                       <InputAdornment position="start">
+                                                         <IconButton
+                                                           onClick={() => {
+                                                             setShowPassword(!showPassword)
+                                                           }}
+                                                         >
+                                                           {showPassword ? <VisibilityOffRounded /> : <VisibilityRounded />}
+                                                         </IconButton>
+                                                       </InputAdornment>
+                                                     ),
+                                                     disableUnderline: true
+                                                   }
+                                                 }
+                                                 variant="standard"
+                                                 size="small"
+                                               />
                                              </div>
                                              <div className="d-flex align-items-center" style={{fontSize: '24px'}}>
                                                ${accountData.balance}
@@ -285,13 +317,18 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                                       account_num, routing_num } = account
 
                                                               return (
-                                                                <Card sx={{ margin: "3rem 2rem", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                                                                <Card sx={{ margin: "3rem 2rem 0", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
                                                                   e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
                                                                   onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
-                                                                  onClick={() => {
-                                                                    setOpen(true)
-                                                                    setAccountName(name)
-                                                                    setAccountBalance(balance)
+                                                                  onClick={(e) => {
+                                                                    if(e.target.tagName === 'BUTTON' || e.target.tagName === 'svg' || e.target.tagName === 'path'){
+                                                                      setOpen(false)
+                                                                    } else {
+                                                                      setOpen(true)
+                                                                      setAccountId(account_id)
+                                                                      setAccountName(name)
+                                                                      setAccountBalance(balance)
+                                                                    }
                                                                   }} key={account_id}>
                                                                   <CardHeader avatar={
                                                                     <Avatar sx={{ bgcolor: "#FFD800" }}>
@@ -306,7 +343,30 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                                       <div>
                                                                         <div className="h6 text-capitalize">{type}</div>
                                                                         <div className="h6">Routing number: {routing_num}</div>
-                                                                        <div className="h6">Account number: {account_num}</div>
+                                                                        <div className="h6 mb-0">Account number:</div>
+                                                                        <TextField
+                                                                          type={showPassword ? 'text' : 'password'}
+                                                                          value={account_num}
+                                                                          disabled
+                                                                          InputProps={
+                                                                            {
+                                                                              endAdornment: (
+                                                                                <InputAdornment position="start">
+                                                                                  <IconButton
+                                                                                    onClick={() => {
+                                                                                      setShowPassword(!showPassword)
+                                                                                    }}
+                                                                                  >
+                                                                                    {showPassword ? <VisibilityOffRounded /> : <VisibilityRounded />}
+                                                                                  </IconButton>
+                                                                                </InputAdornment>
+                                                                              ),
+                                                                              disableUnderline: true
+                                                                            }
+                                                                          }
+                                                                          variant="standard"
+                                                                          size="small"
+                                                                        />
                                                                       </div>
                                                                       <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
                                                                         ${balance}
@@ -325,7 +385,8 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                 </>
           }
           <AccountDetails open={open} setOpen={setOpen} accountName={accountName} accountBalance={accountBalance}
-           setAccountName={setAccountName} setAccountBalance={setAccountBalance} accessToken={accessToken} />
+           setAccountName={setAccountName} setAccountBalance={setAccountBalance} accessToken={accessToken}
+           accountId={accountId} setAccountId={setAccountId} />
 
           <Dialog open={rmOpen} PaperProps={{style: {borderRadius: '1rem', padding: '1rem 2rem'}}}
            keepMounted onClose={(e,reason) => {
@@ -372,7 +433,7 @@ const Transition = forwardRef(function Transition(props, ref) {
   return <Slide in direction="up" timeout={1000} ref={ref} {...props} />
 })
 
-function AccountDetails({ open, setOpen, accountName, accountBalance, setAccountName, setAccountBalance, accessToken }) {
+function AccountDetails({ open, setOpen, accountName, accountBalance, setAccountName, setAccountBalance, accessToken, accountId, setAccountId }) {
   const [end, setEnd] = useState(false)
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState(null)
@@ -385,7 +446,10 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
       fetch(`/api/server/plaid/transactions?accessToken=${accessToken}`, { method: 'GET' })
         .then(res => res.json())
         .then(transactions => {
-          setTransactions(transactions.latest_transactions)
+          const accountTransactions = transactions.latest_transactions.filter(transaction => {
+            return transaction.account_id === accountId
+          })
+          setTransactions(accountTransactions)
           setLoading(false)
         })
         .catch(error => {
@@ -403,6 +467,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
         setTransactions(null)
         setOpen(false)
 
+        setAccountId(null)
         setAccountName(null)
         setAccountBalance(null)
        }}
@@ -512,6 +577,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
             setLoading(true)
             setTransactions(null)
 
+            setAccountId(null)
             setAccountName(null)
             setAccountBalance(null)
            }}>

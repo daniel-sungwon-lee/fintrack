@@ -105,10 +105,10 @@ export default function Track({userId}) {
                              : <h2 className="mb-3" style={{opacity: '0.7'}}>Such empty...</h2>
                   }
 
-                  <Fab variant="extended" size="medium" color="primary" sx={{padding:"1.5rem",
+                  <Fab variant="extended" size="medium" color="secondary" sx={{padding:"1.5rem",
                    borderRadius:"2rem"}} onClick={() => setOpen(true)} disabled={!tokens}>
                     <Box className='d-flex align-items-center' sx={{fontSize: '18px',
-                     color: 'white', textTransform: 'none', lineHeight: 1}}>
+                     color: '', textTransform: 'none', lineHeight: 1}}>
                       {
                         ready ? <>
                                   {

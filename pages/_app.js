@@ -160,6 +160,10 @@ a:hover {
 #OptionsSpeedDial-action-0 .MuiTooltip-tooltip {
   background-color: #d32f2f;
 }
+
+.MuiInputBase-input.MuiInput-input.Mui-disabled {
+  -webkit-text-fill-color: black;
+}
 `
 
 function decodeToken(token) {
