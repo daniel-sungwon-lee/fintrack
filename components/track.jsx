@@ -616,7 +616,6 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
   const [checked, setChecked] = useState([])
-  const [amounts, setAmounts] = useState([])
 
   const [expand, setExpand] = useState(false)
   const [trackerName, setTrackerName] = useState('')
@@ -638,7 +637,6 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
         setEnd(true)
         setReload(false)
         setChecked([])
-        setAmounts([])
 
         const transactionsArr = []
         for(let i =0; i<tokens.length; i++){
@@ -689,7 +687,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
     }
   },[reload, end, loading, checked.length, tokens, value, setReload])
 
-  const handleCheckbox = (transaction_id, amount) => {
+  const handleCheckbox = (transaction_id) => {
     const currentIndex = checked.indexOf(transaction_id)
     const newChecked = [...checked]
 
@@ -699,21 +697,20 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
       newChecked.splice(currentIndex, 1)
     }
     setChecked(newChecked)
-
-    const amountIndex = amounts.indexOf(amount) //bug here~ shouldn't do amounts as target
-    const newAmounts = [...amounts]
-
-    if(amountIndex === -1) {
-      newAmounts.push(amount)
-    } else {
-      newAmounts.splice(amountIndex, 1)
-    }
-    setAmounts(newAmounts)
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
+
+    const amounts = []
+    checked.map(id => {
+      transactions.map(transaction => {
+        if(transaction.transaction_id === id){
+          amounts.push(transaction.amount * -1)
+        }
+      })
+    })
 
     const reqBody = {
       userId: userId,
@@ -816,7 +813,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
                                                             background: 'white', borderRadius: '1rem', marginBottom: '0.5rem',
                                                             boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'
                                                            }} disablePadding>
-                                                            <ListItemButton disabled={submitting} onClick={() => handleCheckbox(transaction_id, amount*-1)}>
+                                                            <ListItemButton disabled={submitting} onClick={() => handleCheckbox(transaction_id)}>
                                                               <ListItemIcon>
                                                                 <Checkbox edge='start' checked={checked.indexOf(transaction_id) !== -1}
                                                                  disableRipple />

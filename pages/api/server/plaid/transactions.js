@@ -24,6 +24,7 @@ export default function handler (request, response, next) {
         const request = {
           access_token: accessToken,
           cursor: cursor,
+          count: 333
         };
         const response = await client.transactionsSync(request)
         const data = response.data;
@@ -38,8 +39,8 @@ export default function handler (request, response, next) {
       }
 
       const compareTxnsByDateDescending = (a, b) => (a.date < b.date) - (a.date > b.date);
-      // Return the 100 most recent transactions
-      const recently_added = [...added].sort(compareTxnsByDateDescending).slice(-100);
+      // Return the 200 most recent transactions
+      const recently_added = [...added].sort(compareTxnsByDateDescending).slice(0,200);
       response.json({ latest_transactions: recently_added });
     })
     .catch(next);
