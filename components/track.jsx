@@ -160,6 +160,8 @@ function Trackers({data, setData, userId, setOpenSnack}) {
   const [trackerId, setTrackerId] = useState(null)
   const [trackerName, setTrackerName] = useState(null)
   const [total, setTotal] = useState(null)
+  const [fromDate, setFromDate] = useState(null)
+  const [toDate, setToDate] = useState(null)
   const [speedDialLoading, setSpeedDialLoading] = useState(false)
 
   useEffect(() => {
@@ -203,9 +205,11 @@ function Trackers({data, setData, userId, setOpenSnack}) {
         })
 
     } else {
-
+      //add edit feature here
     }
   }
+
+  const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
   return (
     <Paper className="d-flex flex-column align-items-center" sx={{
@@ -258,6 +262,8 @@ function Trackers({data, setData, userId, setOpenSnack}) {
                                 setTrackerId(trackerId)
                                 setTrackerName(name)
                                 setTotal(total)
+                                setFromDate(fromDate)
+                                setToDate(toDate)
                                 setOpen(true)
                               }}>
                               <CardHeader avatar={
@@ -280,7 +286,7 @@ function Trackers({data, setData, userId, setOpenSnack}) {
                                   </div>
                                   <ReceiptLongRounded color="secondary" fontSize="large" />
                                   <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
-                                    Total: {total} dollars
+                                    Total: {converter.format(total)}
                                   </div>
                                 </div>
                               </CardContent>
@@ -293,7 +299,8 @@ function Trackers({data, setData, userId, setOpenSnack}) {
       }
       <TrackerDetails open={open} setOpen={setOpen} trackerId={trackerId}
        setTrackerId={setTrackerId} trackerName={trackerName} setTrackerName={setTrackerName}
-       total={total} setTotal={setTotal} />
+       total={total} setTotal={setTotal} fromDate={fromDate} setFromDate={setFromDate}
+       toDate={toDate} setToDate={setToDate} />
 
     </Paper>
   )
@@ -304,10 +311,12 @@ const Transition2 = forwardRef(function Transition(props, ref) {
   return <Grow in timeout='auto' ref={ref} {...props} />
 })
 
-function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, setTrackerName, total, setTotal }) {
+function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, setTrackerName, total, setTotal, fromDate, setFromDate, toDate, setToDate }) {
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
   const [end, setEnd] = useState(false)
+
+  const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
   useEffect(() => {
     const fetchData = async () => {
@@ -339,6 +348,8 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
         setTrackerId(null)
         setTrackerName(null)
         setTotal(null)
+        setFromDate(null)
+        setToDate(null)
         setOpen(false)
        }}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#FFD800",
@@ -355,10 +366,20 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
 
           <DialogContentText sx={{marginBottom:'3rem', color:'black'}}>
             {
-              loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
-                          <span className="h4 text-center d-block">Total expenditure</span>
-                        </Skeleton>
-                      : <span className="h4 text-center d-block">{total} dollars</span>
+              loading ? <>
+                          <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
+                            <span className="h4 text-center d-block">6/6/1997 to 5/9/2023</span>
+                          </Skeleton>
+                          <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
+                            <span className="h4 text-center d-block">Total expenditure</span>
+                          </Skeleton>
+                        </>
+                      : <>
+                          <span className="h4 text-center d-block">
+                            {dayjs(fromDate).format('MM/DD/YY')} &ndash; {dayjs(toDate).format('MM/DD/YY')}
+                          </span>
+                          <span className="h4 text-center d-block">Total: {converter.format(total)}</span>
+                        </>
             }
           </DialogContentText>
 
@@ -411,7 +432,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
 
                                                       return (
                                                         <ListItem key={transaction_id} secondaryAction={
-                                                          <div>{`${amount} ${iso_currency_code}`}</div>
+                                                          <div>{converter.format(amount * -1)}</div>
                                                          } sx={{background:'white', borderRadius:'1rem', marginBottom:'0.5rem',
                                                          boxShadow:'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'}}>
                                                           <ListItemAvatar>
@@ -442,6 +463,8 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
             setTrackerId(null)
             setTrackerName(null)
             setTotal(null)
+            setFromDate(null)
+            setToDate(null)
             setOpen(false)
            }}>
             <Box className='d-flex align-items-center' sx={{
@@ -618,25 +641,42 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
         setAmounts([])
 
         const transactionsArr = []
-        //perhaps add a expand transctions button when token.length > 1?
-        tokens.map(async accessToken => {
+        for(let i =0; i<tokens.length; i++){
           const reqBody = { start_date, end_date }
-          await fetch(`/api/server/plaid/transactions_get?accessToken=${accessToken}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(reqBody)
-          })
-            .then(res => res.json())
-            .then(data => {
-              data.transactions.map(transaction => transactionsArr.push(transaction))
-              setTransactions(transactionsArr)
-              setLoading(false)
+
+          if(i === tokens.length-1){
+            fetch(`/api/server/plaid/transactions_get?accessToken=${tokens[i]}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(reqBody)
             })
-            .catch(error => {
-              window.alert(error)
-              console.error(error)
+              .then(res => res.json())
+              .then(data => {
+                data.transactions.map(transaction => transactionsArr.push(transaction))
+                setTransactions(transactionsArr)
+                setLoading(false)
+              })
+              .catch(error => {
+                window.alert(error)
+                console.error(error)
+              })
+
+          } else {
+            fetch(`/api/server/plaid/transactions_get?accessToken=${tokens[i]}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(reqBody)
             })
-        })
+              .then(res => res.json())
+              .then(data => {
+                data.transactions.map(transaction => transactionsArr.push(transaction))
+              })
+              .catch(error => {
+                window.alert(error)
+                console.error(error)
+              })
+          }
+        }
       }
     }
     fetchData()
@@ -751,6 +791,8 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
       })
   }
 
+  const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+
   return (
     <>
       <p className="mt-2">Transactions:</p>
@@ -769,17 +811,17 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
 
                                                         return (
                                                           <ListItem key={transaction_id} secondaryAction={
-                                                            <div>{`${amount} ${iso_currency_code}`}</div>
+                                                            <div>{converter.format(amount * -1)}</div>
                                                            } sx={{
                                                             background: 'white', borderRadius: '1rem', marginBottom: '0.5rem',
                                                             boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'
                                                            }} disablePadding>
-                                                            <ListItemButton disabled={submitting} onClick={() => handleCheckbox(transaction_id, amount)}>
+                                                            <ListItemButton disabled={submitting} onClick={() => handleCheckbox(transaction_id, amount*-1)}>
                                                               <ListItemIcon>
                                                                 <Checkbox edge='start' checked={checked.indexOf(transaction_id) !== -1}
                                                                  disableRipple />
                                                               </ListItemIcon>
-                                                              <ListItemText primary={name} secondary={date} />
+                                                              <ListItemText primary={name} secondary={dayjs(date).format('MMMM D, YYYY')} />
                                                             </ListItemButton>
                                                           </ListItem>
                                                         )

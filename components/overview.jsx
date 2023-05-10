@@ -188,11 +188,13 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
       })
   }
 
+  const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+
   return (
     <>
       <Zoom in>
         <Paper className="d-flex flex-column align-items-center" sx={{
-         minWidth: "80%", margin:"5rem 1rem", bgcolor:"#FFD800", borderRadius:"8px",
+         minWidth: "80%", margin:"5rem 1rem 6rem", bgcolor:"#FFD800", borderRadius:"8px",
          position: "relative", paddingBottom: '5rem'}} elevation={3}>
 
           {
@@ -289,7 +291,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                />
                                              </div>
                                              <div className="d-flex align-items-center" style={{fontSize: '24px'}}>
-                                               ${accountData.balance}
+                                               {converter.format(accountData.balance)}
                                              </div>
                                            </div>
                                          </CardContent>
@@ -340,7 +342,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                                         />
                                                                       </div>
                                                                       <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
-                                                                        ${balance}
+                                                                        {converter.format(balance)}
                                                                       </div>
                                                                     </div>
                                                                   </CardContent>
@@ -409,6 +411,8 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState(null)
 
+  const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+
   useEffect(() => {
     if(loading && open && !end) {
 
@@ -459,7 +463,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
               loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
                           <span className="h4 text-center d-block">Current Balance</span>
                         </Skeleton>
-                      : <span className="h4 text-center d-block">${accountBalance}</span>
+                      : <span className="h4 text-center d-block">{converter.format(accountBalance)}</span>
             }
           </DialogContentText>
 
@@ -512,7 +516,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
 
                                                       return (
                                                         <ListItem key={transaction_id} secondaryAction={
-                                                          <div>{`${amount} ${iso_currency_code}`}</div>
+                                                          <div>{converter.format(amount * -1)}</div>
                                                          } sx={{background:'white', borderRadius:'1rem', marginBottom:'0.5rem',
                                                          boxShadow:'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'}}>
                                                           <ListItemAvatar>
