@@ -247,12 +247,12 @@ function Trackers({data, setData, userId, setOpenSnack}) {
                         return (
                           <div key={trackerId} id={trackerId} style={{position: 'relative'}}>
                             <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
-                             openIcon={<CloseRounded />} />} sx={{ position:'absolute', right:'2rem', top:'2.4rem' }}
+                             openIcon={<CloseRounded color="error" />} />} sx={{ position:'absolute', right:'2rem', top:'2.4rem' }}
                              FabProps={{sx:{ boxShadow:'none !important', background:'transparent !important' }, disableRipple:true}}
                              direction="down">
+                              <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />} onClick={() => handleSpeedDial('edit', trackerId)} />
                               <SpeedDialAction tooltipTitle='Delete' icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
                                onClick={() => handleSpeedDial('delete', trackerId)} FabProps={{disabled:speedDialLoading}} />
-                              <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />} onClick={() => handleSpeedDial('edit', trackerId)} />
                             </SpeedDial>
 
                             <Card sx={{ margin: "2rem", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
@@ -692,6 +692,15 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
     }
   },[reload, end, loading, checked.length, tokens, value, setReload])
 
+  const handleSelectAll = () => {
+    const newChecked = transactions.map(transaction => transaction.transaction_id)
+    setChecked(newChecked)
+
+    if(checked.length === transactions.length) {
+      setChecked([])
+    }
+  }
+
   const handleCheckbox = (transaction_id) => {
     const currentIndex = checked.indexOf(transaction_id)
     const newChecked = [...checked]
@@ -803,6 +812,10 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
                     <div className="p-5">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Doloribus nulla eos accusantium sit inventore ab dolorem hic repellendus accusamus ad, aliquid ipsum explicabo quis rerum dolor incidunt aut, sed sequi!</div>
                   </Skeleton>
                 : <Card sx={{borderRadius: '8px', backgroundColor: '#FFD800'}}>
+                    <CardHeader title={`${checked.length} selected`} sx={{paddingBottom:'0'}} avatar={
+                      <Checkbox checked={checked.length === transactions.length} indeterminate={checked.length !== transactions.length && checked.length > 0}
+                       onClick={handleSelectAll} />
+                     } titleTypographyProps={{style:{fontSize:'16px'}}} />
                     <CardContent>
                       {
                         transactions.length > 0 ? <List className="track-transactions-list">

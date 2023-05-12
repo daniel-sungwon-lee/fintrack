@@ -160,7 +160,7 @@ a:hover {
 .MuiPopper-root.MuiTooltip-popper, .MuiTooltip-tooltip {
   font-family: ${Inter.style.fontFamily} !important;
 }
-#OptionsSpeedDial-action-0 .MuiTooltip-tooltip {
+#OptionsSpeedDial-action-1 .MuiTooltip-tooltip {
   background-color: #d32f2f;
 }
 
