@@ -440,7 +440,12 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                                               <AttachMoneyRounded color="primary" />
                                                             </Avatar>
                                                           </ListItemAvatar>
-                                                          <ListItemText primary={name} secondary={dayjs(date).format('MMMM D, YYYY')} />
+                                                          <ListItemText primary={name} secondary={
+                                                            <span className="d-block">
+                                                              {dayjs(date).format('MMMM D, YYYY')}
+                                                              <TransactionInfo account_id={account_id} />
+                                                            </span>
+                                                           } />
                                                         </ListItem>
                                                       )
                                                     })
