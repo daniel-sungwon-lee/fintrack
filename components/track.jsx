@@ -6,7 +6,7 @@ import { Alert, Avatar, Box, Card, CardContent, CardHeader, Checkbox, CircularPr
          Fab, Grow, IconButton, List, ListItem, ListItemAvatar, ListItemButton,
          ListItemIcon, ListItemText, Paper, Skeleton, Slide, Snackbar, SpeedDial,
          SpeedDialAction, SpeedDialIcon, TextField, Zoom } from "@mui/material"
-import { useEffect, useState, forwardRef } from "react"
+import { useEffect, useState, forwardRef, useRef } from "react"
 import dynamic from 'next/dynamic'
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
 import { StaticDateRangePicker } from "@mui/x-date-pickers-pro"
@@ -14,6 +14,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import dayjs from "dayjs"
 import { LoadingButton } from "@mui/lab"
+import Lottie from 'lottie-react'
+import receiptAnimation from '/public/lotties/receipt.json'
 
 const TransitionLeft = (props) => {
   return <Slide {...props} direction="right" />
@@ -279,13 +281,14 @@ function Trackers({data, setData, userId, setOpenSnack}) {
                                 <div style={{ height: 0 }} className="invisible">
                                   Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
                                 </div>
-                                <div className="d-flex justify-content-between">
-                                  <div className="d-flex flex-column align-items-start">
+                                <div className="d-flex justify-content-between align-items-center">
+                                  <div className="d-flex flex-column align-items-start" style={{ width:'calc(100%/3)' }}>
                                     <div className="h6">From: {dayjs(fromDate).format('MMMM D, YYYY')}</div>
                                     <div className="h6">To: {dayjs(toDate).format('MMMM D, YYYY')}</div>
                                   </div>
-                                  <ReceiptLongRounded color="secondary" fontSize="large" />
-                                  <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
+                                  <ReceiptLottie />
+                                  {/* <ReceiptLongRounded color="secondary" fontSize="large" style={{ width: 'calc(100%/3)' }} /> */}
+                                  <div className="d-flex align-items-center justify-content-end" style={{ fontSize: '24px', width: 'calc(100%/3)' }}>
                                     Total: {converter.format(total)}
                                   </div>
                                 </div>
@@ -303,6 +306,16 @@ function Trackers({data, setData, userId, setOpenSnack}) {
        toDate={toDate} setToDate={setToDate} />
 
     </Paper>
+  )
+}
+
+function ReceiptLottie({}) {
+  const lottieRef = useRef()
+  return (
+    <>
+      <Lottie animationData={receiptAnimation} loop={false} lottieRef={lottieRef} className="d-flex justify-content-center align-items-center"
+       style={{ width: 'calc(100%/3)' }} onDOMLoaded={() => lottieRef.current.playSegments([0, 220], true)} />
+    </>
   )
 }
 
