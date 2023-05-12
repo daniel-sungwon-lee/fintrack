@@ -87,9 +87,12 @@ a:hover {
 ::-webkit-scrollbar-thumb {
   background: #b4b4b4;
   border-radius: 10px;
+  border: 2.5px transparent solid;
+  background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #868686;
+  border: 0;
 }
 
 

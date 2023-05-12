@@ -1,9 +1,9 @@
-import db from './index.js'
+import db from '../index.js'
 
 export default function handler(req, res) {
   const { item_id } = req.query
 
-  if(req.method === "DELETE") {
+  if (req.method === "DELETE") {
     const sql = `
       delete from "accounts"
       where "item_id" = $1

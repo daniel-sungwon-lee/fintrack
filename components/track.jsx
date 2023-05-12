@@ -818,7 +818,12 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
                                                                 <Checkbox edge='start' checked={checked.indexOf(transaction_id) !== -1}
                                                                  disableRipple />
                                                               </ListItemIcon>
-                                                              <ListItemText primary={name} secondary={dayjs(date).format('MMMM D, YYYY')} />
+                                                              <ListItemText primary={name} secondary={
+                                                                <span className="d-block">
+                                                                  {dayjs(date).format('MMMM D, YYYY')}
+                                                                  <TransactionInfo account_id={account_id} />
+                                                                </span>
+                                                               } />
                                                             </ListItemButton>
                                                           </ListItem>
                                                         )
@@ -849,6 +854,38 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
                       </CardContent>
                     </Collapse>
                   </Card>
+      }
+    </>
+  )
+}
+
+
+function TransactionInfo({account_id}) {
+  const [loading, setLoading] = useState(true)
+  const [accountName, setAccountName] = useState(null)
+
+  useEffect(() => {
+    if (loading) {
+      fetch(`/api/server/accounts/${account_id}`)
+        .then(res => res.json())
+        .then(info => {
+          setAccountName(info.name)
+          setLoading(false)
+        })
+        .catch(error => {
+          window.alert(error)
+          console.error(error)
+        })
+    }
+  })
+
+  return (
+    <>
+      {
+        loading ? <Skeleton variant="rectangle" sx={{ borderRadius: '1rem' }}>
+                    <span>Checking account</span>
+                  </Skeleton>
+                : <span className="d-block">{accountName}</span>
       }
     </>
   )
