@@ -16,6 +16,7 @@ import dayjs from "dayjs"
 import { LoadingButton } from "@mui/lab"
 import Lottie from 'lottie-react'
 import receiptAnimation from '/public/lotties/receipt.json'
+import { gsap } from "gsap"
 
 const TransitionLeft = (props) => {
   return <Slide {...props} direction="right" />
@@ -289,7 +290,8 @@ function Trackers({data, setData, userId, setOpenSnack}) {
                                   <ReceiptLottie />
                                   {/* <ReceiptLongRounded color="secondary" fontSize="large" style={{ width: 'calc(100%/3)' }} /> */}
                                   <div className="d-flex align-items-center justify-content-end" style={{ fontSize: '24px', width: 'calc(100%/3)' }}>
-                                    Total: {converter.format(total)}
+                                    {/* Total: {converter.format(total)} */}
+                                    <TotalAnimated total={total} converter={converter} />
                                   </div>
                                 </div>
                               </CardContent>
@@ -316,6 +318,26 @@ function ReceiptLottie({}) {
       <Lottie animationData={receiptAnimation} loop={false} lottieRef={lottieRef} className="d-flex justify-content-center align-items-center"
        style={{ width: 'calc(100%/3)' }} onDOMLoaded={() => lottieRef.current.playSegments([0, 220], true)} />
     </>
+  )
+}
+function TotalAnimated({total, converter}) {
+  const [load, setLoad] = useState(true)
+  const totalRef = useRef()
+  const tl = gsap.timeline({delay:1.5})
+
+  useEffect(() => {
+    if(load) {
+      setLoad(false)
+      const count = {value: 0}, newValue = total
+      tl.to(count, { value: newValue, onUpdate: () => {
+        totalRef.current.textContent = `Total: ${converter.format(count.value)}`
+      }})
+        .fromTo(totalRef.current, {opacity:0}, {opacity:1, duration:0.5}, "<")
+    }
+  })
+
+  return (
+    <div ref={totalRef} className="total"></div>
   )
 }
 

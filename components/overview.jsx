@@ -432,7 +432,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
           console.error(error)
         })
     }
-  },[loading, open, end, accessToken])
+  },[loading, open, end, accessToken, accountId])
 
   return (
     <>
