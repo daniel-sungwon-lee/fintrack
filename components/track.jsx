@@ -334,7 +334,7 @@ function TotalAnimated({total, converter}) {
       }})
         .fromTo(totalRef.current, {opacity:0}, {opacity:1, duration:0.5}, "<")
     }
-  })
+  },[load, total, tl, converter])
 
   return (
     <div ref={totalRef} className="total"></div>
