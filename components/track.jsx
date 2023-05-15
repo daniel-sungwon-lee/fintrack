@@ -1,11 +1,11 @@
 import { AddRounded, AddchartRounded, AttachMoneyRounded, BarChartRounded, CloseRounded,
-         DeleteRounded, EditRounded, LockRounded, MoreVertRounded, ReceiptLongRounded }
+         DeleteRounded, DoneRounded, EditRounded, LockRounded, MoreVertRounded, ReceiptLongRounded }
         from "@mui/icons-material"
 import { Alert, Avatar, Box, Card, CardContent, CardHeader, Checkbox, CircularProgress,
          Collapse, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
          Fab, Grow, IconButton, List, ListItem, ListItemAvatar, ListItemButton,
          ListItemIcon, ListItemText, Paper, Skeleton, Slide, Snackbar, SpeedDial,
-         SpeedDialAction, SpeedDialIcon, TextField, Zoom } from "@mui/material"
+         SpeedDialAction, SpeedDialIcon, TextField, Tooltip, Zoom } from "@mui/material"
 import { useEffect, useState, forwardRef, useRef } from "react"
 import dynamic from 'next/dynamic'
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
@@ -31,6 +31,7 @@ export default function Track({userId}) {
   const [trackers, setTrackers] = useState(null)
   const [end, setEnd] = useState(false)
   const [openSnack, setOpenSnack] = useState(false)
+  const [openSnack2, setOpenSnack2] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,6 +91,12 @@ export default function Track({userId}) {
     }
     setOpenSnack(false)
   }
+  const handleSnackClose2 = (e, reason) => {
+    if(reason === 'clickaway') {
+      return
+    }
+    setOpenSnack2(false)
+  }
 
   return (
     <>
@@ -104,7 +111,7 @@ export default function Track({userId}) {
 
                   {
                     trackers ? <Trackers data={trackers} setData={setTrackers} userId={userId}
-                                setOpenSnack={setOpenSnack} />
+                                setOpenSnack={setOpenSnack} setOpenSnack2={setOpenSnack2} />
                              : <h2 className="mb-3" style={{opacity: '0.7'}}>Such empty...</h2>
                   }
 
@@ -131,8 +138,6 @@ export default function Track({userId}) {
                                     thickness={5} />
                                   Loading...
                                 </>
-
-
                       }
                     </Box>
                   </Fab>
@@ -147,6 +152,13 @@ export default function Track({userId}) {
                       Tracker deleted
                     </Alert>
                   </Snackbar>
+                  <Snackbar open={openSnack2} autoHideDuration={3333} onClose={handleSnackClose2}
+                    TransitionComponent={TransitionLeft}>
+                    <Alert variant="filled" color="primary" sx={{ width: '100%', color: 'white' }}
+                      onClose={handleSnackClose2}>
+                      Tracker updated
+                    </Alert>
+                  </Snackbar>
 
                 </div>
               </div>
@@ -157,7 +169,7 @@ export default function Track({userId}) {
 }
 
 
-function Trackers({data, setData, userId, setOpenSnack}) {
+function Trackers({data, setData, userId, setOpenSnack, setOpenSnack2}) {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   const [trackerId, setTrackerId] = useState(null)
@@ -166,6 +178,7 @@ function Trackers({data, setData, userId, setOpenSnack}) {
   const [fromDate, setFromDate] = useState(null)
   const [toDate, setToDate] = useState(null)
   const [speedDialLoading, setSpeedDialLoading] = useState(false)
+  const [editModeId, setEditModeId] = useState(null)
 
   useEffect(() => {
     if(data) {
@@ -173,7 +186,7 @@ function Trackers({data, setData, userId, setOpenSnack}) {
     }
   },[data])
 
-  const handleSpeedDial= async (type, trackerId) => {
+  const handleSpeedDial= async (type, trackerId, e) => {
     if(type === 'delete'){
       setSpeedDialLoading(true)
 
@@ -208,7 +221,8 @@ function Trackers({data, setData, userId, setOpenSnack}) {
         })
 
     } else {
-      //add edit feature here
+      setEditModeId(trackerId)
+      e.currentTarget.parentNode.parentNode.nextSibling.style.cursor = 'initial'
     }
   }
 
@@ -249,35 +263,54 @@ function Trackers({data, setData, userId, setOpenSnack}) {
 
                         return (
                           <div key={trackerId} id={trackerId} style={{position: 'relative'}}>
-                            <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
-                             openIcon={<CloseRounded color="error" />} />} sx={{ position:'absolute', right:'2rem', top:'2.4rem' }}
-                             FabProps={{sx:{ boxShadow:'none !important', background:'transparent !important' }, disableRipple:true}}
-                             direction="down">
-                              <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />} onClick={() => handleSpeedDial('edit', trackerId)} />
-                              <SpeedDialAction tooltipTitle='Delete' icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
-                               onClick={() => handleSpeedDial('delete', trackerId)} FabProps={{disabled:speedDialLoading}} />
-                            </SpeedDial>
-
-                            <Card sx={{ margin: "2rem", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                            {
+                              editModeId === trackerId ? <></>
+                                                       : <>
+                                                          <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                                            openIcon={<CloseRounded color="error" />} />} sx={{ position: 'absolute', right: '2rem', top: '2.4rem' }}
+                                                            FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
+                                                            direction="down">
+                                                              <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />} onClick={(e) => handleSpeedDial('edit', trackerId, e)} disabled={editModeId !== trackerId && editModeId !== null} />
+                                                              <SpeedDialAction tooltipTitle='Delete' icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
+                                                              onClick={(e) => handleSpeedDial('delete', trackerId, e)} FabProps={{ disabled: speedDialLoading }} />
+                                                          </SpeedDial>
+                                                         </>
+                            }
+                            <Card sx={{ margin: "2rem", borderRadius: "1rem" }} style={{cursor: 'pointer'}} onMouseEnter={(e) =>
                               e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
                               onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
-                              onClick={() => {
-                                setTrackerId(trackerId)
-                                setTrackerName(name)
-                                setTotal(total)
-                                setFromDate(fromDate)
-                                setToDate(toDate)
-                                setOpen(true)
+                              onClick={(e) => {
+                                if(e.currentTarget.querySelector('aside')){
+                                  setOpen(false)
+                                } else {
+                                  setTrackerId(trackerId)
+                                  setTrackerName(name)
+                                  setTotal(total)
+                                  setFromDate(fromDate)
+                                  setToDate(toDate)
+                                  setOpen(true)
+                                }
                               }}>
-                              <CardHeader avatar={
-                                <Avatar sx={{ bgcolor: "#00C169" }}>
-                                  <BarChartRounded color="secondary" />
-                                </Avatar>
-                                } title={name} titleTypographyProps={{ fontSize: '18px' }} action={
-                                  <Avatar sx={{ bgcolor: "#00C169", visibility: 'hidden', marginLeft: '24px' }}>
-                                    <BarChartRounded color="secondary" />
-                                  </Avatar>
-                                } />
+                              {
+                                editModeId === trackerId ? <CardHeader avatar={
+                                                             <Avatar sx={{ bgcolor: "#00C169" }}>
+                                                               <BarChartRounded color="secondary" />
+                                                             </Avatar>
+                                                           } title={<TrackerEdit name={name} trackerId={trackerId} userId={userId} setEditModeId={setEditModeId} setOpenSnack2={setOpenSnack2} data={data} setData={setData} />} titleTypographyProps={{ fontSize: '18px' }} action={
+                                                             <Avatar sx={{ bgcolor: "#00C169", visibility: 'hidden', marginLeft: '24px' }}>
+                                                               <BarChartRounded color="secondary" />
+                                                             </Avatar>
+                                                           } />
+                                                         : <CardHeader avatar={
+                                                             <Avatar sx={{ bgcolor: "#00C169" }}>
+                                                               <BarChartRounded color="secondary" />
+                                                             </Avatar>
+                                                           } title={name} titleTypographyProps={{ fontSize: '18px' }} action={
+                                                             <Avatar sx={{ bgcolor: "#00C169", visibility: 'hidden', marginLeft: '24px' }}>
+                                                               <BarChartRounded color="secondary" />
+                                                             </Avatar>
+                                                           } />
+                              }
                               <CardContent>
                                 <div style={{ height: 0 }} className="invisible">
                                   Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
@@ -338,6 +371,61 @@ function TotalAnimated({total, converter}) {
 
   return (
     <div ref={totalRef} className="total"></div>
+  )
+}
+
+function TrackerEdit({name, trackerId, userId, setEditModeId, setOpenSnack2, data, setData}) {
+  const [newName, setNewName] = useState(name)
+  const [error, setError] = useState(false)
+  const [editLoading, setEditLoading] = useState(false)
+
+  const handleEdit = async (trackerId, e) => {
+    const cardNode = e.currentTarget.parentNode.parentNode.parentNode.parentNode.parentNode
+    setEditLoading(true)
+
+    await fetch(`/api/server/trackers/${userId}/${trackerId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({newName})
+    })
+      .then(() => {
+        const trackerIds = data.map(tracker => tracker.trackerId)
+        const idIndex = trackerIds.indexOf(trackerId)
+        data[idIndex].name = newName
+
+        setEditLoading(false)
+        setEditModeId(null)
+        setData(data)
+        setOpenSnack2(true)
+        cardNode.style.cursor = 'pointer'
+      })
+      .catch(error => {
+        setEditLoading(false)
+        setError(true)
+        window.alert(error)
+        console.error(error)
+      })
+  }
+
+  return (
+    <>
+      <TextField value={newName} type="name" id="name" required disabled={editLoading}
+       variant="standard" label="Tracker name" onChange={(e) => setNewName(e.target.value)}
+       InputLabelProps={{ required: false }} error={error}
+       helperText={error ? 'Please try again' : 'Ex: Gas'} />
+
+      <aside>
+        <Tooltip title='Submit' placement="left" componentsProps={{ tooltip: { sx: { bgcolor: "#00C169" } } }}>
+          <IconButton onClick={(e) => handleEdit(trackerId, e)} sx={{ position: 'absolute', right: '2.5rem', top: '2.9rem' }}
+          disabled={editLoading}>
+            {
+              editLoading ? <CircularProgress color="inherit" size={20} thickness={5} />
+                          : <DoneRounded color="primary" />
+            }
+          </IconButton>
+        </Tooltip>
+      </aside>
+    </>
   )
 }
 
@@ -847,10 +935,13 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
                     <div className="p-5">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Doloribus nulla eos accusantium sit inventore ab dolorem hic repellendus accusamus ad, aliquid ipsum explicabo quis rerum dolor incidunt aut, sed sequi!</div>
                   </Skeleton>
                 : <Card sx={{borderRadius: '8px', backgroundColor: '#FFD800'}}>
-                    <CardHeader title={`${checked.length} selected`} sx={{paddingBottom:'0'}} avatar={
-                      <Checkbox checked={checked.length === transactions.length} indeterminate={checked.length !== transactions.length && checked.length > 0}
-                       onClick={handleSelectAll} />
-                     } titleTypographyProps={{style:{fontSize:'16px'}}} />
+                    {
+                      transactions.length > 0 ? <CardHeader title={`${checked.length} selected`} sx={{paddingBottom:'0'}} avatar={
+                                                  <Checkbox checked={checked.length === transactions.length} indeterminate={checked.length !== transactions.length && checked.length > 0}
+                                                   onClick={handleSelectAll} />
+                                                 } titleTypographyProps={{style:{fontSize:'16px'}}} />
+                                              : <></>
+                    }
                     <CardContent>
                       {
                         transactions.length > 0 ? <List className="track-transactions-list">
