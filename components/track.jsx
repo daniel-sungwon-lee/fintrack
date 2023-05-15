@@ -417,11 +417,20 @@ function TrackerEdit({name, trackerId, userId, setEditModeId, setOpenSnack2, dat
       <aside>
         <Tooltip title='Submit' placement="left" componentsProps={{ tooltip: { sx: { bgcolor: "#00C169" } } }}>
           <IconButton onClick={(e) => handleEdit(trackerId, e)} sx={{ position: 'absolute', right: '2.5rem', top: '2.9rem' }}
-          disabled={editLoading}>
+           disabled={editLoading}>
             {
               editLoading ? <CircularProgress color="inherit" size={20} thickness={5} />
                           : <DoneRounded color="primary" />
             }
+          </IconButton>
+        </Tooltip>
+        <Tooltip title='Cancel' placement="left" componentsProps={{ tooltip: { sx: { bgcolor: "#d32f2f" } } }}>
+          <IconButton onClick={(e) => {
+             setEditModeId(null)
+             e.currentTarget.parentNode.parentNode.parentNode.parentNode.parentNode.style.cursor='pointer'
+           }} sx={{ position: 'absolute', right: '2.5rem', top: '5.5rem', color: '#d32f2f' }}
+           disabled={editLoading}>
+            <CloseRounded />
           </IconButton>
         </Tooltip>
       </aside>
