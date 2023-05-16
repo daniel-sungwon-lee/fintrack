@@ -223,6 +223,7 @@ function Trackers({data, setData, userId, setOpenSnack, setOpenSnack2}) {
     } else {
       setEditModeId(trackerId)
       e.currentTarget.parentNode.parentNode.nextSibling.style.cursor = 'initial'
+      e.currentTarget.parentNode.parentNode.nextSibling.style.background = '#FFE6C6'
     }
   }
 
@@ -276,7 +277,7 @@ function Trackers({data, setData, userId, setOpenSnack, setOpenSnack2}) {
                                                           </SpeedDial>
                                                          </>
                             }
-                            <Card sx={{ margin: "2rem", borderRadius: "1rem" }} style={{cursor: 'pointer'}} onMouseEnter={(e) =>
+                            <Card sx={{ margin: "2rem", borderRadius: "1rem", transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms' }} style={{cursor: 'pointer'}} onMouseEnter={(e) =>
                               e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
                               onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
                               onClick={(e) => {
@@ -398,6 +399,7 @@ function TrackerEdit({name, trackerId, userId, setEditModeId, setOpenSnack2, dat
         setData(data)
         setOpenSnack2(true)
         cardNode.style.cursor = 'pointer'
+        cardNode.style.background = 'white'
       })
       .catch(error => {
         setEditLoading(false)
@@ -419,7 +421,7 @@ function TrackerEdit({name, trackerId, userId, setEditModeId, setOpenSnack2, dat
           <IconButton onClick={(e) => handleEdit(trackerId, e)} sx={{ position: 'absolute', right: '2.5rem', top: '2.9rem' }}
            disabled={editLoading}>
             {
-              editLoading ? <CircularProgress color="inherit" size={20} thickness={5} />
+              editLoading ? <CircularProgress color="inherit" size={24} thickness={5} />
                           : <DoneRounded color="primary" />
             }
           </IconButton>
@@ -428,6 +430,7 @@ function TrackerEdit({name, trackerId, userId, setEditModeId, setOpenSnack2, dat
           <IconButton onClick={(e) => {
              setEditModeId(null)
              e.currentTarget.parentNode.parentNode.parentNode.parentNode.parentNode.style.cursor='pointer'
+             e.currentTarget.parentNode.parentNode.parentNode.parentNode.parentNode.style.background = 'white'
            }} sx={{ position: 'absolute', right: '2.5rem', top: '5.5rem', color: '#d32f2f' }}
            disabled={editLoading}>
             <CloseRounded />
