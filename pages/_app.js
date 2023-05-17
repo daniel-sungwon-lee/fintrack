@@ -197,7 +197,9 @@ function MyApp({ Component, pageProps }) {
     <>
       <Head>
         <title>FinTrack</title>
-        <meta name="description" content="Finance Tracker" />
+        <meta name="title" property="og:title" content="FinTrack" />
+        <meta name="description" property="og:description" content="Finance Tracker" />
+        <meta name="image" property="og:image" content="/images/money.png" />
         <link rel="icon" href="/images/money.svg" />
       </Head>
 
