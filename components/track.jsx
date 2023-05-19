@@ -371,7 +371,7 @@ function TotalAnimated({total, converter}) {
   },[load, total, tl, converter])
 
   return (
-    <div ref={totalRef} className="total"></div>
+    <div ref={totalRef} className="total" style={{zIndex: '33'}}></div>
   )
 }
 
