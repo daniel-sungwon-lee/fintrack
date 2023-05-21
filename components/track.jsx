@@ -183,7 +183,9 @@ function Trackers({data, setData, userId, setOpenSnack, setOpenSnack2}) {
 
   useEffect(() => {
     if(data) {
-      setLoading(false) //timeout here?
+      setTimeout(() => {
+        setLoading(false)
+      }, 500)
     }
   },[data])
 
@@ -251,7 +253,7 @@ function Trackers({data, setData, userId, setOpenSnack, setOpenSnack2}) {
                           </Avatar>
                           } title="Groceries and Gas" titleTypographyProps={{ fontSize: '18px' }} />
                         <CardContent>
-                          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
+                          <ReceiptLottie />
                         </CardContent>
                       </Card>
                     </Skeleton>
@@ -612,9 +614,14 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                               <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
                                 <ListItem sx={{width: '100vw'}}>
                                   <ListItemAvatar>
-                                    <Avatar sx={{ bgcolor: "white" }}>
-                                      <AttachMoneyRounded color="primary" />
-                                    </Avatar>
+                                    <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                     openIcon={<CloseRounded color="error" />} />} sx={{position: 'relative', right: '1rem'}}
+                                     FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
+                                     direction="down">
+                                      <SpeedDialAction tooltipTitle='Edit' tooltipPlacement="right" icon={<EditRounded />} onClick={(e) => handleSpeedDial('edit', transaction_id, e)} disabled={false} />
+                                      <SpeedDialAction tooltipTitle='Delete' tooltipPlacement="right" icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
+                                       onClick={(e) => handleSpeedDial('delete', transaction_id, e)} FabProps={{ disabled: speedDialLoading }} />
+                                    </SpeedDial>
                                   </ListItemAvatar>
                                   <ListItemText primary="$420.69" secondary="June 6th, 2023" />
                                 </ListItem>
@@ -622,9 +629,14 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                               <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
                                 <ListItem sx={{width: '100vw'}}>
                                   <ListItemAvatar>
-                                    <Avatar sx={{ bgcolor: "white" }}>
-                                      <AttachMoneyRounded color="primary" />
-                                    </Avatar>
+                                    <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                     openIcon={<CloseRounded color="error" />} />} sx={{position: 'relative', right: '1rem'}}
+                                     FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
+                                     direction="down">
+                                      <SpeedDialAction tooltipTitle='Edit' tooltipPlacement="right" icon={<EditRounded />} onClick={(e) => handleSpeedDial('edit', transaction_id, e)} disabled={false} />
+                                      <SpeedDialAction tooltipTitle='Delete' tooltipPlacement="right" icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
+                                       onClick={(e) => handleSpeedDial('delete', transaction_id, e)} FabProps={{ disabled: speedDialLoading }} />
+                                    </SpeedDial>
                                   </ListItemAvatar>
                                   <ListItemText primary="$3.33" secondary="April 20th, 2023" />
                                 </ListItem>
@@ -632,9 +644,14 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                               <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
                                 <ListItem sx={{width: '100vw'}}>
                                   <ListItemAvatar>
-                                    <Avatar sx={{ bgcolor: "white" }}>
-                                      <AttachMoneyRounded color="primary" />
-                                    </Avatar>
+                                    <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                     openIcon={<CloseRounded color="error" />} />} sx={{position: 'relative', right: '1rem'}}
+                                     FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
+                                     direction="down">
+                                      <SpeedDialAction tooltipTitle='Edit' tooltipPlacement="right" icon={<EditRounded />} onClick={(e) => handleSpeedDial('edit', transaction_id, e)} disabled={false} />
+                                      <SpeedDialAction tooltipTitle='Delete' tooltipPlacement="right" icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
+                                       onClick={(e) => handleSpeedDial('delete', transaction_id, e)} FabProps={{ disabled: speedDialLoading }} />
+                                    </SpeedDial>
                                   </ListItemAvatar>
                                   <ListItemText primary="$69.42" secondary="May 4th, 2023" />
                                 </ListItem>
@@ -651,7 +668,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                                       return (
                                                         <ListItem key={transaction_id} secondaryAction={
                                                           <div>{converter.format(amount * -1)}</div>
-                                                         } sx={{background:'white', borderRadius:'1rem', marginBottom:'0.5rem',
+                                                         } sx={{background:'white', borderRadius:'1rem', margin:'0.5rem auto', width: '97%',
                                                          boxShadow:'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'}}>
                                                           <ListItemAvatar>
                                                             <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
