@@ -179,6 +179,7 @@ function Trackers({data, setData, userId, setOpenSnack, setOpenSnack2}) {
   const [toDate, setToDate] = useState(null)
   const [speedDialLoading, setSpeedDialLoading] = useState(false)
   const [editModeId, setEditModeId] = useState(null)
+  const [totalChange, setTotalChange] = useState(false)
 
   useEffect(() => {
     if(data) {
@@ -325,7 +326,7 @@ function Trackers({data, setData, userId, setOpenSnack, setOpenSnack2}) {
                                   {/* <ReceiptLongRounded color="secondary" fontSize="large" style={{ width: 'calc(100%/3)' }} /> */}
                                   <div className="d-flex align-items-center justify-content-end" style={{ fontSize: '24px', width: 'calc(100%/3)' }}>
                                     {/* Total: {converter.format(total)} */}
-                                    <TotalAnimated total={total} converter={converter} />
+                                    <TotalAnimated total={total} totalChange={totalChange} setTotalChange={setTotalChange} userId={userId} trackerId={trackerId} converter={converter} />
                                   </div>
                                 </div>
                               </CardContent>
@@ -339,7 +340,7 @@ function Trackers({data, setData, userId, setOpenSnack, setOpenSnack2}) {
       <TrackerDetails open={open} setOpen={setOpen} trackerId={trackerId}
        setTrackerId={setTrackerId} trackerName={trackerName} setTrackerName={setTrackerName}
        total={total} setTotal={setTotal} fromDate={fromDate} setFromDate={setFromDate}
-       toDate={toDate} setToDate={setToDate} />
+       toDate={toDate} setToDate={setToDate} userId={userId} setTotalChange={setTotalChange} />
 
     </Paper>
   )
@@ -354,7 +355,7 @@ function ReceiptLottie({}) {
     </>
   )
 }
-function TotalAnimated({total, converter}) {
+function TotalAnimated({total, totalChange, setTotalChange, userId, trackerId, converter}) {
   const [load, setLoad] = useState(true)
   const totalRef = useRef()
   const tl = gsap.timeline({delay:1.5})
@@ -364,14 +365,36 @@ function TotalAnimated({total, converter}) {
       setLoad(false)
       const count = {value: 0}, newValue = total
       tl.to(count, { value: newValue, onUpdate: () => {
-        totalRef.current.textContent = `Total: ${converter.format(count.value)}`
+        if(totalRef.current){
+          totalRef.current.textContent = `Total: ${converter.format(count.value)}`
+        }
       }})
         .fromTo(totalRef.current, {opacity:0}, {opacity:1, duration:0.5}, "<")
     }
-  },[load, total, tl, converter])
+
+    if(totalChange) {
+      setTotalChange(false)
+
+      fetch(`/api/server/trackers/${userId}/${trackerId}`)
+        .then(res => res.json())
+        .then(data => {
+          if(totalRef.current){
+            totalRef.current.textContent = `Total: ${converter.format(data.total)}`
+          }
+        })
+        .catch(error => {
+          window.alert(error)
+          console.error(error)
+        })
+    }
+  },[load, totalChange, setTotalChange, total, tl, converter, userId, trackerId])
 
   return (
-    <div ref={totalRef} className="total" style={{zIndex: '33'}}></div>
+    <div ref={totalRef} className="total" style={{zIndex: '33'}}>
+      {
+        //skeleton loading here after changing total here?
+      }
+    </div>
   )
 }
 
@@ -446,10 +469,13 @@ const Transition2 = forwardRef(function Transition(props, ref) {
   return <Grow in timeout='auto' ref={ref} {...props} />
 })
 
-function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, setTrackerName, total, setTotal, fromDate, setFromDate, toDate, setToDate }) {
+function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, setTrackerName, total, setTotal, fromDate, setFromDate, toDate, setToDate, userId, setTotalChange }) {
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
   const [end, setEnd] = useState(false)
+  const [speedDialLoading, setSpeedDialLoading] = useState(false)
+  const [openSnack, setOpenSnack] = useState(false)
+  const [newTotal, setNewTotal] = useState(null)
 
   const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
@@ -458,6 +484,16 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
 
       if(loading && !end && trackerId) {
         setEnd(true)
+
+        await fetch(`/api/server/trackers/${userId}/${trackerId}`)
+          .then(res => res.json())
+          .then(data => {
+            setTotal(data.total)
+          })
+          .catch(error => {
+            window.alert(error)
+            console.error(error)
+          })
 
         await fetch(`/api/server/transactions/${trackerId}`)
           .then(res => res.json())
@@ -472,7 +508,46 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
       }
     }
     fetchData()
-  },[loading, end, trackerId])
+  },[loading, end, trackerId, userId, setTotal])
+
+  const handleSpeedDial = async (type, transaction_id, e) => {
+    if(type === 'delete') {
+      setSpeedDialLoading(true)
+
+      await fetch(`/api/server/transactions/${trackerId}/${transaction_id}`, {
+        method: 'DELETE',
+        headers: { "Content-Type": "application/json" }
+      })
+        .then(() => {
+          const transactionIds = transactions.map(transaction => transaction.transaction_id)
+          const idIndex = transactionIds.indexOf(transaction_id)
+          const newTransactions = transactions.toSpliced(idIndex, 1)
+          setTransactions(newTransactions)
+
+          setSpeedDialLoading(false)
+          setOpenSnack(true)
+
+          const amounts = newTransactions.map(transaction => parseFloat(transaction.amount) * -1)
+          const newTrackerTotal = amounts.reduce((a,b) => a + b, 0)
+          setNewTotal(newTrackerTotal)
+        })
+        .catch(error => {
+          setSpeedDialLoading(false)
+          window.alert(error)
+          console.error(error)
+        })
+
+    } else {
+
+    }
+  }
+
+  const handleSnackClose = (e, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setOpenSnack(false)
+  }
 
   return (
     <>
@@ -486,6 +561,8 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
         setFromDate(null)
         setToDate(null)
         setOpen(false)
+        setNewTotal(null)
+        setTotalChange(true)
        }}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#FFD800",
        alignItems: "center", padding: "3rem 0rem"}}} scroll="body">
@@ -513,7 +590,13 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                           <span className="h4 text-center d-block">
                             {dayjs(fromDate).format('MM/DD/YY')} &ndash; {dayjs(toDate).format('MM/DD/YY')}
                           </span>
-                          <span className="h4 text-center d-block">Total: {converter.format(total)}</span>
+                          <span className="h4 text-center d-block">
+                            Total:
+                            {
+                              newTotal === null ? <> {converter.format(total)}</>
+                                                : <TrackerTotal userId={userId} trackerId={trackerId} newTotal={newTotal} converter={converter} />
+                            }
+                          </span>
                         </>
             }
           </DialogContentText>
@@ -571,9 +654,14 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                                          } sx={{background:'white', borderRadius:'1rem', marginBottom:'0.5rem',
                                                          boxShadow:'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'}}>
                                                           <ListItemAvatar>
-                                                            <Avatar sx={{ bgcolor: "white" }}>
-                                                              <AttachMoneyRounded color="primary" />
-                                                            </Avatar>
+                                                            <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                                              openIcon={<CloseRounded color="error" />} />} sx={{position: 'relative', right: '1rem'}}
+                                                              FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
+                                                              direction="down">
+                                                              <SpeedDialAction tooltipTitle='Edit' tooltipPlacement="right" icon={<EditRounded />} onClick={(e) => handleSpeedDial('edit', transaction_id, e)} disabled={false} />
+                                                              <SpeedDialAction tooltipTitle='Delete' tooltipPlacement="right" icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
+                                                                onClick={(e) => handleSpeedDial('delete', transaction_id, e)} FabProps={{ disabled: speedDialLoading }} />
+                                                            </SpeedDial>
                                                           </ListItemAvatar>
                                                           <ListItemText primary={name} secondary={
                                                             <span className="d-block">
@@ -606,6 +694,8 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
             setFromDate(null)
             setToDate(null)
             setOpen(false)
+            setNewTotal(null)
+            setTotalChange(true)
            }}>
             <Box className='d-flex align-items-center' sx={{
              color: 'white', textTransform: 'none', lineHeight: 1}}>
@@ -614,7 +704,47 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
             </Box>
           </Fab>
         </DialogActions>
+
+        <Snackbar open={openSnack} autoHideDuration={3333} onClose={handleSnackClose}
+          TransitionComponent={TransitionLeft}>
+          <Alert variant="filled" color="error" sx={{ width: '100%', color: 'white' }}
+            onClose={handleSnackClose}>
+            Transaction deleted
+          </Alert>
+        </Snackbar>
+
       </Dialog>
+    </>
+  )
+}
+
+function TrackerTotal({userId, trackerId, newTotal, converter}) {
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    setLoading(true)
+    fetch(`/api/server/trackers/${userId}/${trackerId}?update=total`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newTotal })
+    })
+      .then(() => {
+        setLoading(false)
+      })
+      .catch(error => {
+        window.alert(error)
+        console.error(error)
+      })
+  },[newTotal, trackerId, userId])
+
+  return (
+    <>
+      {
+        loading ? <Skeleton className="d-inline" variant="rectangle" sx={{ borderRadius: '1rem' }}>
+                    <span className="d-inline"> {converter.format(newTotal)}</span>
+                  </Skeleton>
+                : <span className="d-inline"> {converter.format(newTotal)}</span>
+      }
     </>
   )
 }
