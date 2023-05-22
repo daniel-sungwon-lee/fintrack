@@ -478,6 +478,8 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
   const [speedDialLoading, setSpeedDialLoading] = useState(false)
   const [openSnack, setOpenSnack] = useState(false)
   const [newTotal, setNewTotal] = useState(null)
+  const [editModeId, setEditModeId] = useState(null)
+  const [openSnack2, setOpenSnack2] = useState(false)
 
   const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
@@ -540,7 +542,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
         })
 
     } else {
-
+      setEditModeId(transaction_id)
     }
   }
 
@@ -549,6 +551,12 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
       return
     }
     setOpenSnack(false)
+  }
+  const handleSnackClose2 = (e, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setOpenSnack2(false)
   }
 
   return (
@@ -565,6 +573,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
         setOpen(false)
         setNewTotal(null)
         setTotalChange(true)
+        setEditModeId(null)
        }}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#FFD800",
        alignItems: "center", padding: "3rem 0rem"}}} scroll="body">
@@ -666,21 +675,37 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                                               date, iso_currency_code, name } = transaction
 
                                                       return (
-                                                        <ListItem key={transaction_id} secondaryAction={
+                                                        <ListItem key={transaction_id} id={transaction_id} secondaryAction={
                                                           <div>{converter.format(amount * -1)}</div>
-                                                         } sx={{background:'white', borderRadius:'1rem', margin:'0.5rem auto', width: '97%',
+                                                         } sx={{background:'white', borderRadius:'1rem', margin:'0.5rem auto', width: '97%', transition: 'all ease 0.3s',
                                                          boxShadow:'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'}}>
                                                           <ListItemAvatar>
-                                                            <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
-                                                              openIcon={<CloseRounded color="error" />} />} sx={{position: 'relative', right: '1rem'}}
-                                                              FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
-                                                              direction="down">
-                                                              <SpeedDialAction tooltipTitle='Edit' tooltipPlacement="right" icon={<EditRounded />} onClick={(e) => handleSpeedDial('edit', transaction_id, e)} disabled={false} />
-                                                              <SpeedDialAction tooltipTitle='Delete' tooltipPlacement="right" icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
-                                                                onClick={(e) => handleSpeedDial('delete', transaction_id, e)} FabProps={{ disabled: speedDialLoading }} />
-                                                            </SpeedDial>
+                                                            {
+                                                              editModeId === transaction_id
+                                                                ? <SpeedDial className="invisible" ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                                                   openIcon={<CloseRounded color="error" />} />} sx={{ position: 'relative', right: '1rem' }}
+                                                                   FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
+                                                                   direction="down">
+                                                                    <SpeedDialAction tooltipTitle='Edit' tooltipPlacement="right" icon={<EditRounded />} onClick={(e) => handleSpeedDial('edit', transaction_id, e)} disabled={false} />
+                                                                    <SpeedDialAction tooltipTitle='Delete' tooltipPlacement="right" icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
+                                                                     onClick={(e) => handleSpeedDial('delete', transaction_id, e)} FabProps={{ disabled: speedDialLoading }} />
+                                                                  </SpeedDial>
+                                                                : <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                                                   openIcon={<CloseRounded color="error" />} />} sx={{ position: 'relative', right: '1rem' }}
+                                                                   FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
+                                                                   direction="down">
+                                                                    <SpeedDialAction tooltipTitle='Edit' tooltipPlacement="right" icon={<EditRounded />} onClick={(e) => handleSpeedDial('edit', transaction_id, e)} disabled={false} />
+                                                                    <SpeedDialAction tooltipTitle='Delete' tooltipPlacement="right" icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
+                                                                     onClick={(e) => handleSpeedDial('delete', transaction_id, e)} FabProps={{ disabled: speedDialLoading }} />
+                                                                  </SpeedDial>
+                                                            }
                                                           </ListItemAvatar>
-                                                          <ListItemText primary={name} secondary={
+                                                          <ListItemText primary={
+                                                            editModeId === transaction_id
+                                                              ? <TransactionEdit name={name} transaction_id={transaction_id} transactions={transactions} setTransactions={setTransactions}
+                                                                 setEditModeId={setEditModeId} trackerId={trackerId} setOpenSnack2={setOpenSnack2} />
+                                                              : name
+                                                           } secondary={
                                                             <span className="d-block">
                                                               {dayjs(date).format('MMMM D, YYYY')}
                                                               <TransactionInfo account_id={account_id} />
@@ -713,6 +738,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
             setOpen(false)
             setNewTotal(null)
             setTotalChange(true)
+            setEditModeId(null)
            }}>
             <Box className='d-flex align-items-center' sx={{
              color: 'white', textTransform: 'none', lineHeight: 1}}>
@@ -727,6 +753,13 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
           <Alert variant="filled" color="error" sx={{ width: '100%', color: 'white' }}
             onClose={handleSnackClose}>
             Transaction deleted
+          </Alert>
+        </Snackbar>
+        <Snackbar open={openSnack2} autoHideDuration={3333} onClose={handleSnackClose2}
+          TransitionComponent={TransitionLeft}>
+          <Alert variant="filled" color="primary" sx={{ width: '100%', color: 'white' }}
+            onClose={handleSnackClose2}>
+            Transaction updated
           </Alert>
         </Snackbar>
 
@@ -763,6 +796,73 @@ function TrackerTotal({userId, trackerId, newTotal, converter}) {
                 : <span className="d-inline"> {converter.format(newTotal)}</span>
       }
     </>
+  )
+}
+
+function TransactionEdit({name, transaction_id, transactions, setTransactions, setEditModeId, trackerId, setOpenSnack2}) {
+  const [newName, setNewName] = useState(name)
+  const [error, setError] = useState(false)
+  const [editLoading, setEditLoading] = useState(false)
+
+  useEffect(() => {
+    document.getElementById('transactionEdit').parentNode.parentNode.parentNode.style.background = '#FFE6C6'
+
+    return () => {
+      if(document.getElementById(transaction_id)) {
+        document.getElementById(transaction_id).style.background = 'white'
+      }
+    }
+  })
+
+  const handleEdit = async (transaction_id) => {
+    setEditLoading(true)
+
+    await fetch(`/api/server/transactions/${trackerId}/${transaction_id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({newName})
+    })
+      .then(() => {
+        const transactionIds = transactions.map(transaction => transaction.transaction_id)
+        const idIndex = transactionIds.indexOf(transaction_id)
+        transactions[idIndex].name = newName
+
+        setEditLoading(false)
+        setEditModeId(null)
+        setTransactions(transactions)
+        setOpenSnack2(true)
+      })
+      .catch(error => {
+        setEditLoading(false)
+        setError(true)
+        window.alert(error)
+        console.error(error)
+      })
+  }
+
+  return (
+    <div id="transactionEdit">
+      <TextField value={newName} type="name" id="name" required disabled={editLoading}
+       variant="standard" label="Transaction name" onChange={(e) => setNewName(e.target.value)}
+       InputLabelProps={{ required: false }} error={error} sx={{marginBottom: '0.75rem'}}
+       helperText={error ? 'Please try again' : 'Ex: Acne Studios'} />
+
+      <Tooltip title='Submit' placement="right" componentsProps={{ tooltip: { sx: { bgcolor: "#00C169" } } }}>
+        <IconButton onClick={(e) => handleEdit(transaction_id)} sx={{ position: 'absolute', left: '0.5rem', top: '1rem' }}
+         disabled={editLoading}>
+          {
+            editLoading ? <CircularProgress color="inherit" size={24} thickness={5} />
+                        : <DoneRounded color="primary" />
+          }
+        </IconButton>
+      </Tooltip>
+      <Tooltip title='Cancel' placement="right" componentsProps={{ tooltip: { sx: { bgcolor: "#d32f2f" } } }}>
+        <IconButton onClick={(e) => {setEditModeId(null)}} sx={{ position: 'absolute', left: '0.5rem', top: '3.5rem', color: '#d32f2f' }}
+         disabled={editLoading}>
+          <CloseRounded />
+        </IconButton>
+      </Tooltip>
+    </div>
   )
 }
 

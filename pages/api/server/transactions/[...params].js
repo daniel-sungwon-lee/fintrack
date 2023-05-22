@@ -43,6 +43,27 @@ export default function handler(req, res) {
         });
     }
 
+  } else if(req.method === 'PATCH') {
+    const {newName} = req.body
+
+    const sql = `
+      update "transactions"
+      set "name" = $1
+      where "transaction_id" = $2
+    `
+    const params = [newName, transactionId]
+
+    db.query(sql, params)
+      .then(result => {
+        res.status(200).json(result.rows[0])
+      })
+      .catch(err => {
+        console.error(err)
+        res.status(500).json({
+          error: 'an unexpected error occurred'
+        })
+      })
+
   } else {
     const sql = `
       select * from "transactions"
