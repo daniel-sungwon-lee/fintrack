@@ -541,7 +541,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
       setAddTransactionLoading(false)
       setAddTransactionError(false)
       setTransactionDate(dayjs())
-      setTransactionAmount(0)
+      setTransactionAmount('')
     }
   },[loading, end, trackerId, userId, setTotal, expand])
 
@@ -819,7 +819,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                         <TextField value={transactionAmount} type="currency" id="amount" required disabled={addTransactionLoading}
                                           variant="standard" label="Transaction amount" onChange={(e) => setTransactionAmount(e.target.value)}
                                           InputLabelProps={{ required: false }} error={addTransactionError} InputProps={{inputComponent: NumericFormatCustom}}
-                                          helperText={addTransactionError ? 'Please try again' : ''} placeholder="$0" />
+                                          helperText={addTransactionError ? 'Please try again' : ''} placeholder="$0.00" />
                                       </div>
                                       } secondary={
                                       <div className="d-flex justify-content-between">
