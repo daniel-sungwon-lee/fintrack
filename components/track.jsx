@@ -396,7 +396,7 @@ function TotalAnimated({total, totalChange, setTotalChange, userId, trackerId, c
   return (
     <div ref={totalRef} className="total" style={{zIndex: '33'}}>
       {
-        //skeleton loading here after changing total here?
+        //skeleton loading here after changing total here? or increment to updated total w/ animation?
       }
     </div>
   )
@@ -562,7 +562,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
           setSpeedDialLoading(false)
           setOpenSnack(true)
 
-          const amounts = newTransactions.map(transaction => parseFloat(transaction.amount) * -1)
+          const amounts = newTransactions.map(transaction => parseFloat(transaction.amount))
           const newTrackerTotal = amounts.reduce((a,b) => a + b, 0)
           setNewTotal(newTrackerTotal)
         })
@@ -593,7 +593,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
       transaction_id: customTransactionIdGenerator(),
       trackerId: trackerId,
       account_id: 'Custom (added)',
-      amount: transactionAmount * -1,
+      amount: transactionAmount,
       category: 'custom',
       date: dayjs(transactionDate.$d).format('YYYY-MM-DD'),
       iso_currency_code: 'USD',
@@ -614,7 +614,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
         setTransactionDate(dayjs())
         setTimeout(() => setExpand(false), 300)
 
-        const amounts = transactions.map(transaction => parseFloat(transaction.amount) * -1)
+        const amounts = transactions.map(transaction => parseFloat(transaction.amount))
         const newTrackerTotal = amounts.reduce((a, b) => a + b, 0)
         setNewTotal(newTrackerTotal)
       })
@@ -763,7 +763,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
 
                                                       return (
                                                         <ListItem key={transaction_id} id={transaction_id} secondaryAction={
-                                                          <div>{converter.format(amount * -1)}</div>
+                                                          <div>{converter.format(amount)}</div>
                                                          } sx={{background:'white', borderRadius:'1rem', margin:'0.5rem auto', width: '97%', transition: 'all ease 0.3s',
                                                          boxShadow:'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'}}>
                                                           <ListItemAvatar>
@@ -1243,7 +1243,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
     checked.map(id => {
       transactions.map(transaction => {
         if(transaction.transaction_id === id){
-          amounts.push(transaction.amount * -1)
+          amounts.push(transaction.amount)
         }
       })
     })
