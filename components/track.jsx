@@ -830,7 +830,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                         </LocalizationProvider>
 
                                         <LoadingButton loading={addTransactionLoading} type="submit" sx={{
-                                          top: '0.65rem', left: '0.25rem', textTransform: 'none' }}
+                                          top: '0.65rem', left: '0.25rem', textTransform: 'none', borderRadius: '2rem', padding: '6px 16px' }}
                                           loadingPosition="start" startIcon={<DoneRounded />}>
                                           Submit
                                         </LoadingButton>
@@ -881,11 +881,11 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
           </Fab>
         </DialogActions>
 
-        <Snackbar open={openSnack} autoHideDuration={3333} onClose={handleSnackClose}
+        <Snackbar open={openSnack3} autoHideDuration={3333} onClose={handleSnackClose3}
           TransitionComponent={TransitionLeft}>
-          <Alert variant="filled" color="error" sx={{ width: '100%', color: 'white' }}
-            onClose={handleSnackClose}>
-            Transaction deleted
+          <Alert variant="filled" color="primary" sx={{ width: '100%', color: 'white' }}
+            onClose={handleSnackClose3}>
+            Transaction added
           </Alert>
         </Snackbar>
         <Snackbar open={openSnack2} autoHideDuration={3333} onClose={handleSnackClose2}
@@ -895,11 +895,11 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
             Transaction updated
           </Alert>
         </Snackbar>
-        <Snackbar open={openSnack3} autoHideDuration={3333} onClose={handleSnackClose3}
+        <Snackbar open={openSnack} autoHideDuration={3333} onClose={handleSnackClose}
           TransitionComponent={TransitionLeft}>
-          <Alert variant="filled" color="primary" sx={{ width: '100%', color: 'white' }}
-            onClose={handleSnackClose3}>
-            Transaction added
+          <Alert variant="filled" color="error" sx={{ width: '100%', color: 'white' }}
+            onClose={handleSnackClose}>
+            Transaction deleted
           </Alert>
         </Snackbar>
 
