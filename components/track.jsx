@@ -10,13 +10,15 @@ import { useEffect, useState, forwardRef, useRef } from "react"
 import dynamic from 'next/dynamic'
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
 import { StaticDateRangePicker } from "@mui/x-date-pickers-pro"
-import { LocalizationProvider } from "@mui/x-date-pickers"
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import dayjs from "dayjs"
 import { LoadingButton } from "@mui/lab"
 import Lottie from 'lottie-react'
 import receiptAnimation from '/public/lotties/receipt.json'
 import { gsap } from "gsap"
+import { NumericFormat } from "react-number-format"
+import PropTypes from 'prop-types'
 
 const TransitionLeft = (props) => {
   return <Slide {...props} direction="right" />
@@ -471,6 +473,20 @@ const Transition2 = forwardRef(function Transition(props, ref) {
   return <Grow in timeout='auto' ref={ref} {...props} />
 })
 
+const NumericFormatCustom = forwardRef(function NumericFormatCustom(props, ref) {
+  const { onChange, ...other } = props
+
+  return (
+    <NumericFormat {...other} getInputRef={ref} onValueChange={(values) => {
+      onChange({target: {name: props.name, value: values.value},})
+     }} thousandSeparator valueIsNumericString prefix="$" />
+  )
+})
+NumericFormatCustom.propTypes = {
+  name: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+}
+
 function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, setTrackerName, total, setTotal, fromDate, setFromDate, toDate, setToDate, userId, setTotalChange }) {
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
@@ -480,6 +496,13 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
   const [newTotal, setNewTotal] = useState(null)
   const [editModeId, setEditModeId] = useState(null)
   const [openSnack2, setOpenSnack2] = useState(false)
+  const [expand, setExpand] = useState(false)
+  const [transactionName, setTransactionName] = useState('')
+  const [addTransactionLoading, setAddTransactionLoading] = useState(false)
+  const [addTransactionError, setAddTransactionError] = useState(false)
+  const [transactionDate, setTransactionDate] = useState(dayjs())
+  const [transactionAmount, setTransactionAmount] = useState('')
+  const [openSnack3, setOpenSnack3] = useState(false)
 
   const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
@@ -512,7 +535,15 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
       }
     }
     fetchData()
-  },[loading, end, trackerId, userId, setTotal])
+
+    if(!expand) {
+      setTransactionName('')
+      setAddTransactionLoading(false)
+      setAddTransactionError(false)
+      setTransactionDate(dayjs())
+      setTransactionAmount(0)
+    }
+  },[loading, end, trackerId, userId, setTotal, expand])
 
   const handleSpeedDial = async (type, transaction_id, e) => {
     if(type === 'delete') {
@@ -543,7 +574,56 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
 
     } else {
       setEditModeId(transaction_id)
+      setExpand(false)
     }
+  }
+
+  const handleAddTransaction = async (e) => {
+    e.preventDefault()
+    setAddTransactionLoading(true)
+
+    function customTransactionIdGenerator() {
+      var S4 = function () {
+        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+      };
+      return ('custom' + S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4());
+    }
+
+    const reqBody = {
+      transaction_id: customTransactionIdGenerator(),
+      trackerId: trackerId,
+      account_id: 'Custom (added)',
+      amount: transactionAmount * -1,
+      category: 'custom',
+      date: dayjs(transactionDate.$d).format('YYYY-MM-DD'),
+      iso_currency_code: 'USD',
+      name: transactionName
+    }
+
+    await fetch(`/api/server/transactions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(reqBody)
+    })
+      .then(() => {
+        transactions.push(reqBody)
+        setOpenSnack3(true)
+        setAddTransactionLoading(false)
+        setTransactionName('')
+        setTransactionAmount('')
+        setTransactionDate(dayjs())
+        setTimeout(() => setExpand(false), 300)
+
+        const amounts = transactions.map(transaction => parseFloat(transaction.amount) * -1)
+        const newTrackerTotal = amounts.reduce((a, b) => a + b, 0)
+        setNewTotal(newTrackerTotal)
+      })
+      .catch(error => {
+        setAddTransactionLoading(false)
+        setAddTransactionError(true)
+        window.alert(error)
+        console.error(error)
+      })
   }
 
   const handleSnackClose = (e, reason) => {
@@ -557,6 +637,12 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
       return
     }
     setOpenSnack2(false)
+  }
+  const handleSnackClose3 = (e, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setOpenSnack3(false)
   }
 
   return (
@@ -574,6 +660,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
         setNewTotal(null)
         setTotalChange(true)
         setEditModeId(null)
+        setExpand(false)
        }}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#FFD800",
        alignItems: "center", padding: "3rem 0rem"}}} scroll="body">
@@ -719,6 +806,51 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                              : <></>
 
                               }
+                              <ListItem className="d-flex flex-column">
+                                <Collapse in={expand} timeout='auto' sx={{width: '100%', background: 'white', borderRadius: '1rem'}}>
+                                  <form onSubmit={handleAddTransaction}>
+                                    <ListItemText sx={{padding: '1rem'}} primary={
+                                      <div className="d-flex justify-content-between">
+                                        <TextField value={transactionName} type="name" id="name" required disabled={addTransactionLoading}
+                                          variant="standard" label="Transaction name" onChange={(e) => setTransactionName(e.target.value)}
+                                          InputLabelProps={{ required: false }} error={addTransactionError} sx={{ marginBottom: '0.5rem' }}
+                                          helperText={addTransactionError ? 'Please try again' : 'Ex: Aesop'} />
+
+                                        <TextField value={transactionAmount} type="currency" id="amount" required disabled={addTransactionLoading}
+                                          variant="standard" label="Transaction amount" onChange={(e) => setTransactionAmount(e.target.value)}
+                                          InputLabelProps={{ required: false }} error={addTransactionError} InputProps={{inputComponent: NumericFormatCustom}}
+                                          helperText={addTransactionError ? 'Please try again' : ''} placeholder="$0" />
+                                      </div>
+                                      } secondary={
+                                      <div className="d-flex justify-content-between">
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                          <DatePicker label='Transaction date' value={transactionDate} onChange={(newValue) => setTransactionDate(newValue)}
+                                          slotProps={{textField: {variant: 'standard', error: addTransactionError, helperText: addTransactionError ? 'Please try again' : '',
+                                          required: true, InputLabelProps: {required: false}}}} disabled={addTransactionLoading} />
+                                        </LocalizationProvider>
+
+                                        <LoadingButton loading={addTransactionLoading} type="submit" sx={{
+                                          top: '0.65rem', left: '0.25rem', textTransform: 'none' }}
+                                          loadingPosition="start" startIcon={<DoneRounded />}>
+                                          Submit
+                                        </LoadingButton>
+                                      </div>
+                                      } />
+                                  </form>
+                                </Collapse>
+                                <ListItemButton className="d-flex justify-content-center" disabled={addTransactionLoading}
+                                 sx={{color: 'white', borderRadius: '1rem', width: '100%', marginTop: '1rem'}} onClick={() => {
+                                  setExpand(!expand)
+                                  setEditModeId(null)
+                                 }}>
+                                  <div className="d-flex">
+                                    {
+                                      expand ? <><CloseRounded /> Cancel</>
+                                             : <><AddRounded /> Add transaction</>
+                                    }
+                                  </div>
+                                </ListItemButton>
+                              </ListItem>
                             </>
                 }
               </List>
@@ -739,6 +871,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
             setNewTotal(null)
             setTotalChange(true)
             setEditModeId(null)
+            setExpand(false)
            }}>
             <Box className='d-flex align-items-center' sx={{
              color: 'white', textTransform: 'none', lineHeight: 1}}>
@@ -760,6 +893,13 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
           <Alert variant="filled" color="primary" sx={{ width: '100%', color: 'white' }}
             onClose={handleSnackClose2}>
             Transaction updated
+          </Alert>
+        </Snackbar>
+        <Snackbar open={openSnack3} autoHideDuration={3333} onClose={handleSnackClose3}
+          TransitionComponent={TransitionLeft}>
+          <Alert variant="filled" color="primary" sx={{ width: '100%', color: 'white' }}
+            onClose={handleSnackClose3}>
+            Transaction added
           </Alert>
         </Snackbar>
 
@@ -1269,18 +1409,24 @@ function TransactionInfo({account_id}) {
 
   useEffect(() => {
     if (loading) {
-      fetch(`/api/server/accounts/${account_id}`)
-        .then(res => res.json())
-        .then(info => {
-          setAccountName(info.name)
-          setLoading(false)
-        })
-        .catch(error => {
-          window.alert(error)
-          console.error(error)
-        })
+      if(account_id === 'Custom (added)') {
+        setAccountName(account_id)
+        setLoading(false)
+
+      } else {
+        fetch(`/api/server/accounts/${account_id}`)
+          .then(res => res.json())
+          .then(info => {
+            setAccountName(info.name)
+            setLoading(false)
+          })
+          .catch(error => {
+            window.alert(error)
+            console.error(error)
+          })
+      }
     }
-  })
+  },[loading, account_id])
 
   return (
     <>

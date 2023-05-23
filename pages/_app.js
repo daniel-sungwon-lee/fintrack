@@ -145,6 +145,16 @@ a:hover {
   background-color: #00C169;
 }
 
+.MuiPickersDay-root {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+.MuiPickersYear-yearButton {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+.MuiPickersCalendarHeader-label {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+
 .track-transactions-list .MuiListItemButton-root {
   border-radius: 1rem;
 }
