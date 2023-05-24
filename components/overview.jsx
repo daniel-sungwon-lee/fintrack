@@ -105,6 +105,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
   const [loading, setLoading] = useState(true)
   const [end, setEnd] = useState(false)
   const [accounts, setAccounts] = useState(null)
+  const [balances, setBalances] = useState(null)
   const [numbers, setNumbers] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -128,7 +129,21 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
             if(data.length > 0) {
               setAccounts(data)
               setNumbers(null)
-              setLoading(false)
+
+              //get updated account balance
+              fetch(`/api/server/plaid/balance?accessToken=${accessToken}`)
+                .then(res => res.json())
+                .then(data => {
+                  const accountsArr = data.accounts
+                  const balances = accountsArr.map(account => account.balances.current)
+                  setBalances(balances)
+
+                  setLoading(false)
+                })
+                .catch(error => {
+                  window.alert(error)
+                  console.error(error)
+                })
 
             } else {
               await fetch(`/api/server/plaid/auth?accessToken=${accessToken}`, { method: "GET" })
@@ -304,9 +319,10 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                 {
                                   accounts && !numbers ? <>
                                                           {
-                                                            accounts.map(account => {
-                                                              const { account_id, item_id, name, type, balance,
+                                                            accounts.map((account, i) => {
+                                                              const { account_id, item_id, name, type,
                                                                       account_num, routing_num } = account
+                                                              const balance = balances[i]
 
                                                               return (
                                                                 <Card sx={{ margin: "3rem 2rem 0", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
@@ -342,7 +358,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                                         />
                                                                       </div>
                                                                       <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
-                                                                        {converter.format(balance)}
+                                                                        <AccountBalanceUpdate balance={balance} accountId={account_id} converter={converter} />
                                                                       </div>
                                                                     </div>
                                                                   </CardContent>
@@ -397,6 +413,41 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
           </Dialog>
         </Paper>
       </Zoom>
+    </>
+  )
+}
+
+function AccountBalanceUpdate({balance, accountId, converter}) {
+  const [load, setLoad] = useState(true)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if(load) {
+      setLoad(false)
+
+      fetch(`/api/server/accounts/${accountId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newBalance: balance })
+      })
+        .then(() => {
+          setLoading(false)
+        })
+        .catch(error => {
+          window.alert(error)
+          console.error(error)
+        })
+    }
+  },[accountId, balance, load])
+
+  return (
+    <>
+      {
+        loading ? <Skeleton className="d-inline" variant="rectangle" sx={{ borderRadius: '1rem' }}>
+                    <span className="d-inline"> {converter.format(33.33)}</span>
+                  </Skeleton>
+                : <span className="d-inline"> {converter.format(balance)}</span>
+      }
     </>
   )
 }
