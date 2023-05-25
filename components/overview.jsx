@@ -588,11 +588,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
                 }
               </List>
             </CardContent>
-            <CardActions>
-              {
-                //transactions refresh? or not :)
-              }
-            </CardActions>
+            <CardActions></CardActions>
           </Card>
 
         </DialogContent>

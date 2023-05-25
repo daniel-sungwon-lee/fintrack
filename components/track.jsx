@@ -1,11 +1,12 @@
-import { AddRounded, AddchartRounded, AttachMoneyRounded, BarChartRounded, CloseRounded,
-         DeleteRounded, DoneRounded, EditRounded, LockRounded, MoreVertRounded, ReceiptLongRounded }
-        from "@mui/icons-material"
+import { AddRounded, AddchartRounded, ArrowDropDownRounded, AttachMoneyRounded, BarChartRounded,
+         CloseRounded, DeleteRounded, DoneRounded, EditRounded, LockRounded, MoreVertRounded,
+         ReceiptLongRounded } from "@mui/icons-material"
 import { Alert, Avatar, Box, Card, CardContent, CardHeader, Checkbox, CircularProgress,
          Collapse, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-         Fab, Grow, IconButton, List, ListItem, ListItemAvatar, ListItemButton,
-         ListItemIcon, ListItemText, Paper, Skeleton, Slide, Snackbar, SpeedDial,
-         SpeedDialAction, SpeedDialIcon, TextField, Tooltip, Zoom } from "@mui/material"
+         Fab, FormControl, Grow, IconButton, FormHelperText, List, ListItem, ListItemAvatar,
+         ListItemButton, ListItemIcon, ListItemText, MenuItem, Paper, Select, Skeleton,
+         Slide, Snackbar, SpeedDial, SpeedDialAction, SpeedDialIcon, TextField, Tooltip,
+         Zoom } from "@mui/material"
 import { useEffect, useState, forwardRef, useRef } from "react"
 import dynamic from 'next/dynamic'
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
@@ -502,6 +503,9 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
   const [addTransactionError, setAddTransactionError] = useState(false)
   const [transactionDate, setTransactionDate] = useState(dayjs())
   const [transactionAmount, setTransactionAmount] = useState('')
+  const [transactionAccount, setTransactionAccount] = useState(['',''])
+  const [selectLoading, setSelectLoading] = useState(true)
+  const [connectedAccounts, setConnectedAccounts] = useState([])
   const [openSnack3, setOpenSnack3] = useState(false)
 
   const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
@@ -542,6 +546,9 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
       setAddTransactionError(false)
       setTransactionDate(dayjs())
       setTransactionAmount('')
+      setTransactionAccount(['',''])
+      setConnectedAccounts([])
+      setSelectLoading(true)
     }
   },[loading, end, trackerId, userId, setTotal, expand])
 
@@ -592,9 +599,9 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
     const reqBody = {
       transaction_id: customTransactionIdGenerator(),
       trackerId: trackerId,
-      account_id: 'Custom (added)',
+      account_id: transactionAccount[1],
       amount: transactionAmount,
-      category: 'custom',
+      category: 'Custom',
       date: dayjs(transactionDate.$d).format('YYYY-MM-DD'),
       iso_currency_code: 'USD',
       name: transactionName
@@ -612,6 +619,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
         setTransactionName('')
         setTransactionAmount('')
         setTransactionDate(dayjs())
+        setTransactionAccount(['',''])
         setTimeout(() => setExpand(false), 300)
 
         const amounts = transactions.map(transaction => parseFloat(transaction.amount))
@@ -810,31 +818,115 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                 <Collapse in={expand} timeout='auto' sx={{width: '100%', background: 'white', borderRadius: '1rem'}}>
                                   <form onSubmit={handleAddTransaction}>
                                     <ListItemText sx={{padding: '1rem'}} primary={
-                                      <div className="d-flex justify-content-between">
-                                        <TextField value={transactionName} type="name" id="name" required disabled={addTransactionLoading}
-                                          variant="standard" label="Transaction name" onChange={(e) => setTransactionName(e.target.value)}
-                                          InputLabelProps={{ required: false }} error={addTransactionError} sx={{ marginBottom: '0.5rem' }}
-                                          helperText={addTransactionError ? 'Please try again' : 'Ex: Aesop'} />
+                                      <>
+                                        <div className="d-flex justify-content-between">
+                                          <TextField value={transactionName} type="name" id="name" required disabled={addTransactionLoading}
+                                            variant="standard" label="Transaction name" onChange={(e) => setTransactionName(e.target.value)}
+                                            InputLabelProps={{ required: false }} error={addTransactionError} sx={{ marginBottom: '0.5rem' }}
+                                            helperText={addTransactionError ? 'Please try again' : 'Ex: Aesop'} />
 
-                                        <TextField value={transactionAmount} type="currency" id="amount" required disabled={addTransactionLoading}
-                                          variant="standard" label="Transaction amount" onChange={(e) => setTransactionAmount(e.target.value)}
-                                          InputLabelProps={{ required: false }} error={addTransactionError} InputProps={{inputComponent: NumericFormatCustom}}
-                                          helperText={addTransactionError ? 'Please try again' : ''} placeholder="$0.00" />
-                                      </div>
-                                      } secondary={
-                                      <div className="d-flex justify-content-between">
-                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                          <DatePicker label='Transaction date' value={transactionDate} onChange={(newValue) => setTransactionDate(newValue)}
-                                          slotProps={{textField: {variant: 'standard', error: addTransactionError, helperText: addTransactionError ? 'Please try again' : '',
-                                          required: true, InputLabelProps: {required: false}}}} disabled={addTransactionLoading} />
-                                        </LocalizationProvider>
+                                          <TextField value={transactionAmount} type="currency" id="amount" required disabled={addTransactionLoading}
+                                            variant="standard" label="Transaction amount" onChange={(e) => setTransactionAmount(e.target.value)}
+                                            InputLabelProps={{ required: false }} error={addTransactionError} InputProps={{inputComponent: NumericFormatCustom}}
+                                            helperText={addTransactionError ? 'Please try again' : ''} placeholder="$0.00" />
+                                        </div>
 
-                                        <LoadingButton loading={addTransactionLoading} type="submit" sx={{
-                                          top: '0.65rem', left: '0.25rem', textTransform: 'none', borderRadius: '2rem', padding: '6px 16px' }}
-                                          loadingPosition="start" startIcon={<DoneRounded />}>
-                                          Submit
-                                        </LoadingButton>
-                                      </div>
+                                        <div className="d-flex justify-content-between mb-2">
+                                          <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DatePicker label='Transaction date' value={transactionDate} onChange={(newValue) => setTransactionDate(newValue)}
+                                            slotProps={{textField: {variant: 'standard', error: addTransactionError, helperText: addTransactionError ? 'Please try again' : '',
+                                            required: true, InputLabelProps: {required: false}}}} disabled={addTransactionLoading} />
+                                          </LocalizationProvider>
+
+                                          <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DatePicker className="invisible" label='Transaction date' value={transactionDate} onChange={(newValue) => setTransactionDate(newValue)}
+                                            slotProps={{textField: {fullWidth: true, variant: 'standard', error: addTransactionError, helperText: addTransactionError ? 'Please try again' : '',
+                                            required: true, InputLabelProps: {required: false}}}} disabled={addTransactionLoading} />
+                                          </LocalizationProvider>
+                                        </div>
+
+                                        <div className="d-flex">
+                                          <FormControl variant="standard" required error={addTransactionError} disabled={addTransactionLoading}
+                                           sx={{minWidth: '22.5%'}}>
+                                            <Select value={transactionAccount[0]} onChange={(e, child) => {
+                                              setTransactionAccount([e.target.value, child.key.substring(4)])
+                                            }}
+                                             IconComponent={ArrowDropDownRounded} onOpen={() => {
+                                               if(selectLoading) {
+                                                 fetch(`/api/server/institutions?userId=${userId}`)
+                                                   .then(res => res.json())
+                                                   .then(data => {
+                                                     const allAccounts = []
+
+                                                     for(let i=0; i<data.length; i++) {
+                                                      if(i === data.length-1) {
+                                                        fetch(`/api/server/accounts?item_id=${data[i].item_id}`)
+                                                          .then(res => res.json())
+                                                          .then(accounts => {
+                                                            accounts.map(account => {
+                                                              allAccounts.push(account)
+                                                            })
+                                                            setTimeout(() => {
+                                                              setConnectedAccounts(allAccounts)
+                                                              setSelectLoading(false)
+                                                            },300)
+                                                          })
+                                                          .catch(error => {
+                                                            window.alert(error)
+                                                            console.error(error)
+                                                          })
+                                                      } else {
+                                                        fetch(`/api/server/accounts?item_id=${data[i].item_id}`)
+                                                          .then(res => res.json())
+                                                          .then(accounts => {
+                                                            accounts.map(account => allAccounts.push(account))
+                                                          })
+                                                          .catch(error => {
+                                                            window.alert(error)
+                                                            console.error(error)
+                                                          })
+                                                      }
+                                                     }
+                                                   })
+                                                   .catch(error => {
+                                                     window.alert(error)
+                                                     console.error(error)
+                                                   })
+                                               }
+                                             }}>
+                                              {
+                                                selectLoading ? <Skeleton variant="rectangle" sx={{ borderRadius: '1rem', maxWidth: '90%', margin: 'auto' }}>
+                                                                  <MenuItem value='SoFi Checking'>SoFi Checking</MenuItem>
+                                                                </Skeleton>
+                                                              : [
+                                                                  connectedAccounts.map(account => {
+                                                                    const {name, account_id} = account
+
+                                                                    return (
+                                                                      <MenuItem key={account_id} value={name}>{name}</MenuItem>
+                                                                    )
+                                                                  }),
+                                                                  <MenuItem key='leCustom (added)' value='Custom'>Custom</MenuItem>
+                                                                ]
+                                              }
+                                            </Select>
+                                            <FormHelperText error={addTransactionError} sx={{marginLeft: '0'}}>
+                                              {
+                                                addTransactionError ? <>Please try again <span className="invisible d-inline">spa</span></>
+                                                                    : <>Transaction account</>
+                                              }
+                                            </FormHelperText>
+                                          </FormControl>
+                                        </div>
+                                      </>
+                                     } secondary={
+                                        <span className="d-flex justify-content-center">
+                                          <LoadingButton loading={addTransactionLoading} type="submit" fullWidth sx={{
+                                           top: '0.65rem', left: '0.25rem', textTransform: 'none', borderRadius: '2rem', padding: '6px 16px' }}
+                                           loadingPosition="start" startIcon={<DoneRounded />}>
+                                            Submit
+                                          </LoadingButton>
+                                        </span>
                                       } />
                                   </form>
                                 </Collapse>
@@ -1178,8 +1270,10 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
               .then(res => res.json())
               .then(data => {
                 data.transactions.map(transaction => transactionsArr.push(transaction))
-                setTransactions(transactionsArr)
-                setLoading(false)
+                setTimeout(() => {
+                  setTransactions(transactionsArr)
+                  setLoading(false)
+                },500)
               })
               .catch(error => {
                 window.alert(error)

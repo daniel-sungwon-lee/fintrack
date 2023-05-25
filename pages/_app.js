@@ -178,6 +178,10 @@ a:hover {
   -webkit-text-fill-color: black;
   cursor: pointer;
 }
+
+.MuiButtonBase-root.MuiMenuItem-root {
+  font-family: ${Inter.style.fontFamily} !important;
+}
 `
 
 function decodeToken(token) {
