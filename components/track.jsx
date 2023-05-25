@@ -506,6 +506,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
   const [transactionAccount, setTransactionAccount] = useState(['',''])
   const [selectLoading, setSelectLoading] = useState(true)
   const [connectedAccounts, setConnectedAccounts] = useState([])
+  const [transactionAccountCustom, setTransactionAccountCustom] = useState('')
   const [openSnack3, setOpenSnack3] = useState(false)
 
   const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
@@ -548,9 +549,13 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
       setTransactionAmount('')
       setTransactionAccount(['',''])
       setConnectedAccounts([])
+      setTransactionAccountCustom('')
       setSelectLoading(true)
     }
-  },[loading, end, trackerId, userId, setTotal, expand])
+    if(transactionAccount[1] !== 'Custom (added)') {
+      setTransactionAccountCustom('')
+    }
+  },[loading, end, trackerId, userId, setTotal, expand, transactionAccount])
 
   const handleSpeedDial = async (type, transaction_id, e) => {
     if(type === 'delete') {
@@ -599,7 +604,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
     const reqBody = {
       transaction_id: customTransactionIdGenerator(),
       trackerId: trackerId,
-      account_id: transactionAccount[1],
+      account_id: transactionAccount[1] === "Custom (added)" ? `${transactionAccountCustom} (custom)` : transactionAccount[1],
       amount: transactionAmount,
       category: 'Custom',
       date: dayjs(transactionDate.$d).format('YYYY-MM-DD'),
@@ -620,6 +625,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
         setTransactionAmount('')
         setTransactionDate(dayjs())
         setTransactionAccount(['',''])
+        setTransactionAccountCustom('')
         setTimeout(() => setExpand(false), 300)
 
         const amounts = transactions.map(transaction => parseFloat(transaction.amount))
@@ -821,25 +827,25 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                       <>
                                         <div className="d-flex justify-content-between">
                                           <TextField value={transactionName} type="name" id="name" required disabled={addTransactionLoading}
-                                            variant="standard" label="Transaction name" onChange={(e) => setTransactionName(e.target.value)}
+                                            variant="standard" label="Name" onChange={(e) => setTransactionName(e.target.value)}
                                             InputLabelProps={{ required: false }} error={addTransactionError} sx={{ marginBottom: '0.5rem' }}
                                             helperText={addTransactionError ? 'Please try again' : 'Ex: Aesop'} />
 
                                           <TextField value={transactionAmount} type="currency" id="amount" required disabled={addTransactionLoading}
-                                            variant="standard" label="Transaction amount" onChange={(e) => setTransactionAmount(e.target.value)}
+                                            variant="standard" label="Amount" onChange={(e) => setTransactionAmount(e.target.value)}
                                             InputLabelProps={{ required: false }} error={addTransactionError} InputProps={{inputComponent: NumericFormatCustom}}
                                             helperText={addTransactionError ? 'Please try again' : ''} placeholder="$0.00" />
                                         </div>
 
                                         <div className="d-flex justify-content-between mb-2">
                                           <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                            <DatePicker label='Transaction date' value={transactionDate} onChange={(newValue) => setTransactionDate(newValue)}
+                                            <DatePicker label='Date' value={transactionDate} onChange={(newValue) => setTransactionDate(newValue)}
                                             slotProps={{textField: {variant: 'standard', error: addTransactionError, helperText: addTransactionError ? 'Please try again' : '',
                                             required: true, InputLabelProps: {required: false}}}} disabled={addTransactionLoading} />
                                           </LocalizationProvider>
 
                                           <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                            <DatePicker className="invisible" label='Transaction date' value={transactionDate} onChange={(newValue) => setTransactionDate(newValue)}
+                                            <DatePicker className="invisible" label='Date' value={transactionDate} onChange={(newValue) => setTransactionDate(newValue)}
                                             slotProps={{textField: {fullWidth: true, variant: 'standard', error: addTransactionError, helperText: addTransactionError ? 'Please try again' : '',
                                             required: true, InputLabelProps: {required: false}}}} disabled={addTransactionLoading} />
                                           </LocalizationProvider>
@@ -913,11 +919,28 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                             <FormHelperText error={addTransactionError} sx={{marginLeft: '0'}}>
                                               {
                                                 addTransactionError ? <>Please try again <span className="invisible d-inline">spa</span></>
-                                                                    : <>Transaction account</>
+                                                                    : <>Account <span className="invisible">Transaction</span></>
                                               }
                                             </FormHelperText>
                                           </FormControl>
                                         </div>
+
+                                        <>
+                                          {
+                                            transactionAccount[0] === 'Custom' ? <div className="d-flex justify-content-between">
+                                                                                   <TextField value={transactionAccountCustom} id="transactionAccount" required disabled={addTransactionLoading}
+                                                                                    variant="standard" label="Account name" onChange={(e) => setTransactionAccountCustom(e.target.value)}
+                                                                                    InputLabelProps={{ required: false }} error={addTransactionError}
+                                                                                    helperText={addTransactionError ? 'Please try again' : 'Ex: Chase Checking'} />
+
+                                                                                   <TextField className="invisible" value={transactionAccountCustom} id="transactionAccount" required disabled={addTransactionLoading}
+                                                                                    variant="standard" label="Account name" onChange={(e) => setTransactionAccountCustom(e.target.value)}
+                                                                                    InputLabelProps={{ required: false }} error={addTransactionError}
+                                                                                    helperText={addTransactionError ? 'Please try again' : 'Ex: Chase Checking'} />
+                                                                                 </div>
+                                                                               : <></>
+                                          }
+                                        </>
                                       </>
                                      } secondary={
                                         <span className="d-flex justify-content-center">
@@ -1503,7 +1526,9 @@ function TransactionInfo({account_id}) {
 
   useEffect(() => {
     if (loading) {
-      if(account_id === 'Custom (added)') {
+      const idArr = account_id.split(' ')
+
+      if(idArr[idArr.length-1] === '(custom)') {
         setAccountName(account_id)
         setLoading(false)
 
