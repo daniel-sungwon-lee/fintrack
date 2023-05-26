@@ -944,7 +944,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                       </>
                                      } secondary={
                                         <span className="d-flex justify-content-center">
-                                          <LoadingButton loading={addTransactionLoading} type="submit" fullWidth sx={{
+                                          <LoadingButton loading={addTransactionLoading} type="submit" sx={{
                                            top: '0.65rem', left: '0.25rem', textTransform: 'none', borderRadius: '2rem', padding: '6px 16px' }}
                                            loadingPosition="start" startIcon={<DoneRounded />}>
                                             Submit
