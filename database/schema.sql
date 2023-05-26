@@ -26,9 +26,16 @@ CREATE TABLE "accounts" (
 	"item_id" TEXT NOT NULL,
 	"name" TEXT NOT NULL,
 	"type" TEXT NOT NULL,
+	"subtype" TEXT NOT NULL,
 	"balance" numeric NOT NULL,
-	"account_num" TEXT NOT NULL,
-	"routing_num" TEXT NOT NULL,
+	"account_num" TEXT,
+	"routing_num" TEXT,
+	"limit" numeric,
+	"next_payment_due_date" TEXT,
+	"last_statement_balance" numeric,
+	"minimum_payment_amount" numeric,
+	"next_monthly_payment" numeric,
+	"interest_rate" numeric,
 	CONSTRAINT "accounts_pk" PRIMARY KEY ("account_id")
 ) WITH (
   OIDS=FALSE

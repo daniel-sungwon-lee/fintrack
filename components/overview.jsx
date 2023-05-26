@@ -107,6 +107,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
   const [accounts, setAccounts] = useState(null)
   const [balances, setBalances] = useState(null)
   const [numbers, setNumbers] = useState(null)
+  const [liabilities, setLiabilities] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
 
   const [open, setOpen] = useState(false)
@@ -130,7 +131,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
               setAccounts(data)
               setNumbers(null)
 
-              //get updated account balance
+              //getting updated account balance
               fetch(`/api/server/plaid/balance?accessToken=${accessToken}`)
                 .then(res => res.json())
                 .then(data => {
@@ -145,13 +146,36 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                   console.error(error)
                 })
 
+              //get updated limits, next payment date, last statement, minimum payment, next monthly payment, and interest rate data
+
             } else {
               await fetch(`/api/server/plaid/auth?accessToken=${accessToken}`, { method: "GET" })
                 .then(res => res.json())
                 .then(data => {
-                  setAccounts(data.accounts)
-                  setNumbers(data.numbers.ach)
-                  setLoading(false)
+                  const types = data.accounts.map(account => account.type)
+
+                  if(types.some(type => type === 'credit' || type === 'loan')) {
+                    fetch(`/api/server/plaid/liabilities?accessToken=${accessToken}`)
+                      .then(res => res.json())
+                      .then(liabilitiesData => {
+                        setLiabilities(liabilitiesData.liabilities.liabilities)
+                        setAccounts(data.accounts)
+                        setNumbers(data.numbers.ach)
+
+                        console.log(liabilitiesData, liabilities) //check if liabilities data renders correctly
+
+                        setLoading(false)
+                      })
+                      .catch(error => {
+                        window.alert(error)
+                        console.error(error)
+                      })
+
+                  } else {
+                    setAccounts(data.accounts)
+                    setNumbers(data.numbers.ach)
+                    setLoading(false)
+                  }
                 })
                 .catch(error => {
                   window.alert(error)
@@ -258,60 +282,265 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                     accounts && numbers ? <>
                                   {
                                     accounts.map(account => {
-                                     const index = numbers.map(a => a.account_id).indexOf(account.account_id)
-                                     const accountNumber = numbers[index].account
-                                     const routingNumber = numbers[index].routing
+                                      if (account.type === 'credit' || account.type === 'loan') {
+                                        if(account.subtype === "credit card") {
+                                          const index = liabilities.credit.map(a => a.account_id).indexOf(account.account_id)
 
-                                     const accountData = {
-                                       account_id: account.account_id,
-                                       item_id: itemId,
-                                       name: account.name,
-                                       type: account.subtype,
-                                       balance: account.balances.current,
-                                       account_num: accountNumber,
-                                       routing_num: routingNumber
-                                     }
+                                          const accountData = {
+                                            account_id: account.account_id,
+                                            item_id: itemId,
+                                            name: account.name,
+                                            type: account.type,
+                                            subtype: account.subtype,
+                                            balance: account.balances.current,
+                                            limit: account.balances.limit,
+                                            next_payment_due_date: liabilities.credit[index].next_payment_due_date,
+                                            last_statement_balance: liabilities.credit[index].last_statement_balance,
+                                            minimum_payment_amount: liabilities.credit[index].minimum_payment_amount,
+                                          }
 
-                                     return (
-                                       <Card sx={{margin: "3rem 2rem 0", cursor: "pointer", borderRadius:"1rem"}} onMouseEnter={(e) =>
-                                       e.currentTarget.style.boxShadow="0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
-                                       onMouseLeave={(e) => e.currentTarget.style.boxShadow="0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
-                                       onClick={() => {
-                                        setOpen(true)
-                                        setAccountId(accountData.account_id)
-                                        setAccountName(accountData.name)
-                                        setAccountBalance(accountData.balance)
-                                       }} key={accountData.account_id}>
-                                         <CardHeader avatar={
-                                           <Avatar sx={{bgcolor:"#FFD800"}}>
-                                             <AccountBalanceRounded color="primary" />
-                                           </Avatar>
-                                         } title={accountData.name} titleTypographyProps={{fontSize: '18px'}} />
-                                         <CardContent>
-                                           <div style={{height: 0}} className="invisible">
-                                             Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
-                                           </div>
-                                           <div className="d-flex justify-content-between">
-                                             <div>
-                                               <div className="h6 text-capitalize">{accountData.type}</div>
-                                               <div className="h6">Routing number: {routingNumber}</div>
-                                               <div className="h6 mb-0">Account number:</div>
-                                               <TextField
-                                                 type={showPassword ? 'text' : 'password'}
-                                                 value={accountNumber}
-                                                 disabled
-                                                 InputProps={{disableUnderline: true}}
-                                                 variant="standard"
-                                                 size="small"
-                                               />
-                                             </div>
-                                             <div className="d-flex align-items-center" style={{fontSize: '24px'}}>
-                                               {converter.format(accountData.balance)}
-                                             </div>
-                                           </div>
-                                         </CardContent>
-                                       </Card>
-                                     )
+                                          return (
+                                            <Card sx={{ margin: "3rem 2rem 0", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                                              e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                                              onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                                              onClick={() => {
+                                                setOpen(true)
+                                                setAccountId(accountData.account_id)
+                                                setAccountName(accountData.name)
+                                                setAccountBalance(accountData.balance)
+                                              }} key={accountData.account_id}>
+                                              <CardHeader avatar={
+                                                <Avatar sx={{ bgcolor: "#FFD800" }}>
+                                                  <AccountBalanceRounded color="primary" />
+                                                </Avatar>
+                                              } title={accountData.name} titleTypographyProps={{ fontSize: '18px' }} />
+                                              <CardContent>
+                                                <div style={{ height: 0 }} className="invisible">
+                                                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
+                                                </div>
+                                                <div className="d-flex justify-content-between">
+                                                  <div>
+                                                    <div className="h6 text-capitalize">{accountData.subtype}</div>
+                                                    <div className="h6">Credit limit: {accountData.limit}</div>
+                                                    <div className="h6">Statement balance: {accountData.last_statement_balance}</div>
+                                                    <div className="h6">Payment due date: {accountData.next_payment_due_date}</div>
+                                                    <div className="h6">Minimum payment due: {accountData.minimum_payment_amount}</div>
+                                                  </div>
+                                                  <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
+                                                    {converter.format(accountData.balance)}
+                                                  </div>
+                                                </div>
+                                              </CardContent>
+                                            </Card>
+                                          )
+
+                                        } else if(account.subtype === 'student') {
+                                          const index = liabilities.student.map(a => a.account_id).indexOf(account.account_id)
+
+                                          const accountData = {
+                                            account_id: account.account_id,
+                                            item_id: itemId,
+                                            name: account.name,
+                                            type: account.type,
+                                            subtype: account.subtype,
+                                            balance: account.balances.current,
+                                            limit: account.balances.limit,
+                                            next_payment_due_date: liabilities.student[index].next_payment_due_date,
+                                            last_statement_balance: liabilities.student[index].last_statement_balance,
+                                            minimum_payment_amount: liabilities.student[index].minimum_payment_amount,
+                                            interest_rate: liabilities.student[index].interest_rate_percentage,
+                                          }
+
+                                          return (
+                                            <Card sx={{ margin: "3rem 2rem 0", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                                              e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                                              onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                                              onClick={() => {
+                                                setOpen(true)
+                                                setAccountId(accountData.account_id)
+                                                setAccountName(accountData.name)
+                                                setAccountBalance(accountData.balance)
+                                              }} key={accountData.account_id}>
+                                              <CardHeader avatar={
+                                                <Avatar sx={{ bgcolor: "#FFD800" }}>
+                                                  <AccountBalanceRounded color="primary" />
+                                                </Avatar>
+                                              } title={accountData.name} titleTypographyProps={{ fontSize: '18px' }} />
+                                              <CardContent>
+                                                <div style={{ height: 0 }} className="invisible">
+                                                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
+                                                </div>
+                                                <div className="d-flex justify-content-between">
+                                                  <div>
+                                                    <div className="h6 text-capitalize">{accountData.subtype}</div>
+                                                    <div className="h6">Statement balance: {accountData.last_statement_balance}</div>
+                                                    <div className="h6">Payment due date: {accountData.next_payment_due_date}</div>
+                                                    <div className="h6">Minimum payment due: {accountData.minimum_payment_amount}</div>
+                                                    <div className="h6">Interest rate: {accountData.interest_rate}</div>
+                                                  </div>
+                                                  <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
+                                                    {converter.format(accountData.balance)}
+                                                  </div>
+                                                </div>
+                                              </CardContent>
+                                            </Card>
+                                          )
+
+                                        } else if(account.subtype === 'mortgage') {
+                                          const index = liabilities.mortgage.map(a => a.account_id).indexOf(account.account_id)
+
+                                          const accountData = {
+                                            account_id: account.account_id,
+                                            item_id: itemId,
+                                            name: account.name,
+                                            type: account.type,
+                                            subtype: account.subtype,
+                                            balance: account.balances.current,
+                                            limit: account.balances.limit,
+                                            next_payment_due_date: liabilities.mortgage[index].next_payment_due_date,
+                                            next_monthly_payment: liabilities.mortgage[index].next_monthly_payment,
+                                            interest_rate: liabilities.mortgage[index].interest_rate.percentage,
+                                          }
+
+                                          return (
+                                            <Card sx={{ margin: "3rem 2rem 0", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                                              e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                                              onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                                              onClick={() => {
+                                                setOpen(true)
+                                                setAccountId(accountData.account_id)
+                                                setAccountName(accountData.name)
+                                                setAccountBalance(accountData.balance)
+                                              }} key={accountData.account_id}>
+                                              <CardHeader avatar={
+                                                <Avatar sx={{ bgcolor: "#FFD800" }}>
+                                                  <AccountBalanceRounded color="primary" />
+                                                </Avatar>
+                                              } title={accountData.name} titleTypographyProps={{ fontSize: '18px' }} />
+                                              <CardContent>
+                                                <div style={{ height: 0 }} className="invisible">
+                                                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
+                                                </div>
+                                                <div className="d-flex justify-content-between">
+                                                  <div>
+                                                    <div className="h6 text-capitalize">{accountData.subtype}</div>
+                                                    <div className="h6">Payment due date: {accountData.next_payment_due_date}</div>
+                                                    <div className="h6">Next payment due: {accountData.next_monthly_payment}</div>
+                                                    <div className="h6">Interest rate: {accountData.interest_rate}</div>
+                                                  </div>
+                                                  <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
+                                                    {converter.format(accountData.balance)}
+                                                  </div>
+                                                </div>
+                                              </CardContent>
+                                            </Card>
+                                          )
+                                        }
+
+                                      } else if(account.type === 'depository') {
+                                        if(account.subtype === 'checking' || account.subtype === 'savings') {
+                                          const index = numbers.map(a => a.account_id).indexOf(account.account_id)
+                                          const accountNumber = numbers[index].account
+                                          const routingNumber = numbers[index].routing
+
+                                          const accountData = {
+                                            account_id: account.account_id,
+                                            item_id: itemId,
+                                            name: account.name,
+                                            type: account.subtype,
+                                            subtype: account.subtype,
+                                            balance: account.balances.current,
+                                            account_num: accountNumber,
+                                            routing_num: routingNumber
+                                          }
+
+                                          return (
+                                            <Card sx={{margin: "3rem 2rem 0", cursor: "pointer", borderRadius:"1rem"}} onMouseEnter={(e) =>
+                                            e.currentTarget.style.boxShadow="0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                                            onMouseLeave={(e) => e.currentTarget.style.boxShadow="0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                                            onClick={() => {
+                                             setOpen(true)
+                                             setAccountId(accountData.account_id)
+                                             setAccountName(accountData.name)
+                                             setAccountBalance(accountData.balance)
+                                            }} key={accountData.account_id}>
+                                              <CardHeader avatar={
+                                                <Avatar sx={{bgcolor:"#FFD800"}}>
+                                                  <AccountBalanceRounded color="primary" />
+                                                </Avatar>
+                                              } title={accountData.name} titleTypographyProps={{fontSize: '18px'}} />
+                                              <CardContent>
+                                                <div style={{height: 0}} className="invisible">
+                                                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
+                                                </div>
+                                                <div className="d-flex justify-content-between">
+                                                  <div>
+                                                    <div className="h6 text-capitalize">{accountData.subtype}</div>
+                                                    <div className="h6">Routing number: {routingNumber}</div>
+                                                    <div className="h6 mb-0">Account number:</div>
+                                                    <TextField
+                                                      type={showPassword ? 'text' : 'password'}
+                                                      value={accountNumber}
+                                                      disabled
+                                                      InputProps={{disableUnderline: true}}
+                                                      variant="standard"
+                                                      size="small"
+                                                    />
+                                                  </div>
+                                                  <div className="d-flex align-items-center" style={{fontSize: '24px'}}>
+                                                    {converter.format(accountData.balance)}
+                                                  </div>
+                                                </div>
+                                              </CardContent>
+                                            </Card>
+                                          )
+
+                                        } else {
+                                          const accountData = {
+                                            account_id: account.account_id,
+                                            item_id: itemId,
+                                            name: account.name,
+                                            type: account.type,
+                                            subtype: account.subtype,
+                                            balance: account.balances.current,
+                                            limit: account.balances.limit,
+                                          }
+
+                                          return (
+                                            <Card sx={{ margin: "3rem 2rem 0", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                                              e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                                              onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                                              onClick={() => {
+                                                setOpen(true)
+                                                setAccountId(accountData.account_id)
+                                                setAccountName(accountData.name)
+                                                setAccountBalance(accountData.balance)
+                                              }} key={accountData.account_id}>
+                                              <CardHeader avatar={
+                                                <Avatar sx={{ bgcolor: "#FFD800" }}>
+                                                  <AccountBalanceRounded color="primary" />
+                                                </Avatar>
+                                              } title={accountData.name} titleTypographyProps={{ fontSize: '18px' }} />
+                                              <CardContent>
+                                                <div style={{ height: 0 }} className="invisible">
+                                                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
+                                                </div>
+                                                <div className="d-flex justify-content-between">
+                                                  <div>
+                                                    <div className="h6 text-capitalize">{accountData.subtype}</div>
+                                                  </div>
+                                                  <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
+                                                    {converter.format(accountData.balance)}
+                                                  </div>
+                                                </div>
+                                              </CardContent>
+                                            </Card>
+                                          )
+                                        }
+
+                                      } else {
+                                        //investments here later?
+                                      }
                                    })
                                   }
                                </>
@@ -320,8 +549,10 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                   accounts && !numbers ? <>
                                                           {
                                                             accounts.map((account, i) => {
-                                                              const { account_id, item_id, name, type,
-                                                                      account_num, routing_num } = account
+                                                              const { account_id, item_id, name, type, subtype,
+                                                                      account_num, routing_num, limit, next_payment_due_date,
+                                                                      last_statement_balance, minimum_payment_amount,
+                                                                      next_monthly_payment, interest_rate } = account
                                                               const balance = balances[i]
 
                                                               return (
@@ -345,17 +576,49 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                                     </div>
                                                                     <div className="d-flex justify-content-between">
                                                                       <div>
-                                                                        <div className="h6 text-capitalize">{type}</div>
-                                                                        <div className="h6">Routing number: {routing_num}</div>
-                                                                        <div className="h6 mb-0">Account number:</div>
-                                                                        <TextField
-                                                                          type={showPassword ? 'text' : 'password'}
-                                                                          value={account_num}
-                                                                          disabled
-                                                                          InputProps={{disableUnderline: true}}
-                                                                          variant="standard"
-                                                                          size="small"
-                                                                        />
+                                                                        <div className="h6 text-capitalize">{subtype}</div>
+                                                                        {
+                                                                          routing_num ? <div className="h6">Routing number: {routing_num}</div>
+                                                                                      : <></>
+                                                                        }
+                                                                        {
+                                                                          account_num ? <>
+                                                                                          <div className="h6 mb-0">Account number:</div>
+                                                                                          <TextField
+                                                                                            type={showPassword ? 'text' : 'password'}
+                                                                                            value={account_num}
+                                                                                            disabled
+                                                                                            InputProps={{disableUnderline: true}}
+                                                                                            variant="standard"
+                                                                                            size="small"
+                                                                                          />
+                                                                                        </>
+                                                                                      : <></>
+                                                                        }
+                                                                        {
+                                                                          limit ? <div className="h6">Credit limit: {limit}</div>
+                                                                                : <></>
+                                                                        }
+                                                                        {
+                                                                          last_statement_balance ? <div className="h6">Statement balance: {last_statement_balance}</div>
+                                                                                                 : <></>
+                                                                        }
+                                                                        {
+                                                                          next_payment_due_date ? <div className="h6">Payment due date: {next_payment_due_date}</div>
+                                                                                                : <></>
+                                                                        }
+                                                                        {
+                                                                          minimum_payment_amount ? <div className="h6">Minimum payment due: {minimum_payment_amount}</div>
+                                                                                                 : <></>
+                                                                        }
+                                                                        {
+                                                                          next_monthly_payment ? <div className="h6">Next payment due: {next_monthly_payment}</div>
+                                                                                               : <></>
+                                                                        }
+                                                                        {
+                                                                          interest_rate ? <div className="h6">Interest rate: {interest_rate}</div>
+                                                                                        : <></>
+                                                                        }
                                                                       </div>
                                                                       <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
                                                                         <AccountBalanceUpdate balance={balance} accountId={account_id} converter={converter} />
