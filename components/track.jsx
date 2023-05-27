@@ -931,12 +931,12 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                                                                    <TextField value={transactionAccountCustom} id="transactionAccount" required disabled={addTransactionLoading}
                                                                                     variant="standard" label="Account name" onChange={(e) => setTransactionAccountCustom(e.target.value)}
                                                                                     InputLabelProps={{ required: false }} error={addTransactionError}
-                                                                                    helperText={addTransactionError ? 'Please try again' : 'Ex: Chase Checking'} />
+                                                                                    helperText={addTransactionError ? 'Please try again' : 'Ex: Discover It'} />
 
                                                                                    <TextField className="invisible" value={transactionAccountCustom} id="transactionAccount" required disabled={addTransactionLoading}
                                                                                     variant="standard" label="Account name" onChange={(e) => setTransactionAccountCustom(e.target.value)}
                                                                                     InputLabelProps={{ required: false }} error={addTransactionError}
-                                                                                    helperText={addTransactionError ? 'Please try again' : 'Ex: Chase Checking'} />
+                                                                                    helperText={addTransactionError ? 'Please try again' : 'Ex: Discover It'} />
                                                                                  </div>
                                                                                : <></>
                                           }
