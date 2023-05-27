@@ -1,6 +1,6 @@
 import { AddRounded, AddchartRounded, ArrowDropDownRounded, AttachMoneyRounded, BarChartRounded,
-         CloseRounded, DeleteRounded, DoneRounded, EditRounded, LockRounded, MoreVertRounded,
-         ReceiptLongRounded } from "@mui/icons-material"
+         CategoryRounded, CloseRounded, DeleteRounded, DoneRounded, EditRounded, LockRounded,
+         MoreVertRounded, ReceiptLongRounded } from "@mui/icons-material"
 import { Alert, Avatar, Box, Card, CardContent, CardHeader, Checkbox, CircularProgress,
          Collapse, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
          Fab, FormControl, Grow, IconButton, FormHelperText, List, ListItem, ListItemAvatar,
@@ -491,6 +491,7 @@ NumericFormatCustom.propTypes = {
 function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, setTrackerName, total, setTotal, fromDate, setFromDate, toDate, setToDate, userId, setTotalChange }) {
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
+  const [categories, setCategories] = useState([])
   const [end, setEnd] = useState(false)
   const [speedDialLoading, setSpeedDialLoading] = useState(false)
   const [openSnack, setOpenSnack] = useState(false)
@@ -498,6 +499,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
   const [editModeId, setEditModeId] = useState(null)
   const [openSnack2, setOpenSnack2] = useState(false)
   const [expand, setExpand] = useState(false)
+  const [transactionCategory, setTransactionCategory] = useState('')
   const [transactionName, setTransactionName] = useState('')
   const [addTransactionLoading, setAddTransactionLoading] = useState(false)
   const [addTransactionError, setAddTransactionError] = useState(false)
@@ -531,6 +533,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
           .then(res => res.json())
           .then(data => {
             setTransactions(data)
+            setCategories(data.map(transaction => transaction.category).filter((c,i,a) => a.indexOf(c) === i))
             setLoading(false)
           })
           .catch(error => {
@@ -542,6 +545,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
     fetchData()
 
     if(!expand) {
+      setTransactionCategory('')
       setTransactionName('')
       setAddTransactionLoading(false)
       setAddTransactionError(false)
@@ -570,6 +574,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
           const idIndex = transactionIds.indexOf(transaction_id)
           const newTransactions = transactions.toSpliced(idIndex, 1)
           setTransactions(newTransactions)
+          setCategories(newTransactions.map(transaction => transaction.category).filter((c,i,a) => a.indexOf(c) === i))
 
           setSpeedDialLoading(false)
           setOpenSnack(true)
@@ -598,7 +603,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
       var S4 = function () {
         return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
       };
-      return ('custom' + S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4());
+      return ('added' + S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4());
     }
 
     const reqBody = {
@@ -606,7 +611,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
       trackerId: trackerId,
       account_id: transactionAccount[1] === "Custom (added)" ? `${transactionAccountCustom} (custom)` : transactionAccount[1],
       amount: transactionAmount,
-      category: 'Custom',
+      category: transactionCategory,
       date: dayjs(transactionDate.$d).format('YYYY-MM-DD'),
       iso_currency_code: 'USD',
       name: transactionName
@@ -619,8 +624,10 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
     })
       .then(() => {
         transactions.push(reqBody)
+        setCategories(transactions.map(transaction => transaction.category).filter((c,i,a) => a.indexOf(c) === i))
         setOpenSnack3(true)
         setAddTransactionLoading(false)
+        setTransactionCategory('')
         setTransactionName('')
         setTransactionAmount('')
         setTransactionDate('')
@@ -665,6 +672,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
         setLoading(true)
         setEnd(false)
         setTransactions(null)
+        setCategories(null)
         setTrackerId(null)
         setTrackerName(null)
         setTotal(null)
@@ -720,6 +728,91 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
               </div>
               <List>
                 {
+                  loading ? <Skeleton variant="rectangle" sx={{borderRadius: '2rem', maxWidth: '100%'}}>
+                              <Box sx={{ background: '#FFD6A0', padding: '1rem' }}>
+                                <CategoryRounded />
+                                <span> Category</span>
+                              </Box>
+                            </Skeleton>
+                          : <>
+                              {
+                                categories.map(category => {
+                                  const parsedCategory = category.replace(/[{()}"']/g, '').split(',')
+
+                                  return (
+                                    <Box key={category}>
+                                      <Box className='d-flex justify-content-between' sx={{ background: '#FFD6A0', padding: '1rem', borderRadius: '2rem' }}>
+                                        <div>
+                                          <CategoryRounded />
+                                          <span> {parsedCategory[0]}</span>
+                                        </div>
+                                        <div>
+                                          {
+                                            converter.format( transactions.map(transaction => transaction.category === category ? transaction : {amount: 0}).reduce((a,b) => a + parseFloat(b.amount),0) )
+                                          }
+                                        </div>
+                                      </Box>
+
+                                      {
+                                        transactions.map(transaction => {
+                                          const { transaction_id, account_id, amount,
+                                            date, iso_currency_code, name } = transaction
+
+                                          if(transaction.category === category) {
+                                            return (
+                                              <ListItem key={transaction_id} id={transaction_id} secondaryAction={
+                                                <div>{converter.format(amount)}</div>
+                                               } sx={{
+                                                 background: 'white', borderRadius: '1rem', margin: '0.5rem auto', width: '97%', transition: 'all ease 0.3s',
+                                                 boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'
+                                               }}>
+                                                <ListItemAvatar>
+                                                  {
+                                                    editModeId === transaction_id
+                                                      ? <SpeedDial className="invisible" ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                                        openIcon={<CloseRounded color="error" />} />} sx={{ position: 'relative', right: '1rem' }}
+                                                        FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
+                                                        direction="down">
+                                                        <SpeedDialAction tooltipTitle='Edit' tooltipPlacement="right" icon={<EditRounded />} onClick={(e) => handleSpeedDial('edit', transaction_id, e)} disabled={false} />
+                                                        <SpeedDialAction tooltipTitle='Delete' tooltipPlacement="right" icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
+                                                          onClick={(e) => handleSpeedDial('delete', transaction_id, e)} FabProps={{ disabled: speedDialLoading }} />
+                                                      </SpeedDial>
+                                                      : <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                                        openIcon={<CloseRounded color="error" />} />} sx={{ position: 'relative', right: '1rem' }}
+                                                        FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
+                                                        direction="down">
+                                                        <SpeedDialAction tooltipTitle='Edit' tooltipPlacement="right" icon={<EditRounded />} onClick={(e) => handleSpeedDial('edit', transaction_id, e)} disabled={false} />
+                                                        <SpeedDialAction tooltipTitle='Delete' tooltipPlacement="right" icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
+                                                          onClick={(e) => handleSpeedDial('delete', transaction_id, e)} FabProps={{ disabled: speedDialLoading }} />
+                                                      </SpeedDial>
+                                                  }
+                                                </ListItemAvatar>
+                                                <ListItemText primary={
+                                                  editModeId === transaction_id
+                                                    ? <TransactionEdit name={name} transaction_id={transaction_id} transactions={transactions} setTransactions={setTransactions}
+                                                      setEditModeId={setEditModeId} trackerId={trackerId} setOpenSnack2={setOpenSnack2} />
+                                                    : name
+                                                } secondary={
+                                                  <span className="d-block">
+                                                    {dayjs(date).format('MMMM D, YYYY')}
+                                                    <TransactionInfo account_id={account_id} />
+                                                  </span>
+                                                } />
+                                              </ListItem>
+                                            )
+
+                                          } else {
+                                            return
+                                          }
+                                        })
+                                      }
+                                    </Box>
+                                  )
+                                })
+                              }
+                            </>
+                }
+                {
                   loading ? <>
                               <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
                                 <ListItem sx={{width: '100vw'}}>
@@ -768,63 +861,18 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                               </Skeleton>
                             </>
                           : <>
-                              {
-                                transactions ? <>
-                                                 {
-                                                    transactions.map(transaction => {
-                                                      const { transaction_id, account_id, amount, category,
-                                                              date, iso_currency_code, name } = transaction
-
-                                                      return (
-                                                        <ListItem key={transaction_id} id={transaction_id} secondaryAction={
-                                                          <div>{converter.format(amount)}</div>
-                                                         } sx={{background:'white', borderRadius:'1rem', margin:'0.5rem auto', width: '97%', transition: 'all ease 0.3s',
-                                                         boxShadow:'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'}}>
-                                                          <ListItemAvatar>
-                                                            {
-                                                              editModeId === transaction_id
-                                                                ? <SpeedDial className="invisible" ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
-                                                                   openIcon={<CloseRounded color="error" />} />} sx={{ position: 'relative', right: '1rem' }}
-                                                                   FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
-                                                                   direction="down">
-                                                                    <SpeedDialAction tooltipTitle='Edit' tooltipPlacement="right" icon={<EditRounded />} onClick={(e) => handleSpeedDial('edit', transaction_id, e)} disabled={false} />
-                                                                    <SpeedDialAction tooltipTitle='Delete' tooltipPlacement="right" icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
-                                                                     onClick={(e) => handleSpeedDial('delete', transaction_id, e)} FabProps={{ disabled: speedDialLoading }} />
-                                                                  </SpeedDial>
-                                                                : <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
-                                                                   openIcon={<CloseRounded color="error" />} />} sx={{ position: 'relative', right: '1rem' }}
-                                                                   FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
-                                                                   direction="down">
-                                                                    <SpeedDialAction tooltipTitle='Edit' tooltipPlacement="right" icon={<EditRounded />} onClick={(e) => handleSpeedDial('edit', transaction_id, e)} disabled={false} />
-                                                                    <SpeedDialAction tooltipTitle='Delete' tooltipPlacement="right" icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
-                                                                     onClick={(e) => handleSpeedDial('delete', transaction_id, e)} FabProps={{ disabled: speedDialLoading }} />
-                                                                  </SpeedDial>
-                                                            }
-                                                          </ListItemAvatar>
-                                                          <ListItemText primary={
-                                                            editModeId === transaction_id
-                                                              ? <TransactionEdit name={name} transaction_id={transaction_id} transactions={transactions} setTransactions={setTransactions}
-                                                                 setEditModeId={setEditModeId} trackerId={trackerId} setOpenSnack2={setOpenSnack2} />
-                                                              : name
-                                                           } secondary={
-                                                            <span className="d-block">
-                                                              {dayjs(date).format('MMMM D, YYYY')}
-                                                              <TransactionInfo account_id={account_id} />
-                                                            </span>
-                                                           } />
-                                                        </ListItem>
-                                                      )
-                                                    })
-                                                 }
-                                               </>
-                                             : <></>
-
-                              }
                               <ListItem className="d-flex flex-column">
                                 <Collapse in={expand} timeout='auto' sx={{width: '100%', background: 'white', borderRadius: '1rem'}}>
                                   <form onSubmit={handleAddTransaction}>
                                     <ListItemText sx={{padding: '1rem'}} primary={
                                       <>
+                                        <div className="d-flex justify-content-start">
+                                          <TextField value={transactionCategory} id="category" required disabled={addTransactionLoading}
+                                            variant="standard" label="Category" onChange={(e) => setTransactionCategory(e.target.value)}
+                                            InputLabelProps={{ required: false }} error={addTransactionError} sx={{ marginBottom: '0.5rem' }}
+                                            helperText={addTransactionError ? 'Please try again' : 'Ex: Shopping'} fullWidth />
+                                        </div>
+
                                         <div className="d-flex justify-content-between">
                                           <TextField value={transactionName} type="name" id="name" required disabled={addTransactionLoading}
                                             variant="standard" label="Name" onChange={(e) => setTransactionName(e.target.value)}
@@ -977,6 +1025,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
             setLoading(true)
             setEnd(false)
             setTransactions(null)
+            setCategories(null)
             setTrackerId(null)
             setTrackerName(null)
             setTotal(null)
