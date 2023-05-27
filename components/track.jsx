@@ -501,7 +501,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
   const [transactionName, setTransactionName] = useState('')
   const [addTransactionLoading, setAddTransactionLoading] = useState(false)
   const [addTransactionError, setAddTransactionError] = useState(false)
-  const [transactionDate, setTransactionDate] = useState(dayjs())
+  const [transactionDate, setTransactionDate] = useState('')
   const [transactionAmount, setTransactionAmount] = useState('')
   const [transactionAccount, setTransactionAccount] = useState(['',''])
   const [selectLoading, setSelectLoading] = useState(true)
@@ -545,7 +545,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
       setTransactionName('')
       setAddTransactionLoading(false)
       setAddTransactionError(false)
-      setTransactionDate(dayjs())
+      setTransactionDate('')
       setTransactionAmount('')
       setTransactionAccount(['',''])
       setConnectedAccounts([])
@@ -623,7 +623,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
         setAddTransactionLoading(false)
         setTransactionName('')
         setTransactionAmount('')
-        setTransactionDate(dayjs())
+        setTransactionDate('')
         setTransactionAccount(['',''])
         setTransactionAccountCustom('')
         setTimeout(() => setExpand(false), 300)
@@ -839,15 +839,15 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
 
                                         <div className="d-flex justify-content-between mb-2">
                                           <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                            <DatePicker label='Date' value={transactionDate} onChange={(newValue) => setTransactionDate(newValue)}
+                                            <DatePicker label='Date' value={transactionDate} onChange={(newValue) => setTransactionDate(newValue)} minDate={dayjs(fromDate)}
                                             slotProps={{textField: {variant: 'standard', error: addTransactionError, helperText: addTransactionError ? 'Please try again' : '',
-                                            required: true, InputLabelProps: {required: false}}}} disabled={addTransactionLoading} />
+                                            required: true, InputLabelProps: {required: false}}}} disabled={addTransactionLoading} maxDate={dayjs(toDate)} />
                                           </LocalizationProvider>
 
                                           <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                            <DatePicker className="invisible" label='Date' value={transactionDate} onChange={(newValue) => setTransactionDate(newValue)}
+                                            <DatePicker className="invisible" label='Date' value={transactionDate} onChange={(newValue) => setTransactionDate(newValue)} minDate={dayjs(fromDate)}
                                             slotProps={{textField: {fullWidth: true, variant: 'standard', error: addTransactionError, helperText: addTransactionError ? 'Please try again' : '',
-                                            required: true, InputLabelProps: {required: false}}}} disabled={addTransactionLoading} />
+                                            required: true, InputLabelProps: {required: false}}}} disabled={addTransactionLoading} maxDate={dayjs(toDate)} />
                                           </LocalizationProvider>
                                         </div>
 
