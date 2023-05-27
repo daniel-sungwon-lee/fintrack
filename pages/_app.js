@@ -182,6 +182,11 @@ a:hover {
 .MuiButtonBase-root.MuiMenuItem-root {
   font-family: ${Inter.style.fontFamily} !important;
 }
+
+.MuiButtonBase-root.MuiButton-root {
+  font-family: ${Inter.style.fontFamily} !important;
+  text-transform: none;
+}
 `
 
 function decodeToken(token) {

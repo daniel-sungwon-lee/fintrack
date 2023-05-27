@@ -10,7 +10,7 @@ import { Alert, Avatar, Box, Card, CardContent, CardHeader, Checkbox, CircularPr
 import { useEffect, useState, forwardRef, useRef } from "react"
 import dynamic from 'next/dynamic'
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
-import { StaticDateRangePicker } from "@mui/x-date-pickers-pro"
+import { DateRangePicker, SingleInputDateRangeField, StaticDateRangePicker } from "@mui/x-date-pickers-pro"
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import dayjs from "dayjs"
@@ -303,7 +303,7 @@ function Trackers({data, setData, userId, setOpenSnack, setOpenSnack2}) {
                                                              <Avatar sx={{ bgcolor: "#00C169" }}>
                                                                <BarChartRounded color="secondary" />
                                                              </Avatar>
-                                                           } title={<TrackerEdit name={name} trackerId={trackerId} userId={userId} setEditModeId={setEditModeId} setOpenSnack2={setOpenSnack2} data={data} setData={setData} />} titleTypographyProps={{ fontSize: '18px' }} action={
+                                                           } title={<TrackerEdit name={name} trackerId={trackerId} fromDate={fromDate} toDate={toDate} userId={userId} setEditModeId={setEditModeId} setOpenSnack2={setOpenSnack2} data={data} setData={setData} />} titleTypographyProps={{ fontSize: '18px' }} action={
                                                              <Avatar sx={{ bgcolor: "#00C169", visibility: 'hidden', marginLeft: '24px' }}>
                                                                <BarChartRounded color="secondary" />
                                                              </Avatar>
@@ -323,15 +323,25 @@ function Trackers({data, setData, userId, setOpenSnack, setOpenSnack2}) {
                                   Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magnam quisquam eligendi repellendus voluptas ducimus minus provident rem beatae, quia cumque optio quidem facilis magni quo tenetur! Iste hic alias provident.
                                 </div>
                                 <div className="d-flex justify-content-between align-items-center">
-                                  <div className="d-flex flex-column align-items-start" style={{ width:'calc(100%/3)' }}>
-                                    <div className="h6">From: {dayjs(fromDate).format('MMMM D, YYYY')}</div>
-                                    <div className="h6">To: {dayjs(toDate).format('MMMM D, YYYY')}</div>
-                                  </div>
-                                  <ReceiptLottie />
-                                  {/* <ReceiptLongRounded color="secondary" fontSize="large" style={{ width: 'calc(100%/3)' }} /> */}
+                                  {
+                                    editModeId === trackerId ? <div className="invisible d-flex flex-column align-items-start" style={{ width:'calc(100%/3)' }}>
+                                                                 <div className="h6">From: {dayjs(fromDate).format('MMMM D, YYYY')}</div>
+                                                                 <div className="h6">To: {dayjs(toDate).format('MMMM D, YYYY')}</div>
+                                                               </div>
+                                                             : <div className="d-flex flex-column align-items-start" style={{ width:'calc(100%/3)' }}>
+                                                                 <div className="h6">From: {dayjs(fromDate).format('MMMM D, YYYY')}</div>
+                                                                 <div className="h6">To: {dayjs(toDate).format('MMMM D, YYYY')}</div>
+                                                               </div>
+                                  }
+                                  {
+                                    editModeId === trackerId && window.screen.availWidth<768 ? <ReceiptLottie className={'invisible'} />
+                                                                                             : <ReceiptLottie className={''} />
+                                  }
                                   <div className="d-flex align-items-center justify-content-end" style={{ fontSize: '24px', width: 'calc(100%/3)' }}>
-                                    {/* Total: {converter.format(total)} */}
-                                    <TotalAnimated total={total} totalChange={totalChange} setTotalChange={setTotalChange} userId={userId} trackerId={trackerId} converter={converter} />
+                                    {
+                                      editModeId === trackerId && window.screen.availWidth<768 ? <TotalAnimated className={'invisible'} total={total} totalChange={totalChange} setTotalChange={setTotalChange} userId={userId} trackerId={trackerId} converter={converter} />
+                                                                                               : <TotalAnimated className={''} total={total} totalChange={totalChange} setTotalChange={setTotalChange} userId={userId} trackerId={trackerId} converter={converter} />
+                                    }
                                   </div>
                                 </div>
                               </CardContent>
@@ -351,16 +361,16 @@ function Trackers({data, setData, userId, setOpenSnack, setOpenSnack2}) {
   )
 }
 
-function ReceiptLottie({}) {
+function ReceiptLottie({className}) {
   const lottieRef = useRef()
   return (
     <>
-      <Lottie animationData={receiptAnimation} loop={false} lottieRef={lottieRef} className="d-flex justify-content-center align-items-center"
+      <Lottie animationData={receiptAnimation} loop={false} lottieRef={lottieRef} className={`d-flex justify-content-center align-items-center ${className}`}
        style={{ width: 'calc(100%/3)' }} onDOMLoaded={() => lottieRef.current.playSegments([0, 220], true)} />
     </>
   )
 }
-function TotalAnimated({total, totalChange, setTotalChange, userId, trackerId, converter}) {
+function TotalAnimated({className, total, totalChange, setTotalChange, userId, trackerId, converter}) {
   const [load, setLoad] = useState(true)
   const totalRef = useRef()
   const tl = gsap.timeline({delay:1.5})
@@ -395,7 +405,7 @@ function TotalAnimated({total, totalChange, setTotalChange, userId, trackerId, c
   },[load, totalChange, setTotalChange, total, tl, converter, userId, trackerId])
 
   return (
-    <div ref={totalRef} className="total" style={{zIndex: '33'}}>
+    <div ref={totalRef} className={`${className} total`} style={{zIndex: '33'}}>
       {
         //skeleton loading here after changing total here? or increment to updated total w/ animation?
       }
@@ -403,8 +413,9 @@ function TotalAnimated({total, totalChange, setTotalChange, userId, trackerId, c
   )
 }
 
-function TrackerEdit({name, trackerId, userId, setEditModeId, setOpenSnack2, data, setData}) {
+function TrackerEdit({name, trackerId, fromDate, toDate, userId, setEditModeId, setOpenSnack2, data, setData}) {
   const [newName, setNewName] = useState(name)
+  const [dateRange, setDateRange] = useState([dayjs(fromDate), dayjs(toDate)])
   const [error, setError] = useState(false)
   const [editLoading, setEditLoading] = useState(false)
 
@@ -412,15 +423,23 @@ function TrackerEdit({name, trackerId, userId, setEditModeId, setOpenSnack2, dat
     const cardNode = e.currentTarget.parentNode.parentNode.parentNode.parentNode.parentNode
     setEditLoading(true)
 
+    const reqBody = {
+      newName,
+      newFromDate: dayjs(dateRange[0].$d).format('MM-DD-YYYY'),
+      newToDate: dayjs(dateRange[1].$d).format('MM-DD-YYYY')
+    }
+
     await fetch(`/api/server/trackers/${userId}/${trackerId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({newName})
+      body: JSON.stringify(reqBody)
     })
       .then(() => {
         const trackerIds = data.map(tracker => tracker.trackerId)
         const idIndex = trackerIds.indexOf(trackerId)
         data[idIndex].name = newName
+        data[idIndex].fromDate = dayjs(dateRange[0]).format('MMMM D, YYYY')
+        data[idIndex].toDate = dayjs(dateRange[1]).format('MMMM D, YYYY')
 
         setEditLoading(false)
         setEditModeId(null)
@@ -465,6 +484,15 @@ function TrackerEdit({name, trackerId, userId, setEditModeId, setOpenSnack2, dat
           </IconButton>
         </Tooltip>
       </aside>
+
+      <Box sx={{position: 'absolute', left: '3rem', top: '54%', zIndex: 333}}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DateRangePicker label='Date range' slots={{ field: SingleInputDateRangeField }} calendars={1} value={dateRange}
+           onChange={(newValue) => setDateRange(newValue)} disabled={editLoading} onOpen={() => setTimeout(() => document.querySelector('.trackerDateRangeEdit .MuiDateRangeCalendar-root').firstChild.remove(), 100)}
+           slotProps={{textField: {variant: 'standard', error: error, helperText: error ? 'Please try again' : ''},
+                       popper: {className: 'trackerDateRangeEdit'}, dialog: {className: 'trackerDateRangeEdit'}}} />
+        </LocalizationProvider>
+      </Box>
     </>
   )
 }

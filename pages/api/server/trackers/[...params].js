@@ -48,15 +48,15 @@ export default function handler(req, res) {
         })
 
     } else {
-      const { newName } = req.body
+      const { newName, newFromDate, newToDate } = req.body
 
       const sql = `
         update "trackers"
-        set "name" = $1
-        where "userId" = $2
-        and "trackerId" = $3
+        set "name" = $1, "fromDate" = $2, "toDate" = $3
+        where "userId" = $4
+        and "trackerId" = $5
       `
-      const params = [newName, userId, trackerId]
+      const params = [newName, newFromDate, newToDate, userId, trackerId]
 
       db.query(sql, params)
         .then(result => {
