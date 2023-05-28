@@ -521,11 +521,20 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
   const [transactions, setTransactions] = useState([])
   const [categories, setCategories] = useState([])
   const [end, setEnd] = useState(false)
+
+  const [categorySpeedDialLoading, setCategorySpeedDialLoading] = useState(false)
+  const [newCategory, setNewCategory] = useState(null)
+  const [categoryEditLoading, setCategoryEditLoading] = useState(false)
+  const [categoryError, setCategoryError] = useState(false)
+  const [openSnack4, setOpenSnack4] = useState(false)
+
   const [speedDialLoading, setSpeedDialLoading] = useState(false)
   const [openSnack, setOpenSnack] = useState(false)
   const [newTotal, setNewTotal] = useState(null)
+
   const [editModeId, setEditModeId] = useState(null)
   const [openSnack2, setOpenSnack2] = useState(false)
+
   const [expand, setExpand] = useState(false)
   const [transactionCategory, setTransactionCategory] = useState('')
   const [transactionName, setTransactionName] = useState('')
@@ -623,6 +632,73 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
     }
   }
 
+  const handleCategorySpeedDial = (type, category, e) => {
+    if(type === 'delete') {
+      setCategorySpeedDialLoading(true)
+
+    } else {
+      if(e.currentTarget.ariaLabel === 'Edit') {
+        setEditModeId(category)
+        setExpand(false)
+
+      } else {
+        e.preventDefault()
+        setCategoryEditLoading(true)
+
+        const changedTransactionCategories = transactions.filter(transaction => transaction.category === category)
+
+        for(let i=0; i<changedTransactionCategories.length; i++) {
+          if(i === changedTransactionCategories.length -1) {
+            fetch(`/api/server/transactions/${trackerId}/${changedTransactionCategories[i].transaction_id}?update=category`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ newCategory })
+            })
+              .then(() => {
+                transactions.forEach(transaction => {
+                  if(transaction.category === category) {
+                    transaction.category = newCategory
+                  }
+                })
+
+                const categoryIndex = categories.indexOf(category)
+                const newCategories = categories.toSpliced(categoryIndex, 1, newCategory)
+
+                setCategoryEditLoading(false)
+                setEditModeId(null)
+                setCategoryError(false)
+                setNewCategory(null)
+                setCategories(newCategories.filter((c,i,a) => a.indexOf(c) === i))
+                setOpenSnack4(true)
+              })
+              .catch(error => {
+                setCategoryEditLoading(false)
+                setCategoryError(true)
+                window.alert(error)
+                console.error(error)
+              })
+
+          } else {
+            fetch(`/api/server/transactions/${trackerId}/${changedTransactionCategories[i].transaction_id}?update=category`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ newCategory })
+            })
+              .then(() => {
+
+              })
+              .catch(error => {
+                setCategoryEditLoading(false)
+                setCategoryError(true)
+                window.alert(error)
+                console.error(error)
+              })
+          }
+        }
+      }
+    }
+  }
+
   const handleAddTransaction = async (e) => {
     e.preventDefault()
     setAddTransactionLoading(true)
@@ -693,6 +769,12 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
     }
     setOpenSnack3(false)
   }
+  const handleSnackClose4 = (e, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setOpenSnack4(false)
+  }
 
   return (
     <>
@@ -710,6 +792,9 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
         setNewTotal(null)
         setTotalChange(true)
         setEditModeId(null)
+        setCategoryError(false)
+        setNewCategory(null)
+        setCategoryEditLoading(false) //don't want to unless user has to
         setExpand(false)
        }}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#FFD800",
@@ -768,15 +853,65 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                   const parsedCategory = category.replace(/[{()}"']/g, '').split(',')
 
                                   return (
-                                    <Box key={category}>
-                                      <Box className='d-flex justify-content-between' sx={{ background: '#FFD6A0', padding: '1rem', borderRadius: '2rem' }}>
-                                        <div>
-                                          <CategoryRounded />
-                                          <span> {parsedCategory[0]}</span>
-                                        </div>
+                                    <Box key={category} sx={{marginBottom: '1rem'}}>
+                                      <Box className='d-flex justify-content-between' sx={{ background: '#FFD6A0', padding: '1rem', borderRadius: '2rem', position: 'relative' }}>
+                                        {
+                                          editModeId === parsedCategory[0]
+                                            ? <div className="w-100">
+                                                <form className="d-flex justify-content-between w-100 align-items-center"
+                                                 onSubmit={(e) => handleCategorySpeedDial('edit', parsedCategory[0], e)}>
+                                                  <TextField value={newCategory} id="categoryName" required disabled={categoryEditLoading}
+                                                    variant="standard" label="Category name" onChange={(e) => setNewCategory(e.target.value)}
+                                                    InputLabelProps={{ required: false }} error={categoryError}
+                                                    helperText={categoryError ? 'Please try again' : 'Ex: Groceries'} />
+
+                                                  <div className="d-flex">
+                                                    <Tooltip title='Submit' placement="top" componentsProps={{ tooltip: { sx: { bgcolor: "#00C169" } } }}>
+                                                      <IconButton type="submit" disabled={categoryEditLoading}>
+                                                        {
+                                                          categoryEditLoading ? <CircularProgress color="inherit" size={24} thickness={5} />
+                                                                              : <DoneRounded color="primary" />
+                                                        }
+                                                      </IconButton>
+                                                    </Tooltip>
+                                                    <Tooltip title='Cancel' placement="top" componentsProps={{ tooltip: { sx: { bgcolor: "#d32f2f" } } }}>
+                                                      <IconButton onClick={(e) => {
+                                                        setEditModeId(null)
+                                                        setCategoryError(false)
+                                                        setNewCategory(null)
+                                                       }} sx={{ color: '#d32f2f' }} disabled={categoryEditLoading}>
+                                                        <CloseRounded />
+                                                      </IconButton>
+                                                    </Tooltip>
+                                                  </div>
+                                                </form>
+                                              </div>
+                                            : <div>
+                                                <CategoryRounded />
+                                                <span> {parsedCategory[0]}</span>
+                                              </div>
+                                        }
                                         <div>
                                           {
-                                            converter.format( transactions.map(transaction => transaction.category === category ? transaction : {amount: 0}).reduce((a,b) => a + parseFloat(b.amount),0) )
+                                            editModeId === parsedCategory[0]
+                                              ? <></>
+                                              : <div style={{ position: 'relative', right: '2rem' }}>
+                                                  {
+                                                    converter.format(transactions.map(transaction => transaction.category === category ? transaction : { amount: 0 }).reduce((a, b) => a + parseFloat(b.amount), 0))
+                                                  }
+                                                </div>
+                                          }
+                                          {
+                                            editModeId === parsedCategory[0]
+                                              ? <></>
+                                              : <SpeedDial ariaLabel="Category Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                                  openIcon={<CloseRounded color="error" />} />} sx={{ position: 'absolute', right: '0', top: '0' }}
+                                                  FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
+                                                  direction="down">
+                                                  <SpeedDialAction tooltipTitle='Edit' tooltipPlacement="left" icon={<EditRounded />} onClick={(e) => handleCategorySpeedDial('edit', parsedCategory[0], e)} disabled={editModeId !== parsedCategory[0] && editModeId !== null} />
+                                                  <SpeedDialAction tooltipTitle='Delete' tooltipPlacement="left" icon={categorySpeedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
+                                                    onClick={(e) => handleCategorySpeedDial('delete', parsedCategory[0], e)} FabProps={{ disabled: categorySpeedDialLoading }} />
+                                                </SpeedDial>
                                           }
                                         </div>
                                       </Box>
@@ -1049,7 +1184,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
           </Card>
         </DialogContent>
         <DialogActions sx={{position:'absolute', top:"0.25rem", right:"0.25rem"}}>
-          <Fab size='medium' color='error' variant='extended' onClick={() => {
+          <Fab size='medium' color='error' variant='extended' disabled={categoryEditLoading} onClick={() => {
             setLoading(true)
             setEnd(false)
             setTransactions(null)
@@ -1063,6 +1198,8 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
             setNewTotal(null)
             setTotalChange(true)
             setEditModeId(null)
+            setCategoryError(false)
+            setNewCategory(null)
             setExpand(false)
            }}>
             <Box className='d-flex align-items-center' sx={{
@@ -1078,6 +1215,13 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
           <Alert variant="filled" color="primary" sx={{ width: '100%', color: 'white' }}
             onClose={handleSnackClose3}>
             Transaction added
+          </Alert>
+        </Snackbar>
+        <Snackbar open={openSnack4} autoHideDuration={3333} onClose={handleSnackClose4}
+          TransitionComponent={TransitionLeft}>
+          <Alert variant="filled" color="primary" sx={{ width: '100%', color: 'white' }}
+            onClose={handleSnackClose4}>
+            Category updated
           </Alert>
         </Snackbar>
         <Snackbar open={openSnack2} autoHideDuration={3333} onClose={handleSnackClose2}

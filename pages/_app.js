@@ -173,6 +173,9 @@ a:hover {
 #OptionsSpeedDial-action-1 .MuiTooltip-tooltip {
   background-color: #d32f2f;
 }
+#CategoryOptionsSpeedDial-action-1 .MuiTooltip-tooltip {
+  background-color: #d32f2f;
+}
 
 .MuiInputBase-input.MuiInput-input.Mui-disabled {
   -webkit-text-fill-color: black;

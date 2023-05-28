@@ -1,7 +1,7 @@
 import db from '../index'
 
 export default function handler(req, res) {
-  const { params } = req.query
+  const { params, update } = req.query
   const trackerId = parseInt(params[0]) //trackerId will always be the first paramter value in URL
   const transactionId = params[1]
 
@@ -44,25 +44,48 @@ export default function handler(req, res) {
     }
 
   } else if(req.method === 'PATCH') {
-    const {newName} = req.body
+    if(update === 'category') {
+      const {newCategory} = req.body
 
-    const sql = `
-      update "transactions"
-      set "name" = $1
-      where "transaction_id" = $2
-    `
-    const params = [newName, transactionId]
+      const sql = `
+        update "transactions"
+        set "category" = $1
+        where "transaction_id" = $2
+      `
+      const params = [newCategory, transactionId]
 
-    db.query(sql, params)
-      .then(result => {
-        res.status(200).json(result.rows[0])
-      })
-      .catch(err => {
-        console.error(err)
-        res.status(500).json({
-          error: 'an unexpected error occurred'
+      db.query(sql, params)
+        .then(result => {
+          res.status(200).json(result.rows[0])
         })
-      })
+        .catch(err => {
+          console.error(err)
+          res.status(500).json({
+            error: 'an unexpected error occurred'
+          })
+        })
+
+    } else {
+      const {newName} = req.body
+
+      const sql = `
+        update "transactions"
+        set "name" = $1
+        where "transaction_id" = $2
+      `
+      const params = [newName, transactionId]
+
+      db.query(sql, params)
+        .then(result => {
+          res.status(200).json(result.rows[0])
+        })
+        .catch(err => {
+          console.error(err)
+          res.status(500).json({
+            error: 'an unexpected error occurred'
+          })
+        })
+    }
 
   } else {
     const sql = `
