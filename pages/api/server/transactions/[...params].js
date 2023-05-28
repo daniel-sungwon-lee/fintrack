@@ -10,10 +10,11 @@ export default function handler(req, res) {
       const sql = `
         delete from "transactions"
         where "transaction_id" = $1
+        and "trackerId" = $2
       `
-      const param = [transactionId]
+      const params = [transactionId, trackerId]
 
-      db.query(sql, param)
+      db.query(sql, params)
         .then(result => {
           res.status(204).json(result.rows[0])
         })
