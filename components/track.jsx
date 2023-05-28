@@ -1,6 +1,8 @@
 import { AddRounded, AddchartRounded, ArrowDropDownRounded, AttachMoneyRounded, BarChartRounded,
-         CategoryRounded, CloseRounded, DeleteRounded, DoneRounded, EditRounded, LockRounded,
-         MoreVertRounded, ReceiptLongRounded } from "@mui/icons-material"
+         CategoryRounded, CloseRounded, CurrencyExchangeRounded, DeleteRounded, DoneRounded,
+         EditRounded, FastfoodRounded, FitnessCenterRounded, FlightRounded, LocalGasStationRounded,
+         LocalGroceryStoreRounded, LockRounded, MoreVertRounded, ReceiptLongRounded, SavingsRounded,
+         ShoppingBagRounded, SubscriptionsRounded, SwapHorizRounded } from "@mui/icons-material"
 import { Alert, Avatar, Box, Card, CardContent, CardHeader, Checkbox, CircularProgress,
          Collapse, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
          Fab, FormControl, Grow, IconButton, FormHelperText, List, ListItem, ListItemAvatar,
@@ -10,7 +12,8 @@ import { Alert, Avatar, Box, Card, CardContent, CardHeader, Checkbox, CircularPr
 import { useEffect, useState, forwardRef, useRef } from "react"
 import dynamic from 'next/dynamic'
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
-import { DateRangePicker, SingleInputDateRangeField, StaticDateRangePicker } from "@mui/x-date-pickers-pro"
+import { DateRangePicker, SingleInputDateRangeField,
+         StaticDateRangePicker } from "@mui/x-date-pickers-pro"
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import dayjs from "dayjs"
@@ -524,7 +527,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
 
   const [categorySpeedDialLoading, setCategorySpeedDialLoading] = useState(false)
   const [openSnack5, setOpenSnack5] = useState(false)
-  const [newCategory, setNewCategory] = useState(null)
+  const [newCategory, setNewCategory] = useState('')
   const [categoryEditLoading, setCategoryEditLoading] = useState(false)
   const [categoryError, setCategoryError] = useState(false)
   const [openSnack4, setOpenSnack4] = useState(false)
@@ -711,7 +714,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                 setCategoryEditLoading(false)
                 setEditModeId(null)
                 setCategoryError(false)
-                setNewCategory(null)
+                setNewCategory('')
                 setCategories(updatedCategories)
                 setOpenSnack4(true)
               })
@@ -843,7 +846,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
         setTotalChange(true)
         setEditModeId(null)
         setCategoryError(false)
-        setNewCategory(null)
+        setNewCategory('')
         setCategoryEditLoading(false) //don't want to unless user has to
         setCategorySpeedDialLoading(false) //same as above :)
         setExpand(false)
@@ -903,6 +906,51 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                 categories.map(category => {
                                   const parsedCategory = category.replace(/[{()}"']/g, '').split(',')
 
+                                  let icon = null
+                                  switch(parsedCategory[0]) {
+                                    case 'Groceries':
+                                    case 'Grocery':
+                                      icon = <LocalGroceryStoreRounded />
+                                      break;
+                                    case 'Gas' :
+                                    case 'Gasoline':
+                                    case 'Fuel':
+                                      icon = <LocalGasStationRounded />
+                                      break;
+                                    case 'Restaurants':
+                                    case 'Restaurant':
+                                    case 'Food and Drink':
+                                      icon = <FastfoodRounded />
+                                      break;
+                                    case 'Shopping':
+                                    case 'Shops':
+                                      icon = <ShoppingBagRounded />
+                                      break;
+                                    case 'Recreation':
+                                      icon = <FitnessCenterRounded />
+                                      break;
+                                    case 'Travel':
+                                      icon = <FlightRounded />
+                                      break;
+                                    case 'Transfer':
+                                    case 'Transfers':
+                                      icon = <SwapHorizRounded />
+                                      break;
+                                    case 'Payment':
+                                    case 'Payments':
+                                      icon = <CurrencyExchangeRounded />
+                                      break;
+                                    case 'Interest':
+                                      icon = <SavingsRounded />
+                                      break;
+                                    case 'Subscriptions':
+                                      icon = <SubscriptionsRounded />
+                                      break;
+
+                                    default:
+                                      icon = <CategoryRounded />
+                                  }
+
                                   return (
                                     <Box key={category} sx={{marginBottom: '1rem'}}>
                                       <Box className='d-flex justify-content-between' sx={{ background: '#FFD6A0', padding: '1rem', borderRadius: '2rem', position: 'relative' }}>
@@ -929,7 +977,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                                       <IconButton onClick={(e) => {
                                                         setEditModeId(null)
                                                         setCategoryError(false)
-                                                        setNewCategory(null)
+                                                        setNewCategory('')
                                                        }} sx={{ color: '#d32f2f' }} disabled={categoryEditLoading}>
                                                         <CloseRounded />
                                                       </IconButton>
@@ -938,7 +986,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                                 </form>
                                               </div>
                                             : <div>
-                                                <CategoryRounded />
+                                                <span id="categoryIcon">{icon}</span>
                                                 <span> {parsedCategory[0]}</span>
                                               </div>
                                         }
@@ -1250,7 +1298,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
             setTotalChange(true)
             setEditModeId(null)
             setCategoryError(false)
-            setNewCategory(null)
+            setNewCategory('')
             setExpand(false)
            }}>
             <Box className='d-flex align-items-center' sx={{
