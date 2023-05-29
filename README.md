@@ -1,9 +1,19 @@
 # FinTrack
-The finance tracking app
+#### The finance tracking app
+#### This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+## Live Link
+https://fintrack-beta.vercel.app/
+
+## Video Walkthrough
+https://youtu.be/pIRV4APBsnI
+
+## Database Schema
+![Screenshot 2023-05-29 110855](https://github.com/daniel-sungwon-lee/fintrack/assets/72715781/655e46fb-423c-4f6d-b7f3-af1600798723)
+
+https://dbdesigner.page.link/faZYRT9T1x6oNBkJ9
 
 
-
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
 
