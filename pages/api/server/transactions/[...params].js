@@ -52,8 +52,9 @@ export default function handler(req, res) {
         update "transactions"
         set "category" = $1
         where "transaction_id" = $2
+        and "trackerId" = $3
       `
-      const params = [newCategory, transactionId]
+      const params = [newCategory, transactionId, trackerId]
 
       db.query(sql, params)
         .then(result => {
@@ -73,8 +74,9 @@ export default function handler(req, res) {
         update "transactions"
         set "name" = $1
         where "transaction_id" = $2
+        and "trackerId" = $3
       `
-      const params = [newName, transactionId]
+      const params = [newName, transactionId, trackerId]
 
       db.query(sql, params)
         .then(result => {

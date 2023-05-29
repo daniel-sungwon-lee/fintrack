@@ -938,6 +938,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                       break;
                                     case 'Payment':
                                     case 'Payments':
+                                    case 'Bills':
                                       icon = <CurrencyExchangeRounded />
                                       break;
                                     case 'Interest':
@@ -1829,7 +1830,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
                           <TextField value={trackerName} type="name" className="mb-3" id="name" required
                             variant="standard" label="Name of tracker" onChange={(e)=>setTrackerName(e.target.value)}
                             InputLabelProps={{ required: false }} sx={{ width: '195px' }}
-                            helperText={error ? 'Please try again' : 'Ex: Groceries'} error={error} />
+                            helperText={error ? 'Please try again' : 'Ex: August'} error={error} />
 
                           <LoadingButton loading={submitting} type="submit" className='mb-5'
                             variant="contained" sx={{ color: 'white', textTransform: 'none',
