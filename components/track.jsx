@@ -1,5 +1,5 @@
 import { AddRounded, AddchartRounded, ArrowDropDownRounded, AttachMoneyRounded, BarChartRounded,
-         CategoryRounded, CloseRounded, CurrencyExchangeRounded, DeleteRounded, DoneRounded,
+         CategoryRounded, CloseRounded, CurrencyExchangeRounded, DateRangeRounded, DeleteRounded, DoneRounded,
          EditRounded, FastfoodRounded, FitnessCenterRounded, FlightRounded, LocalGasStationRounded,
          LocalGroceryStoreRounded, LockRounded, MoreVertRounded, ReceiptLongRounded, SavingsRounded,
          ShoppingBagRounded, SubscriptionsRounded, SwapHorizRounded } from "@mui/icons-material"
@@ -853,41 +853,42 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
        }}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#FFD800",
        alignItems: "center", padding: "3rem 0rem"}}} scroll="body">
-        <DialogTitle className="w-100 text-center">
+        <DialogTitle className="w-100 text-center" sx={{marginBottom: '2rem'}}>
           {
-            loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
-                        <div className='h2'>Groceries and Gas</div>
+            loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '2rem', maxWidth: '100%'}}>
+                        <Paper elevation={2} sx={{background: 'white', borderRadius: '2rem', padding: '1rem'}}>
+                          <div className='h2 mb-4'>August</div>
+                          <div className="d-flex justify-content-center align-items-center h4">
+                            <DateRangeRounded fontSize="large" style={{marginRight: '0.5rem'}} />
+                            <div>
+                              06/06/1997 - 05/30/2023
+                            </div>
+                          </div>
+                          <div className="h4 text-center d-block">
+                            Total: $420.69
+                          </div>
+                        </Paper>
                       </Skeleton>
-                    : <div className='h2'>{trackerName}</div>
+                    : <Paper elevation={2} sx={{background: 'white', borderRadius: '2rem', padding: '1rem'}}>
+                        <div className='h2 mb-4'>{trackerName}</div>
+                        <div className="d-flex justify-content-center align-items-center h4">
+                          <DateRangeRounded fontSize="large" style={{marginRight: '0.5rem'}} />
+                          <div>
+                            {dayjs(fromDate).format('MM/DD/YY')} &ndash; {dayjs(toDate).format('MM/DD/YY')}
+                          </div>
+                        </div>
+                        <div className="h4 text-center d-block">
+                          Total:
+                          {
+                            newTotal === null ? <> {converter.format(total)}</>
+                                              : <TrackerTotal userId={userId} trackerId={trackerId} newTotal={newTotal} converter={converter} />
+                          }
+                        </div>
+                      </Paper>
           }
         </DialogTitle>
+
         <DialogContent className="w-100">
-
-          <DialogContentText sx={{marginBottom:'3rem', color:'black'}}>
-            {
-              loading ? <>
-                          <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
-                            <span className="h4 text-center d-block">6/6/1997 to 5/9/2023</span>
-                          </Skeleton>
-                          <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '1rem'}}>
-                            <span className="h4 text-center d-block">Total expenditure</span>
-                          </Skeleton>
-                        </>
-                      : <>
-                          <span className="h4 text-center d-block">
-                            {dayjs(fromDate).format('MM/DD/YY')} &ndash; {dayjs(toDate).format('MM/DD/YY')}
-                          </span>
-                          <span className="h4 text-center d-block">
-                            Total:
-                            {
-                              newTotal === null ? <> {converter.format(total)}</>
-                                                : <TrackerTotal userId={userId} trackerId={trackerId} newTotal={newTotal} converter={converter} />
-                            }
-                          </span>
-                        </>
-            }
-          </DialogContentText>
-
           <Card sx={{bgcolor: '#00C169', borderRadius: '1rem', maxWidth: '1000px'}} className="m-auto">
             <CardContent>
               <div className="h4 text-center m-3" style={{fontWeight: 'bold', color: 'white'}}>
@@ -1283,6 +1284,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
             </CardContent>
           </Card>
         </DialogContent>
+
         <DialogActions sx={{position:'absolute', top:"0.25rem", right:"0.25rem"}}>
           <Fab size='medium' color='error' variant='extended' disabled={categoryEditLoading || categorySpeedDialLoading} onClick={() => {
             setLoading(true)
