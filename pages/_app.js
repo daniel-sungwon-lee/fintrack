@@ -95,6 +95,11 @@ a:hover {
   border: 0;
 }
 
+::selection {
+  background: rgb(254, 108, 118);
+  color: white;
+}
+
 
 .MuiTypography-root {
   font-family: ${Inter.style.fontFamily} !important;

@@ -59,6 +59,11 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
                style={{minHeight: '50vh', marginBottom: '7rem'}}>
 
                 {
+                  data.length > 0 ? <NetWorth institutions={data} />
+                                  : <></>
+                }
+
+                {
                   data ? <List className="pt-0">
                           {
                             data.map(institutions => {
@@ -100,6 +105,76 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
   )
 }
 
+//patch this later (balance API limit reaches quickly); maybe find out doing this without the API fetches and pull from account balances below?
+function NetWorth({institutions}) {
+  const [loading, setLoading] = useState(true)
+  const [worth, setWorth] = useState(null)
+
+  const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const totals = []
+
+      if(loading) {
+        for(let i=0; i<institutions.length; i++) {
+          if(i === institutions.length -1) {
+            await fetch(`/api/server/plaid/balance?accessToken=${institutions[i].access_token}`)
+              .then(res => res.json())
+              .then(data => {
+                const accountsArr = data.accounts
+                const balances = accountsArr.map(account => account.balances.current)
+                const total = balances.reduce((a,b) => a + b, 0)
+                totals.push(total)
+
+                setWorth(totals)
+                setLoading(false)
+              })
+              .catch(error => {
+                window.alert(error)
+                console.error(error)
+              })
+
+          } else {
+            await fetch(`/api/server/plaid/balance?accessToken=${institutions[i].access_token}`)
+              .then(res => res.json())
+              .then(data => {
+                const accountsArr = data.accounts
+                const balances = accountsArr.map(account => account.balances.current)
+                const total = balances.reduce((a,b) => a + b, 0)
+                totals.push(total)
+              })
+              .catch(error => {
+                window.alert(error)
+                console.error(error)
+              })
+          }
+        }
+      }
+    }
+    fetchData()
+  })
+
+  return (
+    <>
+      <Paper className="w-100" elevation={2} sx={{
+        borderRadius: '1rem', padding: '2rem',
+        background: '#00C169', color: 'white', marginTop: '2.5rem'
+       }}>
+        {
+          loading ? <Skeleton variant="rounded" sx={{ borderRadius: '2rem' }}>
+                      <div className="h1">$1,000,000</div>
+                    </Skeleton>
+                  : <>
+                      <div className="h1">{converter.format(worth)}</div>
+                    </>
+        }
+        <div>Net worth</div>
+      </Paper>
+    </>
+  )
+}
+
 
 function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions, setInstitutions, setOpenSnack }) {
   const [loading, setLoading] = useState(true)
@@ -131,8 +206,8 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
               setAccounts(data)
               setNumbers(null)
 
-              //getting updated account balance
-              fetch(`/api/server/plaid/balance?accessToken=${accessToken}`)
+              //getting updated account balance(s)
+              await fetch(`/api/server/plaid/accounts?accessToken=${accessToken}`)
                 .then(res => res.json())
                 .then(data => {
                   const accountsArr = data.accounts

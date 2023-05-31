@@ -240,7 +240,7 @@ function Trackers({data, setData, userId, setOpenSnack, setOpenSnack2}) {
 
   return (
     <Paper className="d-flex flex-column align-items-center" sx={{
-     minWidth: "80%", margin: "5rem 1rem", bgcolor: "#00C169", borderRadius: "8px",
+     minWidth: "80%", margin: "2.5rem 1rem 5rem", bgcolor: "#00C169", borderRadius: "8px",
      paddingBottom: '3.5rem' }} elevation={3}>
       {
         loading ? <>
@@ -853,7 +853,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
        }}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#FFD800",
        alignItems: "center", padding: "3rem 0rem"}}} scroll="body">
-        <DialogTitle className="w-100 text-center" sx={{marginBottom: '2rem'}}>
+        <DialogTitle className="container mx-auto w-100 text-center" sx={{marginBottom: '2rem'}}>
           {
             loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '2rem', maxWidth: '100%'}}>
                         <Paper elevation={2} sx={{background: 'white', borderRadius: '2rem', padding: '1rem'}}>
