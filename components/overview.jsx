@@ -62,8 +62,8 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
                style={{minHeight: '50vh', marginBottom: '7rem'}}>
 
                 {
-                  data.length > 0 ? <NetWorth institutions={data} totals={totals} />
-                                  : <></>
+                  data && data.length > 0 ? <NetWorth institutions={data} totals={totals} />
+                                          : <></>
                 }
 
                 {
@@ -75,7 +75,7 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
                               return (
                                 <Accounts key={item_id} itemId={item_id} accessToken={access_token}
                                  name={name} accountsPlaceholder={accountsPlaceholder} institutions={data}
-                                 setInstitutions={setData} setOpenSnack={setOpenSnack} totals={totals} setTotals={setTotals} />
+                                 setInstitutions={setData} setOpenSnack={setOpenSnack} totals={totals} />
                               )
 
                             })
@@ -116,20 +116,23 @@ function NetWorth({institutions, totals}) {
     const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
     const tl = gsap.timeline()
 
-    if(totals.length === institutions.length) {
-      const netWorth = totals.reduce((a,b) => a + b, 0)
-      setLoading(false)
+    setTimeout(() => {
+      let filteredTotals = totals.filter((o,i,a) => i === a.findIndex((t) => t.itemId === o.itemId))
+      if(filteredTotals.length === institutions.length) {
+        const netWorth = filteredTotals.reduce((a,b) => a + b.balancesTotal, 0)
+        setLoading(false)
 
-      const count = { value: 0 }, newValue = netWorth
-      tl.to(count, {
-        value: newValue, onUpdate: () => {
-          if (worthRef.current) {
-            worthRef.current.textContent = `${converter.format(count.value)}`
+        const count = { value: 0 }, newValue = netWorth
+        tl.to(count, {
+          value: newValue, onUpdate: () => {
+            if (worthRef.current) {
+              worthRef.current.textContent = `${converter.format(count.value)}`
+            }
           }
-        }
-      })
-        .fromTo(worthRef.current, { opacity: 0 }, { opacity: 1, duration: 0.5 }, "<")
-    }
+        })
+          .fromTo(worthRef.current, { opacity: 0 }, { opacity: 1, duration: 0.5 }, "<")
+      }
+    }, 3000)
   },[totals, institutions])
 
   return (
@@ -153,7 +156,7 @@ function NetWorth({institutions, totals}) {
 }
 
 
-function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions, setInstitutions, setOpenSnack, totals, setTotals }) {
+function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions, setInstitutions, setOpenSnack, totals }) {
   const [loading, setLoading] = useState(true)
   const [end, setEnd] = useState(false)
   const [accounts, setAccounts] = useState(null)
@@ -183,15 +186,16 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
               setAccounts(data)
               setNumbers(null)
 
-              //getting updated account balance(s)
+              //getting updated account balance(s) (look into making it not fire twice)
               await fetch(`/api/server/plaid/accounts?accessToken=${accessToken}`)
                 .then(res => res.json())
                 .then(data => {
                   const accountsArr = data.accounts
                   const balances = accountsArr.map(account => account.balances.current)
                   setBalances(balances)
+
                   const balancesTotal = balances.reduce((a,b) => a + b, 0)
-                  setTotals([...totals, balancesTotal])
+                  totals.push({itemId, balancesTotal})
 
                   setLoading(false)
                 })
@@ -218,6 +222,10 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
 
                         console.log(liabilitiesData, liabilities) //check if liabilities data renders correctly
 
+                        const balances = data.accounts.map(account => account.balances.current)
+                        const balancesTotal = balances.reduce((a, b) => a + b, 0)
+                        totals.push({ itemId, balancesTotal })
+
                         setLoading(false)
                       })
                       .catch(error => {
@@ -228,6 +236,11 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                   } else {
                     setAccounts(data.accounts)
                     setNumbers(data.numbers.ach)
+
+                    const balances = data.accounts.map(account => account.balances.current)
+                    const balancesTotal = balances.reduce((a, b) => a + b, 0)
+                    totals.push({ itemId, balancesTotal })
+
                     setLoading(false)
                   }
                 })
@@ -287,7 +300,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
     <>
       <Zoom in>
         <Paper className="d-flex flex-column align-items-center" sx={{
-         minWidth: "80%", margin:"5rem 1rem 6rem", bgcolor:"#FFD800", borderRadius:"8px",
+         minWidth: "80%", margin:"5rem 1rem", bgcolor:"#FFD800", borderRadius:"8px",
          position: "relative", paddingBottom: '5rem'}} elevation={3}>
 
           {
