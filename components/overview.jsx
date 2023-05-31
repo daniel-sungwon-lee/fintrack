@@ -6,8 +6,9 @@ import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogCon
 import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded,
          RecommendRounded, RemoveCircleRounded, ThumbUpRounded, VisibilityOffRounded,
          VisibilityRounded } from "@mui/icons-material"
-import { useEffect, useState, forwardRef } from "react"
+import { useEffect, useState, forwardRef, useRef } from "react"
 import dynamic from 'next/dynamic'
+import { gsap } from "gsap"
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
 
 const Link = dynamic(() => import('./plaid/link'), { ssr: false })
@@ -22,6 +23,8 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
   const [data, setData] = useState(null)
   const [newData, setNewData] = useState(false)
   const [openSnack, setOpenSnack] = useState(false)
+
+  const [totals, setTotals] = useState([])
 
   useEffect(() => {
     if(!newData && userId) {
@@ -59,7 +62,7 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
                style={{minHeight: '50vh', marginBottom: '7rem'}}>
 
                 {
-                  data.length > 0 ? <NetWorth institutions={data} />
+                  data.length > 0 ? <NetWorth institutions={data} totals={totals} />
                                   : <></>
                 }
 
@@ -72,7 +75,7 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
                               return (
                                 <Accounts key={item_id} itemId={item_id} accessToken={access_token}
                                  name={name} accountsPlaceholder={accountsPlaceholder} institutions={data}
-                                 setInstitutions={setData} setOpenSnack={setOpenSnack} />
+                                 setInstitutions={setData} setOpenSnack={setOpenSnack} totals={totals} setTotals={setTotals} />
                               )
 
                             })
@@ -105,55 +108,29 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
   )
 }
 
-//patch this later (balance API limit reaches quickly); maybe find out doing this without the API fetches and pull from account balances below?
-function NetWorth({institutions}) {
+function NetWorth({institutions, totals}) {
   const [loading, setLoading] = useState(true)
-  const [worth, setWorth] = useState(null)
-
-  const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+  const worthRef = useRef()
 
   useEffect(() => {
-    const fetchData = async () => {
-      const totals = []
+    const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+    const tl = gsap.timeline()
 
-      if(loading) {
-        for(let i=0; i<institutions.length; i++) {
-          if(i === institutions.length -1) {
-            await fetch(`/api/server/plaid/balance?accessToken=${institutions[i].access_token}`)
-              .then(res => res.json())
-              .then(data => {
-                const accountsArr = data.accounts
-                const balances = accountsArr.map(account => account.balances.current)
-                const total = balances.reduce((a,b) => a + b, 0)
-                totals.push(total)
+    if(totals.length === institutions.length) {
+      const netWorth = totals.reduce((a,b) => a + b, 0)
+      setLoading(false)
 
-                setWorth(totals)
-                setLoading(false)
-              })
-              .catch(error => {
-                window.alert(error)
-                console.error(error)
-              })
-
-          } else {
-            await fetch(`/api/server/plaid/balance?accessToken=${institutions[i].access_token}`)
-              .then(res => res.json())
-              .then(data => {
-                const accountsArr = data.accounts
-                const balances = accountsArr.map(account => account.balances.current)
-                const total = balances.reduce((a,b) => a + b, 0)
-                totals.push(total)
-              })
-              .catch(error => {
-                window.alert(error)
-                console.error(error)
-              })
+      const count = { value: 0 }, newValue = netWorth
+      tl.to(count, {
+        value: newValue, onUpdate: () => {
+          if (worthRef.current) {
+            worthRef.current.textContent = `${converter.format(count.value)}`
           }
         }
-      }
+      })
+        .fromTo(worthRef.current, { opacity: 0 }, { opacity: 1, duration: 0.5 }, "<")
     }
-    fetchData()
-  })
+  },[totals, institutions])
 
   return (
     <>
@@ -166,7 +143,7 @@ function NetWorth({institutions}) {
                       <div className="h1">$1,000,000</div>
                     </Skeleton>
                   : <>
-                      <div className="h1">{converter.format(worth)}</div>
+                      <div className="h1" ref={worthRef}></div>
                     </>
         }
         <div>Net worth</div>
@@ -176,7 +153,7 @@ function NetWorth({institutions}) {
 }
 
 
-function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions, setInstitutions, setOpenSnack }) {
+function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions, setInstitutions, setOpenSnack, totals, setTotals }) {
   const [loading, setLoading] = useState(true)
   const [end, setEnd] = useState(false)
   const [accounts, setAccounts] = useState(null)
@@ -213,6 +190,8 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                   const accountsArr = data.accounts
                   const balances = accountsArr.map(account => account.balances.current)
                   setBalances(balances)
+                  const balancesTotal = balances.reduce((a,b) => a + b, 0)
+                  setTotals([...totals, balancesTotal])
 
                   setLoading(false)
                 })
