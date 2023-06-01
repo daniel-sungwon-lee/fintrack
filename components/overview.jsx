@@ -191,10 +191,15 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                 .then(res => res.json())
                 .then(data => {
                   const accountsArr = data.accounts
-                  const balances = accountsArr.map(account => account.balances.current)
+                  const balances = accountsArr.map(account => {
+                    return {
+                      account_id: account.account_id,
+                      balance: account.balances.current
+                    }
+                  })
                   setBalances(balances)
 
-                  const balancesTotal = balances.reduce((a,b) => a + b, 0)
+                  const balancesTotal = balances.reduce((a,b) => a + b.balance, 0)
                   totals.push({itemId, balancesTotal})
 
                   setLoading(false)
@@ -620,7 +625,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                                       account_num, routing_num, limit, next_payment_due_date,
                                                                       last_statement_balance, minimum_payment_amount,
                                                                       next_monthly_payment, interest_rate } = account
-                                                              const balance = balances[i]
+                                                              const balance = balances.find((obj) => obj.account_id === account.account_id).balance
 
                                                               return (
                                                                 <Card sx={{ margin: "3rem 2rem 0", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
