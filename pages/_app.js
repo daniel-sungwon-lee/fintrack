@@ -182,6 +182,12 @@ a:hover {
 #CategoryOptionsSpeedDial-action-1 .MuiTooltip-tooltip {
   background-color: #d32f2f;
 }
+#TransactionOptionsSpeedDial-action-1 .MuiTooltip-tooltip {
+  background-color: #d32f2f;
+}
+#CategoryOptionsSpeedDial-action-1, #CategoryOptionsSpeedDial-action-0, #TransactionOptionsSpeedDial-action-1, #TransactionOptionsSpeedDial-action-0 {
+  z-index: 1500;
+}
 
 .MuiInputBase-input.MuiInput-input.Mui-disabled {
   -webkit-text-fill-color: black;

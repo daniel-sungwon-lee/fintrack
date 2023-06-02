@@ -1033,7 +1033,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                                 <ListItemAvatar>
                                                   {
                                                     editModeId === transaction_id
-                                                      ? <SpeedDial className="invisible" ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                                      ? <SpeedDial className="invisible" ariaLabel="Transaction Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
                                                          openIcon={<CloseRounded color="error" />} />} sx={{ position: 'relative', right: '1rem' }}
                                                          FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true, disabled: categoryEditLoading || categorySpeedDialLoading }}
                                                          direction="down">
@@ -1041,7 +1041,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                                           <SpeedDialAction tooltipTitle='Delete' tooltipPlacement="right" icon={speedDialLoading ? <CircularProgress color="inherit" size={20} thickness={5} /> : <DeleteRounded color="error" />}
                                                            onClick={(e) => handleSpeedDial('delete', transaction_id, e)} FabProps={{ disabled: speedDialLoading }} />
                                                         </SpeedDial>
-                                                      : <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                                      : <SpeedDial ariaLabel="Transaction Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
                                                          openIcon={<CloseRounded color="error" />} />} sx={{ position: 'relative', right: '1rem' }}
                                                          FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true, disabled: categoryEditLoading || categorySpeedDialLoading }}
                                                          direction="down">
@@ -1081,7 +1081,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                               <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
                                 <ListItem sx={{width: '100vw'}}>
                                   <ListItemAvatar>
-                                    <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                    <SpeedDial ariaLabel="Transaction Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
                                      openIcon={<CloseRounded color="error" />} />} sx={{position: 'relative', right: '1rem'}}
                                      FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
                                      direction="down">
@@ -1096,7 +1096,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                               <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
                                 <ListItem sx={{width: '100vw'}}>
                                   <ListItemAvatar>
-                                    <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                    <SpeedDial ariaLabel="Transaction Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
                                      openIcon={<CloseRounded color="error" />} />} sx={{position: 'relative', right: '1rem'}}
                                      FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
                                      direction="down">
@@ -1111,7 +1111,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                               <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
                                 <ListItem sx={{width: '100vw'}}>
                                   <ListItemAvatar>
-                                    <SpeedDial ariaLabel="Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
+                                    <SpeedDial ariaLabel="Transaction Options SpeedDial" icon={<SpeedDialIcon icon={<MoreVertRounded />}
                                      openIcon={<CloseRounded color="error" />} />} sx={{position: 'relative', right: '1rem'}}
                                      FabProps={{ sx: { boxShadow: 'none !important', background: 'transparent !important' }, disableRipple: true }}
                                      direction="down">
