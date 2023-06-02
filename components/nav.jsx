@@ -1,5 +1,5 @@
 import { BarChartRounded, HomeRounded, PowerSettingsNewRounded } from "@mui/icons-material";
-import { BottomNavigation, BottomNavigationAction } from "@mui/material";
+import { BottomNavigation, BottomNavigationAction, useScrollTrigger } from "@mui/material";
 import { useEffect, useState } from "react";
 
 export default function Nav({ page, setPage }) {
@@ -7,11 +7,16 @@ export default function Nav({ page, setPage }) {
 
   useEffect(() => setValue(page),[page])
 
+  const trigger = useScrollTrigger({
+    disableHysteresis: true,
+    threshold: 0,
+  })
+
   return (
     <BottomNavigation sx={{ justifyContent: "space-around", height: '75px',
-     boxShadow: "0 0.2rem 0.4rem 0 rgb(17 17 17 / 8%)", marginBottom: '1rem',
-     position: 'sticky', top: '0', zIndex: '1200' }} value={value}
-     onChange={(e,value) => {
+     boxShadow: trigger ? "0 0.2rem 0.4rem 0 rgb(17 17 17 / 32%)" : "0 0.2rem 0.4rem 0 rgb(17 17 17 / 8%)",
+     marginBottom: '1rem', position: 'sticky', top: '0', zIndex: '1200', transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)' }}
+     value={value} onChange={(e,value) => {
       setValue(value)
       setPage(value)
      }}>
