@@ -9,7 +9,8 @@ export default function Nav({ page, setPage }) {
 
   return (
     <BottomNavigation sx={{ justifyContent: "space-around", height: '75px',
-     boxShadow: "0 0.2rem 0.4rem 0 rgb(17 17 17 / 8%)", marginBottom: '1rem'}} value={value}
+     boxShadow: "0 0.2rem 0.4rem 0 rgb(17 17 17 / 8%)", marginBottom: '1rem',
+     position: 'sticky', top: '0', zIndex: '1200' }} value={value}
      onChange={(e,value) => {
       setValue(value)
       setPage(value)

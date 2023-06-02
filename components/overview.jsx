@@ -143,7 +143,7 @@ function NetWorth({institutions, totals}) {
        }}>
         {
           loading ? <Skeleton variant="rounded" sx={{ borderRadius: '2rem' }}>
-                      <div className="h1">$1,000,000</div>
+                      <div className="h1">$10,000,000</div>
                     </Skeleton>
                   : <>
                       <div className="h1" ref={worthRef}></div>
