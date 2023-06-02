@@ -927,7 +927,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
           </Card>
 
         </DialogContent>
-        <DialogActions sx={{position:'absolute', top:"0.25rem", right:"0.25rem"}}>
+        <DialogActions sx={{position:'fixed', top:"0.25rem", right:"0.25rem", zIndex:'1600'}}>
           <Fab size='medium' color='error' variant='extended' onClick={() => {
             setEnd(false)
             setOpen(false)

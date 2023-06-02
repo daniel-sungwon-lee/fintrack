@@ -831,7 +831,9 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
 
   return (
     <>
-      <Dialog open={open} TransitionComponent={Transition2} onClose={() => {
+      <Dialog open={open} TransitionComponent={Transition2} onClose={(e) => {
+        e.currentTarget.querySelector('.MuiBox-root.top').scrollIntoView()
+
         setLoading(true)
         setEnd(false)
         setTransactions(null)
@@ -853,6 +855,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
        }}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#FFD800",
        alignItems: "center", padding: "3rem 0rem"}}} scroll="body">
+        <Box className="top" sx={{ position: 'absolute', top: '0', left: '0' }}></Box>
         <DialogTitle className="container mx-auto w-100 text-center" sx={{marginBottom: '2rem'}}>
           {
             loading ? <Skeleton variant="rectangle" sx={{margin: 'auto', borderRadius: '2rem', maxWidth: '100%'}}>
@@ -1285,8 +1288,10 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
           </Card>
         </DialogContent>
 
-        <DialogActions sx={{position:'absolute', top:"0.25rem", right:"0.25rem"}}>
-          <Fab size='medium' color='error' variant='extended' disabled={categoryEditLoading || categorySpeedDialLoading} onClick={() => {
+        <DialogActions sx={{position:'fixed', top:"0.25rem", right:"0.25rem", zIndex:'1600'}}>
+          <Fab size='medium' color='error' variant='extended' disabled={categoryEditLoading || categorySpeedDialLoading} onClick={(e) => {
+            e.currentTarget.parentNode.parentNode.parentNode.querySelector('.MuiBox-root.top').scrollIntoView()
+
             setLoading(true)
             setEnd(false)
             setTransactions(null)
@@ -1555,7 +1560,7 @@ function TrackDialog({userId, open, setOpen, setTrackLoading, setTrackEnd, token
 
         </DialogContent>
 
-        <DialogActions sx={{ position: 'absolute', top: "0.25rem", right: "0.25rem" }}>
+        <DialogActions sx={{ position: 'fixed', top: "0.25rem", right: "0.25rem", zIndex: '1600' }}>
           <Fab size='medium' color='error' variant='extended' onClick={() => {
             setOpen(false)
             setValue([null, null])
