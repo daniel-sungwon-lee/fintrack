@@ -9,6 +9,7 @@ import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded,
 import { useEffect, useState, forwardRef, useRef } from "react"
 import dynamic from 'next/dynamic'
 import { gsap } from "gsap"
+const jwt = require('jsonwebtoken')
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
 
 const Link = dynamic(() => import('./plaid/link'), { ssr: false })
@@ -31,6 +32,20 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
       fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
         .then(res => res.json())
         .then(data => {
+          const encryptedData = data.map(data => {
+            const {item_id, access_token, name} = data
+
+            const encryptedAccessToken = jwt.sign({access_token}, 'e3675f6c-9eca-4d72-a241-f3f8ebfda65d')
+
+            const updatedData = {
+              item_id,
+              access_token: encryptedAccessToken,
+              name
+            }
+
+            return updatedData
+          })
+
           setData(data)
           setLoading(false)
           setAccountsPlaceholder(false)
