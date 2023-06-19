@@ -5,6 +5,8 @@ import { usePlaidLink } from "react-plaid-link";
 import { Fab, CircularProgress, Box } from "@mui/material";
 import { AccountBalanceRounded } from "@mui/icons-material"
 
+const jwt = require('jsonwebtoken')
+
 const Link = ({ userId, setAccountsPlaceholder, setData, setNewData, dispatch, isPaymentInitiation, linkToken }) => {
 
   const onSuccess = React.useCallback(
@@ -74,7 +76,22 @@ const Link = ({ userId, setAccountsPlaceholder, setData, setNewData, dispatch, i
                             .then(res => res.json())
                             .then(data => {
                               //done!
-                              setData(data)
+                              const encryptedData = data.map(data => {
+                                const { item_id, access_token, name, userId } = data
+
+                                const encryptedAccessToken = jwt.sign({ access_token }, 'e3675f6c-9eca-4d72-a241-f3f8ebfda65d')
+
+                                const updatedData = {
+                                  item_id,
+                                  access_token: encryptedAccessToken,
+                                  userId,
+                                  name
+                                }
+
+                                return updatedData
+                              })
+
+                              setData(encryptedData)
                               setAccountsPlaceholder(false)
                             })
                             .catch(error => {
@@ -105,7 +122,22 @@ const Link = ({ userId, setAccountsPlaceholder, setData, setNewData, dispatch, i
                         .then(res => res.json())
                         .then(data => {
                           //done!
-                          setData(data)
+                          const encryptedData = data.map(data => {
+                            const { item_id, access_token, name, userId } = data
+
+                            const encryptedAccessToken = jwt.sign({ access_token }, 'e3675f6c-9eca-4d72-a241-f3f8ebfda65d')
+
+                            const updatedData = {
+                              item_id,
+                              access_token: encryptedAccessToken,
+                              userId,
+                              name
+                            }
+
+                            return updatedData
+                          })
+
+                          setData(encryptedData)
                           setAccountsPlaceholder(false)
                         })
                         .catch(error => {

@@ -59,3 +59,14 @@ export const client = new PlaidApi(configuration);
 export const prettyPrintResponse = (response) => {
   console.log(util.inspect(response.data, { colors: true, depth: 4 }));
 };
+
+
+
+
+
+export const decodeAccessToken = (token) => {
+  const [, encodedData] = token.split('.');
+  const decodedPayload = atob(encodedData);
+  const payload = JSON.parse(decodedPayload);
+  return payload.access_token;
+}
