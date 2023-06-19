@@ -23,6 +23,7 @@ import receiptAnimation from '/public/lotties/receipt.json'
 import { gsap } from "gsap"
 import { NumericFormat } from "react-number-format"
 import PropTypes from 'prop-types'
+const jwt = require('jsonwebtoken')
 
 const TransitionLeft = (props) => {
   return <Slide {...props} direction="right" />
@@ -68,7 +69,10 @@ export default function Track({userId}) {
             if(data.length > 0) {
               const tokenArr = data.map(institution => {
                 const {access_token} = institution
-                return access_token
+
+                const encryptedAccessToken = jwt.sign({ access_token }, 'e3675f6c-9eca-4d72-a241-f3f8ebfda65d')
+
+                return encryptedAccessToken
               })
               setTokens(tokenArr)
               setReady(true)

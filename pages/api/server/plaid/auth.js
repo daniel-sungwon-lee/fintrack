@@ -1,7 +1,7 @@
 import {
   PLAID_CLIENT_ID, PLAID_SECRET, PLAID_ENV, PLAID_PRODUCTS, PLAID_COUNTRY_CODES,
   PLAID_REDIRECT_URI, PLAID_ANDROID_PACKAGE_NAME, configuration, client,
-  prettyPrintResponse
+  prettyPrintResponse, decodeAccessToken
 } from './index';
 import { ACCESS_TOKEN } from './set_access_token';
 
@@ -9,11 +9,12 @@ import db from '../index'
 
 export default function handler (request, response, next) {
   const { accessToken } = request.query
+  const access_token = decodeAccessToken(accessToken)
 
   Promise.resolve()
     .then(async function () {
       const authResponse = await client.authGet({
-        access_token: accessToken,
+        access_token: access_token,
       });
       prettyPrintResponse(authResponse);
       response.json(authResponse.data);
@@ -23,7 +24,7 @@ export default function handler (request, response, next) {
         //liabilities accounts
         if(account.type === 'credit' || account.type === 'loan'){
           const liabilitiesResponse = client.liabilitiesGet({
-            access_token: accessToken,
+            access_token: access_token,
           });
 
           if(account.subtype === 'credit card'){

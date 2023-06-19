@@ -40,13 +40,14 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
             const updatedData = {
               item_id,
               access_token: encryptedAccessToken,
+              userId,
               name
             }
 
             return updatedData
           })
 
-          setData(data)
+          setData(encryptedData)
           setLoading(false)
           setAccountsPlaceholder(false)
 
