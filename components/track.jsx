@@ -1873,10 +1873,16 @@ function TransactionInfo({account_id}) {
 
       } else {
         fetch(`/api/server/accounts/${account_id}`)
-          .then(res => res.json())
+          .then(res => res.text())
           .then(info => {
-            setAccountName(info.name)
-            setLoading(false)
+            if(info === '') {
+              setAccountName('(Account removed)')
+              setLoading(false)
+
+            } else {
+              setAccountName(JSON.parse(info).name)
+              setLoading(false)
+            }
           })
           .catch(error => {
             window.alert(error)
