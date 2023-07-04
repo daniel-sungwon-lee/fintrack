@@ -1032,7 +1032,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                           if(transaction.category.replace(/[{()}"']/g, '').split(',')[0] === category) {
                                             return (
                                               <ListItem key={transaction_id} id={transaction_id} secondaryAction={
-                                                <div>{converter.format(amount)}</div>
+                                                <div style={Math.sign(amount) === -1 ? {color: 'red'} : {}}>{converter.format(amount)}</div>
                                                } sx={{
                                                  background: 'white', borderRadius: '1rem', margin: '0.5rem auto', width: '97%', transition: 'all ease 0.3s',
                                                  boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'
@@ -1807,7 +1807,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
 
                                                         return (
                                                           <ListItem key={transaction_id} secondaryAction={
-                                                            <div>{converter.format(amount * -1)}</div>
+                                                            <div style={Math.sign(amount * -1) === -1 ? {color: 'red'} : {}}>{converter.format(amount * -1)}</div>
                                                            } sx={{
                                                             background: 'white', borderRadius: '1rem', marginBottom: '0.5rem',
                                                             boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'
