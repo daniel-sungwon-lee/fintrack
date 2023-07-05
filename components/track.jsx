@@ -1058,7 +1058,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                                         </SpeedDial>
                                                   }
                                                 </ListItemAvatar>
-                                                <ListItemText primary={
+                                                <ListItemText sx={{maxWidth: '60%'}} primary={
                                                   editModeId === transaction_id
                                                     ? <TransactionEdit name={name} transaction_id={transaction_id} transactions={transactions} setTransactions={setTransactions}
                                                       setEditModeId={setEditModeId} trackerId={trackerId} setOpenSnack2={setOpenSnack2} />

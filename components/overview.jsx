@@ -926,7 +926,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
                                                               <AttachMoneyRounded color="primary" />
                                                             </Avatar>
                                                           </ListItemAvatar>
-                                                          <ListItemText primary={name} secondary={newDate} />
+                                                          <ListItemText sx={{maxWidth: '60%'}} primary={name} secondary={newDate} />
                                                         </ListItem>
                                                       )
                                                     })
