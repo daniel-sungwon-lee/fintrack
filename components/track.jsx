@@ -1817,7 +1817,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
                                                                 <Checkbox edge='start' checked={checked.indexOf(transaction_id) !== -1}
                                                                  disableRipple />
                                                               </ListItemIcon>
-                                                              <ListItemText primary={name} secondary={
+                                                              <ListItemText sx={{maxWidth: '60%'}} primary={name} secondary={
                                                                 <span className="d-block">
                                                                   {dayjs(date).format('MMMM D, YYYY')}
                                                                   <TransactionInfo account_id={account_id} />
