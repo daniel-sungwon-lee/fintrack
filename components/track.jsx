@@ -336,18 +336,18 @@ function Trackers({data, setData, userId, setOpenSnack, setOpenSnack2}) {
                                                                  <div className="h6">To: {dayjs(toDate).format('MMMM D, YYYY')}</div>
                                                                </div>
                                                              : <div className="d-flex flex-column align-items-start" style={{ width:'calc(100%/3)' }}>
-                                                                 <div className="h6">From: {dayjs(fromDate).format('MMMM D, YYYY')}</div>
-                                                                 <div className="h6">To: {dayjs(toDate).format('MMMM D, YYYY')}</div>
+                                                                 <div className="h6 tracker-fontsize-mobile-sm">From: {dayjs(fromDate).format('MMMM D, YYYY')}</div>
+                                                                 <div className="h6 tracker-fontsize-mobile-sm">To: {dayjs(toDate).format('MMMM D, YYYY')}</div>
                                                                </div>
                                   }
                                   {
-                                    editModeId === trackerId && window.screen.availWidth<768 ? <ReceiptLottie className={'invisible'} />
-                                                                                             : <ReceiptLottie className={''} />
+                                    editModeId === trackerId ? <ReceiptLottie className={'hidden'} />
+                                                             : <ReceiptLottie className={''} />
                                   }
                                   <div className="d-flex align-items-center justify-content-end" style={{ fontSize: '24px', width: 'calc(100%/3)' }}>
                                     {
-                                      editModeId === trackerId && window.screen.availWidth<768 ? <TotalAnimated className={'invisible'} total={total} totalChange={totalChange} setTotalChange={setTotalChange} userId={userId} trackerId={trackerId} converter={converter} />
-                                                                                               : <TotalAnimated className={''} total={total} totalChange={totalChange} setTotalChange={setTotalChange} userId={userId} trackerId={trackerId} converter={converter} />
+                                      editModeId === trackerId ? <TotalAnimated className={'hidden'} total={total} totalChange={totalChange} setTotalChange={setTotalChange} userId={userId} trackerId={trackerId} converter={converter} />
+                                                               : <TotalAnimated className={'tracker-fontsize-mobile'} total={total} totalChange={totalChange} setTotalChange={setTotalChange} userId={userId} trackerId={trackerId} converter={converter} />
                                     }
                                   </div>
                                 </div>

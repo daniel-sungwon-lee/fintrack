@@ -202,6 +202,20 @@ a:hover {
   font-family: ${Inter.style.fontFamily} !important;
   text-transform: none;
 }
+
+
+@media(max-width: 767px) {
+  .tracker-fontsize-mobile {
+    font-size: 18px !important;
+  }
+  .tracker-fontsize-mobile-sm {
+    font-size: 14px !important;
+  }
+
+  .hidden {
+    visibility: hidden !important;
+  }
+}
 `
 
 function decodeToken(token) {
