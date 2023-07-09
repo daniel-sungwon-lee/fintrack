@@ -32,6 +32,8 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
       fetch(`/api/server/institutions?userId=${userId}`, { method: "GET" })
         .then(res => res.json())
         .then(data => {
+          //typeError here (e.map not function) on data.map below
+          //cause is usually on a cold boot when the server gives 500 error response
           const encryptedData = data.map(data => {
             const {item_id, access_token, name} = data
 
@@ -54,6 +56,8 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
           setNewData(true) //ready for new data (bank account connection)
         })
         .catch(error => {
+          //reload if server 500 error for data.map?
+          //console.log('error message', error)
           window.alert(error)
           console.error(error)
         })
