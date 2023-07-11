@@ -56,10 +56,10 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
           setNewData(true) //ready for new data (bank account connection)
         })
         .catch(error => {
-          //reload if server 500 error for data.map?
-          //console.log('error message', error)
           window.alert(error)
           console.error(error)
+          //reloads if typeError is produced (quickfix)
+          window.location.reload()
         })
     }
   },[newData, userId])
