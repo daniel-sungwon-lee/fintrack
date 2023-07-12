@@ -35,6 +35,7 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
           //if server response with 500 typeError, reload page
           if(data.error) {
             window.location.reload()
+            return
           }
 
           const encryptedData = data.map(data => {
