@@ -122,7 +122,7 @@ export default function Auth ({ setUser }) {
   const handleAutoFill = (e) => {
     e.preventDefault();
     setEmail('hello@there')
-    setPassword('obiwankenobi')
+    setPassword('obiwankenobi?')
   }
 
   if(page==="login") {
