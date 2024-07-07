@@ -121,8 +121,8 @@ export default function Auth ({ setUser }) {
 
   const handleAutoFill = (e) => {
     e.preventDefault();
-    setEmail('hello@there')
-    setPassword('obiwankenobi?')
+    setEmail('demo@account')
+    setPassword('testing123?')
   }
 
   if(page==="login") {
