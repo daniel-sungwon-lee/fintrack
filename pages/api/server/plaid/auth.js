@@ -20,10 +20,10 @@ export default function handler (request, response, next) {
       response.json(authResponse.data);
 
       //added code below for posting accounts data
-      await authResponse.data.accounts.map(account => {
+      await authResponse.data.accounts.map(async account => {
         //liabilities accounts
         if(account.type === 'credit' || account.type === 'loan'){
-          const liabilitiesResponse = client.liabilitiesGet({
+          const liabilitiesResponse = await client.liabilitiesGet({
             access_token: access_token,
           });
 

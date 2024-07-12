@@ -249,8 +249,6 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                         setAccounts(data.accounts)
                         setNumbers(data.numbers.ach)
 
-                        console.log(liabilitiesData, liabilities) //check if liabilities data renders correctly
-
                         const balances = data.accounts.map(account => account.balances.current)
                         const balancesTotal = balances.reduce((a, b) => a + b, 0)
                         totals.push({ itemId, balancesTotal })
