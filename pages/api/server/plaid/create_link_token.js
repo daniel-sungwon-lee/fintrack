@@ -10,8 +10,11 @@ export default function handler (request, response, next) {
           // This should correspond to a unique id for the current user.
           client_user_id: 'user-id',
         },
-        client_name: 'Plaid Quickstart',
+        client_name: 'FinTrack',
         products: PLAID_PRODUCTS,
+        transactions: {
+          days_requested: 730
+        },
         country_codes: PLAID_COUNTRY_CODES,
         language: 'en',
       };
