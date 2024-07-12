@@ -234,6 +234,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                 })
 
               //get updated limits, next payment date, last statement, minimum payment, next monthly payment, and interest rate data
+              //todo for updated liabilities data?
 
             } else {
               await fetch(`/api/server/plaid/auth?accessToken=${accessToken}`, { method: "GET" })
