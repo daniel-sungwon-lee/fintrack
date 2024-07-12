@@ -925,7 +925,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
 
                                                       return (
                                                         <ListItem key={transaction_id} secondaryAction={
-                                                          <div style={Math.sign(amount * -1) === -1 ? {color: 'red'} : {}}>{converter.format(amount * -1)}</div>
+                                                          <Amount account_id={account_id} amount={amount} />
                                                          } sx={{background:'white', borderRadius:'1rem', marginBottom:'0.5rem',
                                                          boxShadow:'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'}}>
                                                           <ListItemAvatar>
@@ -969,6 +969,46 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
           </Fab>
         </DialogActions>
       </Dialog>
+    </>
+  )
+}
+
+
+function Amount({amount, account_id}) {
+  const [loading, setLoading] = useState(true)
+  const [sign, setSign] = useState(null)
+
+  const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+
+  useEffect(() => {
+    if(loading) {
+      fetch(`/api/server/accounts/${account_id}`)
+        .then(res => res.text())
+        .then(type => {
+          if(JSON.parse(type).type === "depository") {
+            setSign(-1)
+            setLoading(false)
+
+          } else {
+            setSign(1)
+            setLoading(false)
+          }
+        })
+        .catch(error => {
+          window.alert(error)
+          console.error(error)
+        })
+    }
+  },[loading, account_id])
+
+  return (
+    <>
+      {
+        loading ? <Skeleton>
+                    <div style={Math.sign(amount * sign) === -1 ? { color: 'red' } : {}}>{converter.format(amount * sign)}</div>
+                  </Skeleton>
+                : <div style={Math.sign(amount * sign) === -1 ? {color: 'red'} : {}}>{converter.format(amount * sign)}</div>
+      }
     </>
   )
 }
