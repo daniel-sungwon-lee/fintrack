@@ -12,6 +12,7 @@ export default function handler (request, response, next) {
         },
         client_name: 'FinTrack',
         products: PLAID_PRODUCTS,
+        required_if_supported_products: ['auth','liabilities'],
         transactions: {
           days_requested: 730
         },
