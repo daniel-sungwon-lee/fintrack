@@ -242,28 +242,42 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                 .then(data => {
                   const types = data.accounts.map(account => account.type)
 
-                  if(types.some(type => type === 'credit' || type === 'loan')) {
-                    fetch(`/api/server/plaid/liabilities?accessToken=${accessToken}`)
-                      .then(res => res.json())
-                      .then(liabilitiesData => {
-                        setLiabilities(liabilitiesData.liabilities.liabilities)
-                        setAccounts(data.accounts)
-                        setNumbers(data.numbers.ach)
+                  if(types.some(type => type === 'depository')) {
+                    if(types.some(type => type === 'credit' || type === 'loan')) {
+                      fetch(`/api/server/plaid/liabilities?accessToken=${accessToken}`)
+                        .then(res => res.json())
+                        .then(liabilitiesData => {
+                          setLiabilities(liabilitiesData.liabilities.liabilities)
+                          setAccounts(data.accounts)
+                          setNumbers(data.numbers.ach)
 
-                        const balances = data.accounts.map(account => account.balances.current)
-                        const balancesTotal = balances.reduce((a, b) => a + b, 0)
-                        totals.push({ itemId, balancesTotal })
+                          const balances = data.accounts.map(account => account.balances.current)
+                          const balancesTotal = balances.reduce((a, b) => a + b, 0)
+                          totals.push({ itemId, balancesTotal })
 
-                        setLoading(false)
-                      })
-                      .catch(error => {
-                        window.alert(error)
-                        console.error(error)
-                      })
+                          setLoading(false)
+                        })
+                        .catch(error => {
+                          window.alert(error)
+                          console.error(error)
+                        })
+
+                    } else {
+                      setAccounts(data.accounts)
+                      setNumbers(data.numbers.ach)
+
+                      const balances = data.accounts.map(account => account.balances.current)
+                      const balancesTotal = balances.reduce((a, b) => a + b, 0)
+                      totals.push({ itemId, balancesTotal })
+
+                      setLoading(false)
+                    }
 
                   } else {
+                    setLiabilities(data.liabilities)
                     setAccounts(data.accounts)
-                    setNumbers(data.numbers.ach)
+                    //liabilities accounts only so no routing/account numbers (no depository accounts)
+                    setNumbers([])
 
                     const balances = data.accounts.map(account => account.balances.current)
                     const balancesTotal = balances.reduce((a, b) => a + b, 0)

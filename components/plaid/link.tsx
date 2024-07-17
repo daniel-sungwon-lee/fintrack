@@ -41,9 +41,11 @@ const Link = ({ userId, setAccountsPlaceholder, setData, setNewData, dispatch, i
         //access_token and item_id data object here, when successfully connected to new account(s)
         //ready to be stored to context (changes when a new account is connected)
 
+        const {access_token} = data
 
         //getting name of institution
-        await fetch(`/api/server/plaid/item?accessToken=${data.access_token}`, { method: "GET" })
+        const quickEncrypt = jwt.sign({ access_token }, 'e3675f6c-9eca-4d72-a241-f3f8ebfda65d')
+        await fetch(`/api/server/plaid/item?accessToken=${quickEncrypt}`, { method: "GET" })
           .then(res => res.json())
           .then(async result => {
             const newData = {
