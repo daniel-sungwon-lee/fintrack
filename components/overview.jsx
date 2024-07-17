@@ -26,6 +26,7 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
   const [openSnack, setOpenSnack] = useState(false)
 
   const [totals, setTotals] = useState([])
+  //array should update when item/institution gets removed/updated
 
   useEffect(() => {
     if(!newData && userId) {
@@ -218,12 +219,19 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                   const balances = accountsArr.map(account => {
                     return {
                       account_id: account.account_id,
-                      balance: account.balances.current
+                      balance: account.balances.current,
+                      type: account.type
                     }
                   })
                   setBalances(balances)
 
-                  const balancesTotal = balances.reduce((a,b) => a + b.balance, 0)
+                  const balancesTotal = balances.reduce((a,b) => {
+                    let currentBalance = b.balance
+                    if(b.type === 'credit' || b.type === 'loan') {
+                      currentBalance = currentBalance * -1
+                    }
+                    return a + currentBalance
+                  },0)
                   totals.push({itemId, balancesTotal})
 
                   setLoading(false)
@@ -251,8 +259,20 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                           setAccounts(data.accounts)
                           setNumbers(data.numbers.ach)
 
-                          const balances = data.accounts.map(account => account.balances.current)
-                          const balancesTotal = balances.reduce((a, b) => a + b, 0)
+                          const balances = data.accounts.map(account => {
+                            return {
+                              account_id: account.account_id,
+                              balance: account.balances.current,
+                              type: account.type
+                            }
+                          })
+                          const balancesTotal = balances.reduce((a, b) => {
+                            let currentBalance = b.balance
+                            if (b.type === 'credit' || b.type === 'loan') {
+                              currentBalance = currentBalance * -1
+                            }
+                            return a + currentBalance
+                          }, 0)
                           totals.push({ itemId, balancesTotal })
 
                           setLoading(false)
@@ -266,8 +286,20 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                       setAccounts(data.accounts)
                       setNumbers(data.numbers.ach)
 
-                      const balances = data.accounts.map(account => account.balances.current)
-                      const balancesTotal = balances.reduce((a, b) => a + b, 0)
+                      const balances = data.accounts.map(account => {
+                        return {
+                          account_id: account.account_id,
+                          balance: account.balances.current,
+                          type: account.type
+                        }
+                      })
+                      const balancesTotal = balances.reduce((a, b) => {
+                        let currentBalance = b.balance
+                        if (b.type === 'credit' || b.type === 'loan') {
+                          currentBalance = currentBalance * -1
+                        }
+                        return a + currentBalance
+                      }, 0)
                       totals.push({ itemId, balancesTotal })
 
                       setLoading(false)
@@ -279,8 +311,20 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                     //liabilities accounts only so no routing/account numbers (no depository accounts)
                     setNumbers([])
 
-                    const balances = data.accounts.map(account => account.balances.current)
-                    const balancesTotal = balances.reduce((a, b) => a + b, 0)
+                    const balances = data.accounts.map(account => {
+                      return {
+                        account_id: account.account_id,
+                        balance: account.balances.current,
+                        type: account.type
+                      }
+                    })
+                    const balancesTotal = balances.reduce((a, b) => {
+                      let currentBalance = b.balance
+                      if (b.type === 'credit' || b.type === 'loan') {
+                        currentBalance = currentBalance * -1
+                      }
+                      return a + currentBalance
+                    }, 0)
                     totals.push({ itemId, balancesTotal })
 
                     setLoading(false)
