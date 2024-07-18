@@ -26,7 +26,7 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
   const [openSnack, setOpenSnack] = useState(false)
 
   const [totals, setTotals] = useState([])
-  //array should update when item/institution gets removed/updated
+  //array should update when item/institution gets updated
 
   useEffect(() => {
     if(!newData && userId) {
@@ -362,6 +362,8 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
             const idIndex = itemIds.indexOf(itemId)
             const newInstitutions = institutions.toSpliced(idIndex, 1)
             setInstitutions(newInstitutions)
+
+            totals.splice(0,totals.length,...totals.filter((t,i) => !(t.itemId === itemId)))
 
             setRmOpen(false)
             setRmLoading(false)
