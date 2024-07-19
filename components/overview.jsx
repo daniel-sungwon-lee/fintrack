@@ -110,7 +110,10 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
                 }
 
                 {
-                  accountsPlaceholder ? <Accounts accountsPlaceholder={accountsPlaceholder} />
+                  accountsPlaceholder ? <>
+                                          <NetWorth institutions={['placeholder']} totals={[]} />
+                                          <Accounts accountsPlaceholder={accountsPlaceholder} />
+                                        </>
                                       : <></>
                 }
 
@@ -975,7 +978,8 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
                             </>
                           : <>
                               {
-                                transactions ? <>
+                                transactions && transactions.length > 0
+                                             ? <>
                                                  {
                                                     transactions.map(transaction => {
                                                       const { transaction_id, account_id, amount, date, name, iso_currency_code } = transaction
@@ -999,7 +1003,9 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
                                                     })
                                                  }
                                                </>
-                                             : <></>
+                                             : <>
+                                                <div className="h6 m-1 d-flex justify-content-center" style={{opacity: '0.7'}}>No transactions to show...</div>
+                                               </>
 
                               }
                             </>
