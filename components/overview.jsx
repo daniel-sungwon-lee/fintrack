@@ -191,6 +191,8 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
   const [balances, setBalances] = useState(null)
   const [numbers, setNumbers] = useState(null)
   const [liabilities, setLiabilities] = useState(null)
+  const [holdings, setHoldings] = useState(null)
+  const [securities, setSecurities] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
 
   const [open, setOpen] = useState(false)
@@ -255,10 +257,90 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
 
                   if(types.some(type => type === 'depository')) {
                     if(types.some(type => type === 'credit' || type === 'loan')) {
-                      fetch(`/api/server/plaid/liabilities?accessToken=${accessToken}`)
+                      if(types.some(type => type === 'investment')) {
+                        //auth, liabilities, and investment accounts
+                        fetch(`/api/server/plaid/investments?accessToken=${accessToken}`)
+                          .then(res => res.json())
+                          .then(investmentData => {
+                            setHoldings(investmentData.holdings)
+                            setSecurities(investmentData.securities)
+
+                            fetch(`/api/server/plaid/liabilities?accessToken=${accessToken}`)
+                            .then(res => res.json())
+                            .then(liabilitiesData => {
+                              setLiabilities(liabilitiesData.liabilities.liabilities)
+
+                              setAccounts(data.accounts)
+                              setNumbers(data.numbers.ach)
+
+                              const balances = data.accounts.map(account => {
+                                return {
+                                  account_id: account.account_id,
+                                  balance: account.balances.current,
+                                  type: account.type
+                                }
+                              })
+                              const balancesTotal = balances.reduce((a, b) => {
+                                let currentBalance = b.balance
+                                if (b.type === 'credit' || b.type === 'loan') {
+                                  currentBalance = currentBalance * -1
+                                }
+                                return a + currentBalance
+                              }, 0)
+                              totals.push({ itemId, balancesTotal })
+
+                              setLoading(false)
+                            })
+                            .catch(error => {
+                              window.alert(error)
+                              console.error(error)
+                            })
+                          })
+                          .catch(error => {
+                            window.alert(error)
+                            console.error(error)
+                          })
+
+                      } else {
+                        //auth and liabilities accounts
+                        fetch(`/api/server/plaid/liabilities?accessToken=${accessToken}`)
+                          .then(res => res.json())
+                          .then(liabilitiesData => {
+                            setLiabilities(liabilitiesData.liabilities.liabilities)
+                            setAccounts(data.accounts)
+                            setNumbers(data.numbers.ach)
+
+                            const balances = data.accounts.map(account => {
+                              return {
+                                account_id: account.account_id,
+                                balance: account.balances.current,
+                                type: account.type
+                              }
+                            })
+                            const balancesTotal = balances.reduce((a, b) => {
+                              let currentBalance = b.balance
+                              if (b.type === 'credit' || b.type === 'loan') {
+                                currentBalance = currentBalance * -1
+                              }
+                              return a + currentBalance
+                            }, 0)
+                            totals.push({ itemId, balancesTotal })
+
+                            setLoading(false)
+                          })
+                          .catch(error => {
+                            window.alert(error)
+                            console.error(error)
+                          })
+                      }
+
+                    } else if(types.some(type => type === 'investment')) {
+                      //auth and investment accounts
+                      fetch(`/api/server/plaid/investments?accessToken=${accessToken}`)
                         .then(res => res.json())
-                        .then(liabilitiesData => {
-                          setLiabilities(liabilitiesData.liabilities.liabilities)
+                        .then(investmentData => {
+                          setHoldings(investmentData.holdings)
+                          setSecurities(investmentData.securities)
                           setAccounts(data.accounts)
                           setNumbers(data.numbers.ach)
 
@@ -281,11 +363,12 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                           setLoading(false)
                         })
                         .catch(error => {
-                          window.alert(error)
+                          window.error(error)
                           console.error(error)
                         })
 
                     } else {
+                      //auth accounts only
                       setAccounts(data.accounts)
                       setNumbers(data.numbers.ach)
 
@@ -308,10 +391,74 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                       setLoading(false)
                     }
 
+                  } else if(types.some(type => type === 'credit' || type === 'loan')) {
+                    if(types.some(type => type === 'investment')) {
+                      //investment and liabilities accounts
+                      fetch(`/api/server/plaid/investments?accessToken=${accessToken}`)
+                        .then(res => res.json())
+                        .then(investmentData => {
+                          setHoldings(investmentData.holdings)
+                          setSecurities(investmentData.securities)
+                          setLiabilities(data.liabilities)
+                          setAccounts(data.accounts)
+                          //no auth/depository accounts so empty Numbers array
+                          setNumbers([])
+
+                          const balances = data.accounts.map(account => {
+                            return {
+                              account_id: account.account_id,
+                              balance: account.balances.current,
+                              type: account.type
+                            }
+                          })
+                          const balancesTotal = balances.reduce((a, b) => {
+                            let currentBalance = b.balance
+                            if (b.type === 'credit' || b.type === 'loan') {
+                              currentBalance = currentBalance * -1
+                            }
+                            return a + currentBalance
+                          }, 0)
+                          totals.push({ itemId, balancesTotal })
+
+                          setLoading(false)
+                        })
+                        .catch(error => {
+                          window.error(error)
+                          console.error(error)
+                        })
+
+                    } else {
+                      //liabilities accounts only
+                      setLiabilities(data.liabilities)
+                      setAccounts(data.accounts)
+                      //liabilities accounts only so no routing/account numbers (no depository accounts)
+                      setNumbers([])
+
+                      const balances = data.accounts.map(account => {
+                        return {
+                          account_id: account.account_id,
+                          balance: account.balances.current,
+                          type: account.type
+                        }
+                      })
+                      const balancesTotal = balances.reduce((a, b) => {
+                        let currentBalance = b.balance
+                        if (b.type === 'credit' || b.type === 'loan') {
+                          currentBalance = currentBalance * -1
+                        }
+                        return a + currentBalance
+                      }, 0)
+                      totals.push({ itemId, balancesTotal })
+
+                      setLoading(false)
+                    }
+
                   } else {
-                    setLiabilities(data.liabilities)
+                    //investment accounts only
+                    setHoldings(data.holdings)
+                    setSecurities(data.securities)
                     setAccounts(data.accounts)
-                    //liabilities accounts only so no routing/account numbers (no depository accounts)
+                    //investment accounts only so no routing/account numbers (no depository accounts)
                     setNumbers([])
 
                     const balances = data.accounts.map(account => {
@@ -696,8 +843,58 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                           )
                                         }
 
-                                      } else {
-                                        //investments here later?
+                                      } else if (account.type === 'investment') {
+                                        //combining holdings and securities arrays with each object holding combined/detailed data
+                                        const detailedHoldings = holdings.map(security => {
+                                          let i = securities.map(obj => obj.security_id).indexOf(security.security_id)
+                                          return {...security, ...securities[i]}
+                                        })
+
+                                        //amount of securities/positions per account
+                                        const securitiesAmount = detailedHoldings.filter(security => security.account_id === account.account_id).length
+
+                                        const accountData = {
+                                          account_id: account.account_id,
+                                          item_id: itemId,
+                                          name: account.name,
+                                          type: account.type,
+                                          subtype: account.subtype,
+                                          balance: account.balances.current,
+                                          amountOfSecurities: securitiesAmount,
+                                        }
+
+                                        return (
+                                          <Card sx={{ margin: "3rem 2rem 0", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                                            e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                                            onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                                            onClick={() => {
+                                              setOpen(true)
+                                              setAccountId(accountData.account_id)
+                                              setAccountName(accountData.name)
+                                              setAccountBalance(accountData.balance)
+                                            }} key={accountData.account_id}>
+                                            <CardHeader avatar={
+                                              <Avatar sx={{ bgcolor: "#FFD800" }}>
+                                                <AccountBalanceRounded color="primary" />
+                                              </Avatar>
+                                            } title={accountData.name} titleTypographyProps={{ fontSize: '18px' }} />
+                                            <CardContent>
+                                              <div style={{ height: 0 }} className="invisible">
+                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
+                                              </div>
+                                              <div className="d-flex justify-content-between">
+                                                <div>
+                                                  <div className="h6 text-capitalize">{accountData.subtype}</div>
+                                                  <div className="h6">Positions: {accountData.amountOfSecurities}</div>
+                                                  {/* price change update data here? */}
+                                                </div>
+                                                <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
+                                                  {converter.format(accountData.balance)}
+                                                </div>
+                                              </div>
+                                            </CardContent>
+                                          </Card>
+                                        )
                                       }
                                    })
                                   }
