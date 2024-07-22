@@ -199,6 +199,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
   const [accountId, setAccountId] = useState(null)
   const [accountName, setAccountName] = useState(null)
   const [accountBalance, setAccountBalance] = useState(null)
+  const [accountType, setAccountType] = useState(null)
   const [rmOpen, setRmOpen] = useState(false)
   const [rmLoading, setRmLoading] = useState(false)
 
@@ -613,6 +614,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                 setAccountId(accountData.account_id)
                                                 setAccountName(accountData.name)
                                                 setAccountBalance(accountData.balance)
+                                                setAccountType(accountData.type)
                                               }} key={accountData.account_id}>
                                               <CardHeader avatar={
                                                 <Avatar sx={{ bgcolor: "#FFD800" }}>
@@ -665,6 +667,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                 setAccountId(accountData.account_id)
                                                 setAccountName(accountData.name)
                                                 setAccountBalance(accountData.balance)
+                                                setAccountType(accountData.type)
                                               }} key={accountData.account_id}>
                                               <CardHeader avatar={
                                                 <Avatar sx={{ bgcolor: "#FFD800" }}>
@@ -716,6 +719,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                 setAccountId(accountData.account_id)
                                                 setAccountName(accountData.name)
                                                 setAccountBalance(accountData.balance)
+                                                setAccountType(accountData.type)
                                               }} key={accountData.account_id}>
                                               <CardHeader avatar={
                                                 <Avatar sx={{ bgcolor: "#FFD800" }}>
@@ -768,6 +772,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                              setAccountId(accountData.account_id)
                                              setAccountName(accountData.name)
                                              setAccountBalance(accountData.balance)
+                                             setAccountType(accountData.type)
                                             }} key={accountData.account_id}>
                                               <CardHeader avatar={
                                                 <Avatar sx={{bgcolor:"#FFD800"}}>
@@ -820,6 +825,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                 setAccountId(accountData.account_id)
                                                 setAccountName(accountData.name)
                                                 setAccountBalance(accountData.balance)
+                                                setAccountType(accountData.type)
                                               }} key={accountData.account_id}>
                                               <CardHeader avatar={
                                                 <Avatar sx={{ bgcolor: "#FFD800" }}>
@@ -872,6 +878,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                               setAccountId(accountData.account_id)
                                               setAccountName(accountData.name)
                                               setAccountBalance(accountData.balance)
+                                              setAccountType(accountData.type)
                                             }} key={accountData.account_id}>
                                             <CardHeader avatar={
                                               <Avatar sx={{ bgcolor: "#FFD800" }}>
@@ -907,7 +914,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                               const { account_id, item_id, name, type, subtype,
                                                                       account_num, routing_num, limit, next_payment_due_date,
                                                                       last_statement_balance, minimum_payment_amount,
-                                                                      next_monthly_payment, interest_rate } = account
+                                                                      next_monthly_payment, interest_rate, holdings, securitiesAmount } = account
                                                               const balance = balances.find((obj) => obj.account_id === account.account_id).balance
 
                                                               return (
@@ -919,6 +926,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                                     setAccountId(account_id)
                                                                     setAccountName(name)
                                                                     setAccountBalance(balance)
+                                                                    setAccountType(type)
                                                                   }} key={account_id}>
                                                                   <CardHeader avatar={
                                                                     <Avatar sx={{ bgcolor: "#FFD800" }}>
@@ -974,6 +982,10 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                                           interest_rate ? <div className="h6">Interest rate: {interest_rate}</div>
                                                                                         : <></>
                                                                         }
+                                                                        {
+                                                                          securitiesAmount ? <div className="h6">Positions: {securitiesAmount}</div>
+                                                                                           : <></>
+                                                                        }
                                                                       </div>
                                                                       <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
                                                                         <AccountBalanceUpdate balance={balance} accountId={account_id} converter={converter} />
@@ -993,7 +1005,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
           }
           <AccountDetails open={open} setOpen={setOpen} accountName={accountName} accountBalance={accountBalance}
            setAccountName={setAccountName} setAccountBalance={setAccountBalance} accessToken={accessToken}
-           accountId={accountId} setAccountId={setAccountId} />
+           accountId={accountId} setAccountId={setAccountId} accountType={accountType} setAccountType={setAccountType} />
 
           <Dialog open={rmOpen} PaperProps={{style: {borderRadius: '1rem', padding: '1rem 2rem'}}}
            keepMounted onClose={(e,reason) => {
@@ -1075,7 +1087,7 @@ const Transition = forwardRef(function Transition(props, ref) {
   return <Slide in direction="up" timeout={1000} ref={ref} {...props} />
 })
 
-function AccountDetails({ open, setOpen, accountName, accountBalance, setAccountName, setAccountBalance, accessToken, accountId, setAccountId }) {
+function AccountDetails({ open, setOpen, accountName, accountBalance, setAccountName, setAccountBalance, accessToken, accountId, setAccountId, accountType, setAccountType }) {
   const [end, setEnd] = useState(false)
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState(null)
@@ -1087,21 +1099,27 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
 
       setEnd(true)
 
-      fetch(`/api/server/plaid/transactions?accessToken=${accessToken}`, { method: 'GET' })
-        .then(res => res.json())
-        .then(transactions => {
-          const accountTransactions = transactions.latest_transactions.filter(transaction => {
-            return transaction.account_id === accountId
+      if(accountType === 'investment') {
+        //investments_transactions_get
+
+      } else {
+        fetch(`/api/server/plaid/transactions?accessToken=${accessToken}`, { method: 'GET' })
+          .then(res => res.json())
+          .then(transactions => {
+            const accountTransactions = transactions.latest_transactions.filter(transaction => {
+              return transaction.account_id === accountId
+            })
+            setTransactions(accountTransactions)
+            setLoading(false)
           })
-          setTransactions(accountTransactions)
-          setLoading(false)
-        })
-        .catch(error => {
-          window.alert(error)
-          console.error(error)
-        })
+          .catch(error => {
+            window.alert(error)
+            console.error(error)
+          })
+      }
+
     }
-  },[loading, open, end, accessToken, accountId])
+  },[loading, open, end, accessToken, accountId, accountType])
 
   return (
     <>
@@ -1114,6 +1132,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
         setAccountId(null)
         setAccountName(null)
         setAccountBalance(null)
+        setAccountType(null)
        }}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#00C169",
        color: "white", alignItems: "center", padding: "3rem 0rem"}}} scroll="body">
@@ -1223,6 +1242,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
             setAccountId(null)
             setAccountName(null)
             setAccountBalance(null)
+            setAccountType(null)
            }}>
             <Box className='d-flex align-items-center' sx={{
              color: 'white', textTransform: 'none', lineHeight: 1}}>
