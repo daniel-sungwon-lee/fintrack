@@ -9,6 +9,7 @@ import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded,
 import { useEffect, useState, forwardRef, useRef } from "react"
 import dynamic from 'next/dynamic'
 import { gsap } from "gsap"
+import dayjs from "dayjs"
 const jwt = require('jsonwebtoken')
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
 
@@ -1101,6 +1102,24 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
 
       if(accountType === 'investment') {
         //investments_transactions_get
+        fetch(`/api/server/plaid/investments_transactions_get?accessToken=${accessToken}`, {
+          method: 'POST',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            start_date: dayjs().subtract(2, 'year').format('YYYY-MM-DD'),
+            end_date: dayjs().format('YYYY-MM-DD')
+          })
+        })
+          .then(res => res.json())
+          .then(response => {
+            const investmentAccountTransactions = response.investmentTransactions.filter(transaction => transaction.account_id === accountId)
+            setTransactions(investmentAccountTransactions)
+            setLoading(false)
+          })
+          .catch(error => {
+            window.alert(error)
+            console.error(error)
+          })
 
       } else {
         fetch(`/api/server/plaid/transactions?accessToken=${accessToken}`, { method: 'GET' })
