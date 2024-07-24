@@ -1,15 +1,16 @@
 import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent,
          DialogContentText, DialogTitle, Fab, Slide, Paper, Zoom, Skeleton,
-         CardActions, List, ListItem, ListItemAvatar, ListItemText,
+         CardActions, List, ListItem, ListItemAvatar, ListItemText, Tabs, Tab,
          IconButton, Snackbar, Alert, CircularProgress, Tooltip, Box, TextField,
          } from "@mui/material"
-import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded,
+import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded, ShowChartRounded,
          RecommendRounded, RemoveCircleRounded, ThumbUpRounded, VisibilityOffRounded,
          VisibilityRounded } from "@mui/icons-material"
 import { useEffect, useState, forwardRef, useRef } from "react"
 import dynamic from 'next/dynamic'
 import { gsap } from "gsap"
 import dayjs from "dayjs"
+import SwipeableViews from "react-swipeable-views"
 const jwt = require('jsonwebtoken')
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
 
@@ -1088,10 +1089,30 @@ const Transition = forwardRef(function Transition(props, ref) {
   return <Slide in direction="up" timeout={1000} ref={ref} {...props} />
 })
 
+function TabPanel(props) {
+  const { children, value, index } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={index}
+    >
+      {value === index && (
+        <>
+          {children}
+        </>
+      )}
+    </div>
+  );
+}
+
 function AccountDetails({ open, setOpen, accountName, accountBalance, setAccountName, setAccountBalance, accessToken, accountId, setAccountId, accountType, setAccountType }) {
   const [end, setEnd] = useState(false)
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState(null)
+  const [holdings, setHoldings] = useState(null)
+  const [value, setValue] = useState(0)
 
   const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
@@ -1114,7 +1135,18 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
           .then(response => {
             const investmentAccountTransactions = response.investmentTransactions.filter(transaction => transaction.account_id === accountId)
             setTransactions(investmentAccountTransactions)
-            setLoading(false)
+
+            fetch(`/api/server/accounts/${accountId}`)
+              .then(res => res.json())
+              .then(account => {
+                setHoldings(account.holdings.holdings)
+                setLoading(false)
+              })
+              .catch(error => {
+                window.alert(error)
+                console.error(error)
+              })
+
           })
           .catch(error => {
             window.alert(error)
@@ -1140,12 +1172,22 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
     }
   },[loading, open, end, accessToken, accountId, accountType])
 
+  const handleChange = (e, newValue) => {
+    setValue(newValue)
+  }
+
+  const handleChangeTab = (i) => {
+    setValue(i)
+  }
+
   return (
     <>
       <Dialog open={open} TransitionComponent={Transition} onClose={() => {
         setEnd(false)
         setLoading(true)
         setTransactions(null)
+        setHoldings(null)
+        setValue(0)
         setOpen(false)
 
         setAccountId(null)
@@ -1176,76 +1218,250 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
 
           <Card sx={{bgcolor: '#FFD800', borderRadius: '1rem', maxWidth: '1000px'}} className="m-auto">
             <CardContent>
-              <div className="h4 text-center m-3" style={{fontWeight: 'bold'}}>Transactions</div>
-              <List>
-                {
-                  loading ? <>
-                              <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
-                                <ListItem sx={{width: '100vw'}}>
-                                  <ListItemAvatar>
-                                    <Avatar sx={{ bgcolor: "white" }}>
-                                      <AttachMoneyRounded color="primary" />
-                                    </Avatar>
-                                  </ListItemAvatar>
-                                  <ListItemText primary="$420.69" secondary="June 6th, 2023" />
-                                </ListItem>
-                              </Skeleton>
-                              <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
-                                <ListItem sx={{width: '100vw'}}>
-                                  <ListItemAvatar>
-                                    <Avatar sx={{ bgcolor: "white" }}>
-                                      <AttachMoneyRounded color="primary" />
-                                    </Avatar>
-                                  </ListItemAvatar>
-                                  <ListItemText primary="$3.33" secondary="April 20th, 2023" />
-                                </ListItem>
-                              </Skeleton>
-                              <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
-                                <ListItem sx={{width: '100vw'}}>
-                                  <ListItemAvatar>
-                                    <Avatar sx={{ bgcolor: "white" }}>
-                                      <AttachMoneyRounded color="primary" />
-                                    </Avatar>
-                                  </ListItemAvatar>
-                                  <ListItemText primary="$69.42" secondary="May 4th, 2023" />
-                                </ListItem>
-                              </Skeleton>
-                            </>
-                          : <>
-                              {
-                                transactions && transactions.length > 0
-                                             ? <>
-                                                 {
-                                                    transactions.map(transaction => {
-                                                      const { transaction_id, account_id, amount, date, name, iso_currency_code } = transaction
-                                                      const newDate = new Date(date).toLocaleDateString('en-US', {
-                                                        year: 'numeric', month: 'long', day: 'numeric'
-                                                      })
+              {
+                accountType === 'investment'
+                  ? <>
+                      <Paper sx={{borderRadius: '2rem'}}>
+                        <Tabs value={value} onChange={handleChange} variant="fullWidth" sx={{
+                          margin: '0 22px'
+                        }}>
+                          <Tab label="Transactions" sx={{fontSize: '18px', color: 'black', fontWeight: 'bold'}} />
+                          <Tab label="Holdings" sx={{fontSize: '18px', color: 'black', fontWeight: 'bold'}} />
+                        </Tabs>
+                      </Paper>
 
-                                                      return (
-                                                        <ListItem key={transaction_id} secondaryAction={
-                                                          <Amount account_id={account_id} amount={amount} />
-                                                         } sx={{background:'white', borderRadius:'1rem', marginBottom:'0.5rem',
-                                                         boxShadow:'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'}}>
-                                                          <ListItemAvatar>
-                                                            <Avatar sx={{ bgcolor: "white" }}>
-                                                              <AttachMoneyRounded color="primary" />
-                                                            </Avatar>
-                                                          </ListItemAvatar>
-                                                          <ListItemText sx={{maxWidth: '60%'}} primary={name} secondary={newDate} />
-                                                        </ListItem>
-                                                      )
-                                                    })
-                                                 }
-                                               </>
-                                             : <>
-                                                <div className="h6 m-1 d-flex justify-content-center" style={{opacity: '0.7'}}>No transactions to show...</div>
-                                               </>
+                      <SwipeableViews index={value} onChangeIndex={handleChangeTab} slideStyle={{overflowX: 'hidden'}}>
+                        <TabPanel value={value} index={0}>
+                          <List sx={{marginTop: '1rem'}}>
+                            {
+                              loading ? <>
+                                          <Skeleton variant="rectangle" sx={{ margin: '8px 16px', borderRadius: '1rem' }}>
+                                            <ListItem sx={{ width: '100vw' }}>
+                                              <ListItemAvatar>
+                                                <Avatar sx={{ bgcolor: "white" }}>
+                                                  <AttachMoneyRounded color="primary" />
+                                                </Avatar>
+                                              </ListItemAvatar>
+                                              <ListItemText primary="$420.69" secondary="June 6th, 2023" />
+                                            </ListItem>
+                                          </Skeleton>
+                                          <Skeleton variant="rectangle" sx={{ margin: '8px 16px', borderRadius: '1rem' }}>
+                                            <ListItem sx={{ width: '100vw' }}>
+                                              <ListItemAvatar>
+                                                <Avatar sx={{ bgcolor: "white" }}>
+                                                  <AttachMoneyRounded color="primary" />
+                                                </Avatar>
+                                              </ListItemAvatar>
+                                              <ListItemText primary="$3.33" secondary="April 20th, 2023" />
+                                            </ListItem>
+                                          </Skeleton>
+                                          <Skeleton variant="rectangle" sx={{ margin: '8px 16px', borderRadius: '1rem' }}>
+                                            <ListItem sx={{ width: '100vw' }}>
+                                              <ListItemAvatar>
+                                                <Avatar sx={{ bgcolor: "white" }}>
+                                                  <AttachMoneyRounded color="primary" />
+                                                </Avatar>
+                                              </ListItemAvatar>
+                                              <ListItemText primary="$69.42" secondary="May 4th, 2023" />
+                                            </ListItem>
+                                          </Skeleton>
+                                        </>
+                                : <>
+                                  {
+                                    transactions && transactions.length > 0
+                                      ? <>
+                                          {
+                                            transactions.map(transaction => {
+                                              const { investment_transaction_id, account_id, amount, date, name, iso_currency_code } = transaction
+                                              const newDate = new Date(date).toLocaleDateString('en-US', {
+                                                year: 'numeric', month: 'long', day: 'numeric'
+                                              })
 
-                              }
-                            </>
-                }
-              </List>
+                                              return (
+                                                <ListItem key={investment_transaction_id} secondaryAction={
+                                                  <Amount account_id={account_id} amount={amount} />
+                                                } sx={{
+                                                  background: 'white', borderRadius: '1rem', marginBottom: '0.5rem',
+                                                  boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'
+                                                }}>
+                                                  <ListItemAvatar>
+                                                    <Avatar sx={{ bgcolor: "white" }}>
+                                                      <AttachMoneyRounded color="primary" />
+                                                    </Avatar>
+                                                  </ListItemAvatar>
+                                                  <ListItemText sx={{ maxWidth: '60%' }} primary={name} secondary={newDate} />
+                                                </ListItem>
+                                              )
+                                            })
+                                          }
+                                        </>
+                                      : <>
+                                          <div className="h6 m-1 d-flex justify-content-center" style={{ opacity: '0.7' }}>No transactions to show...</div>
+                                        </>
+
+                                  }
+                                  </>
+                            }
+                          </List>
+                        </TabPanel>
+
+                        <TabPanel value={value} index={1}>
+                        <div className="h4 m-3">Positions</div>
+                          <List>
+                            {
+                              loading ? <>
+                                          <Skeleton variant="rectangle" sx={{ margin: '8px 16px', borderRadius: '1rem' }}>
+                                            <ListItem sx={{ width: '100vw' }}>
+                                              <ListItemAvatar>
+                                                <Avatar sx={{ bgcolor: "white" }}>
+                                                  <ShowChartRounded color="primary" />
+                                                </Avatar>
+                                              </ListItemAvatar>
+                                              <ListItemText primary="Tesla" secondary="420 shares" />
+                                            </ListItem>
+                                          </Skeleton>
+                                          <Skeleton variant="rectangle" sx={{ margin: '8px 16px', borderRadius: '1rem' }}>
+                                            <ListItem sx={{ width: '100vw' }}>
+                                              <ListItemAvatar>
+                                                <Avatar sx={{ bgcolor: "white" }}>
+                                                  <ShowChartRounded color="primary" />
+                                                </Avatar>
+                                              </ListItemAvatar>
+                                              <ListItemText primary="Apple" secondary="333 shares" />
+                                            </ListItem>
+                                          </Skeleton>
+                                          <Skeleton variant="rectangle" sx={{ margin: '8px 16px', borderRadius: '1rem' }}>
+                                            <ListItem sx={{ width: '100vw' }}>
+                                              <ListItemAvatar>
+                                                <Avatar sx={{ bgcolor: "white" }}>
+                                                  <ShowChartRounded color="primary" />
+                                                </Avatar>
+                                              </ListItemAvatar>
+                                              <ListItemText primary="Dogecoin" secondary="30,000 shares" />
+                                            </ListItem>
+                                          </Skeleton>
+                                        </>
+                                : <>
+                                  {
+                                    holdings && holdings.length > 0
+                                      ? <>
+                                          {
+                                            holdings.map(security => {
+                                              const { security_id, account_id, institution_value, institution_price,
+                                                close_price, quantity, name, ticker_symbol, type, iso_currency_code,
+                                                institution_price_as_of } = security
+                                              const newDate = new Date(institution_price_as_of).toLocaleDateString('en-US', {
+                                                year: 'numeric', month: 'long', day: 'numeric'
+                                              })
+
+                                              return (
+                                                <ListItem key={security_id} secondaryAction={
+                                                  <div>{converter.format(institution_value)}</div>
+                                                } sx={{
+                                                  background: 'white', borderRadius: '1rem', marginBottom: '0.5rem',
+                                                  boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'
+                                                }}>
+                                                  <ListItemAvatar>
+                                                    <Avatar sx={{ bgcolor: "white" }}>
+                                                      <ShowChartRounded color="primary" />
+                                                    </Avatar>
+                                                  </ListItemAvatar>
+                                                  <ListItemText sx={{ maxWidth: '60%' }} primary={name} secondary={
+                                                    <>
+                                                      <span className="d-block">{ticker_symbol}</span>
+                                                      <span className="d-block text-capitalize">{type}</span>
+                                                      <span className="d-block">{`${quantity} shares`}</span>
+                                                    </>
+                                                   } />
+                                                </ListItem>
+                                              )
+                                            })
+                                          }
+                                        </>
+                                      : <>
+                                          <div className="h6 m-1 d-flex justify-content-center" style={{ opacity: '0.7' }}>No holdings...</div>
+                                        </>
+
+                                  }
+                                  </>
+                            }
+                          </List>
+                        </TabPanel>
+                      </SwipeableViews>
+                    </>
+                  : <>
+                      <div className="h4 text-center m-3" style={{fontWeight: 'bold'}}>Transactions</div>
+                      <List>
+                        {
+                          loading ? <>
+                                      <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
+                                        <ListItem sx={{width: '100vw'}}>
+                                          <ListItemAvatar>
+                                            <Avatar sx={{ bgcolor: "white" }}>
+                                              <AttachMoneyRounded color="primary" />
+                                            </Avatar>
+                                          </ListItemAvatar>
+                                          <ListItemText primary="$420.69" secondary="June 6th, 2023" />
+                                        </ListItem>
+                                      </Skeleton>
+                                      <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
+                                        <ListItem sx={{width: '100vw'}}>
+                                          <ListItemAvatar>
+                                            <Avatar sx={{ bgcolor: "white" }}>
+                                              <AttachMoneyRounded color="primary" />
+                                            </Avatar>
+                                          </ListItemAvatar>
+                                          <ListItemText primary="$3.33" secondary="April 20th, 2023" />
+                                        </ListItem>
+                                      </Skeleton>
+                                      <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
+                                        <ListItem sx={{width: '100vw'}}>
+                                          <ListItemAvatar>
+                                            <Avatar sx={{ bgcolor: "white" }}>
+                                              <AttachMoneyRounded color="primary" />
+                                            </Avatar>
+                                          </ListItemAvatar>
+                                          <ListItemText primary="$69.42" secondary="May 4th, 2023" />
+                                        </ListItem>
+                                      </Skeleton>
+                                    </>
+                                  : <>
+                                      {
+                                        transactions && transactions.length > 0
+                                                    ? <>
+                                                        {
+                                                            transactions.map(transaction => {
+                                                              const { transaction_id, account_id, amount, date, name, iso_currency_code } = transaction
+                                                              const newDate = new Date(date).toLocaleDateString('en-US', {
+                                                                year: 'numeric', month: 'long', day: 'numeric'
+                                                              })
+
+                                                              return (
+                                                                <ListItem key={transaction_id} secondaryAction={
+                                                                  <Amount account_id={account_id} amount={amount} />
+                                                                } sx={{background:'white', borderRadius:'1rem', marginBottom:'0.5rem',
+                                                                boxShadow:'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'}}>
+                                                                  <ListItemAvatar>
+                                                                    <Avatar sx={{ bgcolor: "white" }}>
+                                                                      <AttachMoneyRounded color="primary" />
+                                                                    </Avatar>
+                                                                  </ListItemAvatar>
+                                                                  <ListItemText sx={{maxWidth: '60%'}} primary={name} secondary={newDate} />
+                                                                </ListItem>
+                                                              )
+                                                            })
+                                                        }
+                                                      </>
+                                                    : <>
+                                                        <div className="h6 m-1 d-flex justify-content-center" style={{opacity: '0.7'}}>No transactions to show...</div>
+                                                      </>
+
+                                      }
+                                    </>
+                        }
+                      </List>
+                    </>
+              }
             </CardContent>
             <CardActions></CardActions>
           </Card>
@@ -1257,6 +1473,8 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
             setOpen(false)
             setLoading(true)
             setTransactions(null)
+            setHoldings(null)
+            setValue(0)
 
             setAccountId(null)
             setAccountName(null)
@@ -1287,6 +1505,7 @@ function Amount({amount, account_id}) {
       fetch(`/api/server/accounts/${account_id}`)
         .then(res => res.text())
         .then(type => {
+          //check investment transactions to see if the amount also needs to changed (sign change)
           if(JSON.parse(type).type === "depository") {
             setSign(-1)
             setLoading(false)

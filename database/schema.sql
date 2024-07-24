@@ -36,7 +36,7 @@ CREATE TABLE "accounts" (
 	"minimum_payment_amount" numeric,
 	"next_monthly_payment" numeric,
 	"interest_rate" numeric,
-	"holdings" TEXT,
+	"holdings" JSON,
 	"securitiesAmount" integer,
 	CONSTRAINT "accounts_pk" PRIMARY KEY ("account_id")
 ) WITH (

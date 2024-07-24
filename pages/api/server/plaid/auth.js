@@ -522,6 +522,10 @@ export default function handler (request, response, next) {
               let i = investmentsResponse.data.securities.map(obj => obj.security_id).indexOf(security.security_id)
               return { ...security, ...investmentsResponse.data.securities[i] }
             })
+            //storing holdings data as JSON
+            const holdingsJSON = {
+              holdings: detailedHoldings.filter(security => security.account_id === account.account_id)
+            }
 
             const accountData = {
               account_id: account.account_id,
@@ -538,7 +542,7 @@ export default function handler (request, response, next) {
               minimum_payment_amount: null,
               next_monthly_payment: null,
               interest_rate: null,
-              holdings: detailedHoldings.filter(security => security.account_id === account.account_id),
+              holdings: JSON.stringify(holdingsJSON),
               securitiesAmount: detailedHoldings.filter(security => security.account_id === account.account_id).length,
             }
 
@@ -925,6 +929,10 @@ export default function handler (request, response, next) {
               let i = investmentsResponse.data.securities.map(obj => obj.security_id).indexOf(security.security_id)
               return { ...security, ...investmentsResponse.data.securities[i] }
             })
+            //storing holdings data as JSON
+            const holdingsJSON = {
+              holdings: detailedHoldings.filter(security => security.account_id === account.account_id)
+            }
 
             const accountData = {
               account_id: account.account_id,
@@ -941,7 +949,7 @@ export default function handler (request, response, next) {
               minimum_payment_amount: null,
               next_monthly_payment: null,
               interest_rate: null,
-              holdings: detailedHoldings.filter(security => security.account_id === account.account_id),
+              holdings: JSON.stringify(holdingsJSON),
               securitiesAmount: detailedHoldings.filter(security => security.account_id === account.account_id).length,
             }
 
@@ -1036,6 +1044,10 @@ export default function handler (request, response, next) {
             let i = investmentsResponse.data.securities.map(obj => obj.security_id).indexOf(security.security_id)
             return { ...security, ...investmentsResponse.data.securities[i] }
           })
+          //storing holdings data as JSON
+          const holdingsJSON = {
+            holdings: detailedHoldings.filter(security => security.account_id === account.account_id)
+          }
 
           const accountData = {
             account_id: account.account_id,
@@ -1052,7 +1064,7 @@ export default function handler (request, response, next) {
             minimum_payment_amount: null,
             next_monthly_payment: null,
             interest_rate: null,
-            holdings: detailedHoldings.filter(security => security.account_id === account.account_id),
+            holdings: JSON.stringify(holdingsJSON),
             securitiesAmount: detailedHoldings.filter(security => security.account_id === account.account_id).length,
           }
 
