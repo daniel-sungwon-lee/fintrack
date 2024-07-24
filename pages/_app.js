@@ -203,6 +203,11 @@ a:hover {
   text-transform: none;
 }
 
+.MuiButtonBase-root.MuiTab-root {
+  font-family: ${Inter.style.fontFamily} !important;
+  text-transform: none;
+}
+
 
 @media(max-width: 767px) {
   .tracker-fontsize-mobile {

@@ -5,7 +5,7 @@ import {
 } from './index';
 import { ACCESS_TOKEN } from './set_access_token';
 
-export default function handler (request, response, next) {
+export default function handler(request, response, next) {
   const { accessToken } = request.query
   const access_token = decodeAccessToken(accessToken)
 
@@ -22,31 +22,31 @@ export default function handler (request, response, next) {
           count: 333
         }
       };
-      const plaidResponse = await client.transactionsGet(request);
-      let transactions = plaidResponse.data.transactions;
-      const total_transactions = plaidResponse.data.total_transactions;
+      const plaidResponse = await client.investmentsTransactionsGet(request);
+      let investmentTransactions = plaidResponse.data.investment_transactions;
+      const total_investment_transactions = plaidResponse.data.total_investment_transactions
 
       // Manipulate the offset parameter to paginate
       // transactions and retrieve all available data
-      while (transactions.length < total_transactions) {
+      while (investmentTransactions.length < total_investment_transactions) {
         const paginatedRequest = {
           access_token: access_token,
           start_date: start_date,
           end_date: end_date,
           options: {
-            offset: transactions.length,
+            offset: investmentTransactions.length,
             count: 333
           },
         };
-        const paginatedResponse = await client.transactionsGet(paginatedRequest);
-        transactions = transactions.concat(
-          paginatedResponse.data.transactions,
+        const paginatedResponse = await client.investmentsTransactionsGet(paginatedRequest);
+        investmentTransactions = investmentTransactions.concat(
+          paginatedResponse.data.investment_transactions,
         );
 
-        prettyPrintResponse(transactions)
+        prettyPrintResponse(investmentTransactions)
       }
 
-      response.json({ transactions: transactions })
+      response.json({ investmentTransactions: investmentTransactions })
     })
     .catch(next)
 }

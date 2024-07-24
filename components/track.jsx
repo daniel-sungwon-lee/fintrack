@@ -1620,6 +1620,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
         setChecked([])
 
         const transactionsArr = []
+        //get transactions from investment accounts???
         for(let i =0; i<tokens.length; i++){
           const reqBody = { start_date, end_date }
 
@@ -1734,6 +1735,7 @@ function Transactions({ userId, value, setValue, reload, setReload, setOpen, set
                     trackerId,
                     account_id: transaction.account_id,
                     amount: transaction.amount,
+                    //transaction.category deprecated...change to personal_finance_category?
                     category: transaction.category,
                     date: transaction.date,
                     iso_currency_code: transaction.iso_currency_code,

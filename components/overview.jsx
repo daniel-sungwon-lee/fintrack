@@ -1,14 +1,16 @@
 import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent,
          DialogContentText, DialogTitle, Fab, Slide, Paper, Zoom, Skeleton,
-         CardActions, List, ListItem, ListItemAvatar, ListItemText,
+         CardActions, List, ListItem, ListItemAvatar, ListItemText, Tabs, Tab,
          IconButton, Snackbar, Alert, CircularProgress, Tooltip, Box, TextField,
          } from "@mui/material"
-import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded,
+import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded, ShowChartRounded,
          RecommendRounded, RemoveCircleRounded, ThumbUpRounded, VisibilityOffRounded,
          VisibilityRounded } from "@mui/icons-material"
 import { useEffect, useState, forwardRef, useRef } from "react"
 import dynamic from 'next/dynamic'
 import { gsap } from "gsap"
+import dayjs from "dayjs"
+import SwipeableViews from "react-swipeable-views"
 const jwt = require('jsonwebtoken')
 const Placeholder = dynamic(() => import('./placeholder'), { ssr: false })
 
@@ -110,7 +112,10 @@ export default function Overview({ userId, dispatch, isPaymentInitiation, linkTo
                 }
 
                 {
-                  accountsPlaceholder ? <Accounts accountsPlaceholder={accountsPlaceholder} />
+                  accountsPlaceholder ? <>
+                                          <NetWorth institutions={['placeholder']} totals={[]} />
+                                          <Accounts accountsPlaceholder={accountsPlaceholder} />
+                                        </>
                                       : <></>
                 }
 
@@ -188,12 +193,15 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
   const [balances, setBalances] = useState(null)
   const [numbers, setNumbers] = useState(null)
   const [liabilities, setLiabilities] = useState(null)
+  const [holdings, setHoldings] = useState(null)
+  const [securities, setSecurities] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
 
   const [open, setOpen] = useState(false)
   const [accountId, setAccountId] = useState(null)
   const [accountName, setAccountName] = useState(null)
   const [accountBalance, setAccountBalance] = useState(null)
+  const [accountType, setAccountType] = useState(null)
   const [rmOpen, setRmOpen] = useState(false)
   const [rmLoading, setRmLoading] = useState(false)
 
@@ -252,10 +260,90 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
 
                   if(types.some(type => type === 'depository')) {
                     if(types.some(type => type === 'credit' || type === 'loan')) {
-                      fetch(`/api/server/plaid/liabilities?accessToken=${accessToken}`)
+                      if(types.some(type => type === 'investment')) {
+                        //auth, liabilities, and investment accounts
+                        fetch(`/api/server/plaid/investments?accessToken=${accessToken}`)
+                          .then(res => res.json())
+                          .then(investmentData => {
+                            setHoldings(investmentData.holdings)
+                            setSecurities(investmentData.securities)
+
+                            fetch(`/api/server/plaid/liabilities?accessToken=${accessToken}`)
+                            .then(res => res.json())
+                            .then(liabilitiesData => {
+                              setLiabilities(liabilitiesData.liabilities.liabilities)
+
+                              setAccounts(data.accounts)
+                              setNumbers(data.numbers.ach)
+
+                              const balances = data.accounts.map(account => {
+                                return {
+                                  account_id: account.account_id,
+                                  balance: account.balances.current,
+                                  type: account.type
+                                }
+                              })
+                              const balancesTotal = balances.reduce((a, b) => {
+                                let currentBalance = b.balance
+                                if (b.type === 'credit' || b.type === 'loan') {
+                                  currentBalance = currentBalance * -1
+                                }
+                                return a + currentBalance
+                              }, 0)
+                              totals.push({ itemId, balancesTotal })
+
+                              setLoading(false)
+                            })
+                            .catch(error => {
+                              window.alert(error)
+                              console.error(error)
+                            })
+                          })
+                          .catch(error => {
+                            window.alert(error)
+                            console.error(error)
+                          })
+
+                      } else {
+                        //auth and liabilities accounts
+                        fetch(`/api/server/plaid/liabilities?accessToken=${accessToken}`)
+                          .then(res => res.json())
+                          .then(liabilitiesData => {
+                            setLiabilities(liabilitiesData.liabilities.liabilities)
+                            setAccounts(data.accounts)
+                            setNumbers(data.numbers.ach)
+
+                            const balances = data.accounts.map(account => {
+                              return {
+                                account_id: account.account_id,
+                                balance: account.balances.current,
+                                type: account.type
+                              }
+                            })
+                            const balancesTotal = balances.reduce((a, b) => {
+                              let currentBalance = b.balance
+                              if (b.type === 'credit' || b.type === 'loan') {
+                                currentBalance = currentBalance * -1
+                              }
+                              return a + currentBalance
+                            }, 0)
+                            totals.push({ itemId, balancesTotal })
+
+                            setLoading(false)
+                          })
+                          .catch(error => {
+                            window.alert(error)
+                            console.error(error)
+                          })
+                      }
+
+                    } else if(types.some(type => type === 'investment')) {
+                      //auth and investment accounts
+                      fetch(`/api/server/plaid/investments?accessToken=${accessToken}`)
                         .then(res => res.json())
-                        .then(liabilitiesData => {
-                          setLiabilities(liabilitiesData.liabilities.liabilities)
+                        .then(investmentData => {
+                          setHoldings(investmentData.holdings)
+                          setSecurities(investmentData.securities)
                           setAccounts(data.accounts)
                           setNumbers(data.numbers.ach)
 
@@ -278,11 +366,12 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                           setLoading(false)
                         })
                         .catch(error => {
-                          window.alert(error)
+                          window.error(error)
                           console.error(error)
                         })
 
                     } else {
+                      //auth accounts only
                       setAccounts(data.accounts)
                       setNumbers(data.numbers.ach)
 
@@ -305,10 +394,74 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                       setLoading(false)
                     }
 
+                  } else if(types.some(type => type === 'credit' || type === 'loan')) {
+                    if(types.some(type => type === 'investment')) {
+                      //investment and liabilities accounts
+                      fetch(`/api/server/plaid/investments?accessToken=${accessToken}`)
+                        .then(res => res.json())
+                        .then(investmentData => {
+                          setHoldings(investmentData.holdings)
+                          setSecurities(investmentData.securities)
+                          setLiabilities(data.liabilities)
+                          setAccounts(data.accounts)
+                          //no auth/depository accounts so empty Numbers array
+                          setNumbers([])
+
+                          const balances = data.accounts.map(account => {
+                            return {
+                              account_id: account.account_id,
+                              balance: account.balances.current,
+                              type: account.type
+                            }
+                          })
+                          const balancesTotal = balances.reduce((a, b) => {
+                            let currentBalance = b.balance
+                            if (b.type === 'credit' || b.type === 'loan') {
+                              currentBalance = currentBalance * -1
+                            }
+                            return a + currentBalance
+                          }, 0)
+                          totals.push({ itemId, balancesTotal })
+
+                          setLoading(false)
+                        })
+                        .catch(error => {
+                          window.error(error)
+                          console.error(error)
+                        })
+
+                    } else {
+                      //liabilities accounts only
+                      setLiabilities(data.liabilities)
+                      setAccounts(data.accounts)
+                      //liabilities accounts only so no routing/account numbers (no depository accounts)
+                      setNumbers([])
+
+                      const balances = data.accounts.map(account => {
+                        return {
+                          account_id: account.account_id,
+                          balance: account.balances.current,
+                          type: account.type
+                        }
+                      })
+                      const balancesTotal = balances.reduce((a, b) => {
+                        let currentBalance = b.balance
+                        if (b.type === 'credit' || b.type === 'loan') {
+                          currentBalance = currentBalance * -1
+                        }
+                        return a + currentBalance
+                      }, 0)
+                      totals.push({ itemId, balancesTotal })
+
+                      setLoading(false)
+                    }
+
                   } else {
-                    setLiabilities(data.liabilities)
+                    //investment accounts only
+                    setHoldings(data.holdings)
+                    setSecurities(data.securities)
                     setAccounts(data.accounts)
-                    //liabilities accounts only so no routing/account numbers (no depository accounts)
+                    //investment accounts only so no routing/account numbers (no depository accounts)
                     setNumbers([])
 
                     const balances = data.accounts.map(account => {
@@ -463,6 +616,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                 setAccountId(accountData.account_id)
                                                 setAccountName(accountData.name)
                                                 setAccountBalance(accountData.balance)
+                                                setAccountType(accountData.type)
                                               }} key={accountData.account_id}>
                                               <CardHeader avatar={
                                                 <Avatar sx={{ bgcolor: "#FFD800" }}>
@@ -515,6 +669,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                 setAccountId(accountData.account_id)
                                                 setAccountName(accountData.name)
                                                 setAccountBalance(accountData.balance)
+                                                setAccountType(accountData.type)
                                               }} key={accountData.account_id}>
                                               <CardHeader avatar={
                                                 <Avatar sx={{ bgcolor: "#FFD800" }}>
@@ -566,6 +721,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                 setAccountId(accountData.account_id)
                                                 setAccountName(accountData.name)
                                                 setAccountBalance(accountData.balance)
+                                                setAccountType(accountData.type)
                                               }} key={accountData.account_id}>
                                               <CardHeader avatar={
                                                 <Avatar sx={{ bgcolor: "#FFD800" }}>
@@ -618,6 +774,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                              setAccountId(accountData.account_id)
                                              setAccountName(accountData.name)
                                              setAccountBalance(accountData.balance)
+                                             setAccountType(accountData.type)
                                             }} key={accountData.account_id}>
                                               <CardHeader avatar={
                                                 <Avatar sx={{bgcolor:"#FFD800"}}>
@@ -670,6 +827,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                 setAccountId(accountData.account_id)
                                                 setAccountName(accountData.name)
                                                 setAccountBalance(accountData.balance)
+                                                setAccountType(accountData.type)
                                               }} key={accountData.account_id}>
                                               <CardHeader avatar={
                                                 <Avatar sx={{ bgcolor: "#FFD800" }}>
@@ -693,8 +851,59 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                           )
                                         }
 
-                                      } else {
-                                        //investments here later?
+                                      } else if (account.type === 'investment') {
+                                        //combining holdings and securities arrays with each object holding combined/detailed data
+                                        const detailedHoldings = holdings.map(security => {
+                                          let i = securities.map(obj => obj.security_id).indexOf(security.security_id)
+                                          return {...security, ...securities[i]}
+                                        })
+
+                                        //amount of securities/positions per account
+                                        const securitiesAmount = detailedHoldings.filter(security => security.account_id === account.account_id).length
+
+                                        const accountData = {
+                                          account_id: account.account_id,
+                                          item_id: itemId,
+                                          name: account.name,
+                                          type: account.type,
+                                          subtype: account.subtype,
+                                          balance: account.balances.current,
+                                          amountOfSecurities: securitiesAmount,
+                                        }
+
+                                        return (
+                                          <Card sx={{ margin: "3rem 2rem 0", cursor: "pointer", borderRadius: "1rem" }} onMouseEnter={(e) =>
+                                            e.currentTarget.style.boxShadow = "0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)"}
+                                            onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)"}
+                                            onClick={() => {
+                                              setOpen(true)
+                                              setAccountId(accountData.account_id)
+                                              setAccountName(accountData.name)
+                                              setAccountBalance(accountData.balance)
+                                              setAccountType(accountData.type)
+                                            }} key={accountData.account_id}>
+                                            <CardHeader avatar={
+                                              <Avatar sx={{ bgcolor: "#FFD800" }}>
+                                                <AccountBalanceRounded color="primary" />
+                                              </Avatar>
+                                            } title={accountData.name} titleTypographyProps={{ fontSize: '18px' }} />
+                                            <CardContent>
+                                              <div style={{ height: 0 }} className="invisible">
+                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque quasi porro quam voluptas fugiat dicta obcaecati repellat ut, at ratione eum dolores consectetur. Nisi obcaecati culpa laboriosam alias reprehenderit illum.
+                                              </div>
+                                              <div className="d-flex justify-content-between">
+                                                <div>
+                                                  <div className="h6 text-capitalize">{accountData.subtype}</div>
+                                                  <div className="h6">Positions: {accountData.amountOfSecurities}</div>
+                                                  {/* price change update data here? */}
+                                                </div>
+                                                <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
+                                                  {converter.format(accountData.balance)}
+                                                </div>
+                                              </div>
+                                            </CardContent>
+                                          </Card>
+                                        )
                                       }
                                    })
                                   }
@@ -707,7 +916,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                               const { account_id, item_id, name, type, subtype,
                                                                       account_num, routing_num, limit, next_payment_due_date,
                                                                       last_statement_balance, minimum_payment_amount,
-                                                                      next_monthly_payment, interest_rate } = account
+                                                                      next_monthly_payment, interest_rate, holdings, securitiesAmount } = account
                                                               const balance = balances.find((obj) => obj.account_id === account.account_id).balance
 
                                                               return (
@@ -719,6 +928,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                                     setAccountId(account_id)
                                                                     setAccountName(name)
                                                                     setAccountBalance(balance)
+                                                                    setAccountType(type)
                                                                   }} key={account_id}>
                                                                   <CardHeader avatar={
                                                                     <Avatar sx={{ bgcolor: "#FFD800" }}>
@@ -774,6 +984,10 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                                           interest_rate ? <div className="h6">Interest rate: {interest_rate}</div>
                                                                                         : <></>
                                                                         }
+                                                                        {
+                                                                          securitiesAmount ? <div className="h6">Positions: {securitiesAmount}</div>
+                                                                                           : <></>
+                                                                        }
                                                                       </div>
                                                                       <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
                                                                         <AccountBalanceUpdate balance={balance} accountId={account_id} converter={converter} />
@@ -793,7 +1007,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
           }
           <AccountDetails open={open} setOpen={setOpen} accountName={accountName} accountBalance={accountBalance}
            setAccountName={setAccountName} setAccountBalance={setAccountBalance} accessToken={accessToken}
-           accountId={accountId} setAccountId={setAccountId} />
+           accountId={accountId} setAccountId={setAccountId} accountType={accountType} setAccountType={setAccountType} />
 
           <Dialog open={rmOpen} PaperProps={{style: {borderRadius: '1rem', padding: '1rem 2rem'}}}
            keepMounted onClose={(e,reason) => {
@@ -875,10 +1089,30 @@ const Transition = forwardRef(function Transition(props, ref) {
   return <Slide in direction="up" timeout={1000} ref={ref} {...props} />
 })
 
-function AccountDetails({ open, setOpen, accountName, accountBalance, setAccountName, setAccountBalance, accessToken, accountId, setAccountId }) {
+function TabPanel(props) {
+  const { children, value, index } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={index}
+    >
+      {value === index && (
+        <>
+          {children}
+        </>
+      )}
+    </div>
+  );
+}
+
+function AccountDetails({ open, setOpen, accountName, accountBalance, setAccountName, setAccountBalance, accessToken, accountId, setAccountId, accountType, setAccountType }) {
   const [end, setEnd] = useState(false)
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState(null)
+  const [holdings, setHoldings] = useState(null)
+  const [value, setValue] = useState(0)
 
   const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
@@ -887,21 +1121,64 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
 
       setEnd(true)
 
-      fetch(`/api/server/plaid/transactions?accessToken=${accessToken}`, { method: 'GET' })
-        .then(res => res.json())
-        .then(transactions => {
-          const accountTransactions = transactions.latest_transactions.filter(transaction => {
-            return transaction.account_id === accountId
+      if(accountType === 'investment') {
+        //investments_transactions_get
+        fetch(`/api/server/plaid/investments_transactions_get?accessToken=${accessToken}`, {
+          method: 'POST',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            start_date: dayjs().subtract(2, 'year').format('YYYY-MM-DD'),
+            end_date: dayjs().format('YYYY-MM-DD')
           })
-          setTransactions(accountTransactions)
-          setLoading(false)
         })
-        .catch(error => {
-          window.alert(error)
-          console.error(error)
-        })
+          .then(res => res.json())
+          .then(response => {
+            const investmentAccountTransactions = response.investmentTransactions.filter(transaction => transaction.account_id === accountId)
+            setTransactions(investmentAccountTransactions)
+
+            fetch(`/api/server/accounts/${accountId}`)
+              .then(res => res.json())
+              .then(account => {
+                setHoldings(account.holdings.holdings)
+                setLoading(false)
+              })
+              .catch(error => {
+                window.alert(error)
+                console.error(error)
+              })
+
+          })
+          .catch(error => {
+            window.alert(error)
+            console.error(error)
+          })
+
+      } else {
+        fetch(`/api/server/plaid/transactions?accessToken=${accessToken}`, { method: 'GET' })
+          .then(res => res.json())
+          .then(transactions => {
+            const accountTransactions = transactions.latest_transactions.filter(transaction => {
+              return transaction.account_id === accountId
+            })
+            setTransactions(accountTransactions)
+            setLoading(false)
+          })
+          .catch(error => {
+            window.alert(error)
+            console.error(error)
+          })
+      }
+
     }
-  },[loading, open, end, accessToken, accountId])
+  },[loading, open, end, accessToken, accountId, accountType])
+
+  const handleChange = (e, newValue) => {
+    setValue(newValue)
+  }
+
+  const handleChangeTab = (i) => {
+    setValue(i)
+  }
 
   return (
     <>
@@ -909,11 +1186,14 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
         setEnd(false)
         setLoading(true)
         setTransactions(null)
+        setHoldings(null)
+        setValue(0)
         setOpen(false)
 
         setAccountId(null)
         setAccountName(null)
         setAccountBalance(null)
+        setAccountType(null)
        }}
        closeAfterTransition keepMounted fullScreen PaperProps={{style: {background: "#00C169",
        color: "white", alignItems: "center", padding: "3rem 0rem"}}} scroll="body">
@@ -938,73 +1218,250 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
 
           <Card sx={{bgcolor: '#FFD800', borderRadius: '1rem', maxWidth: '1000px'}} className="m-auto">
             <CardContent>
-              <div className="h4 text-center m-3" style={{fontWeight: 'bold'}}>Transactions</div>
-              <List>
-                {
-                  loading ? <>
-                              <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
-                                <ListItem sx={{width: '100vw'}}>
-                                  <ListItemAvatar>
-                                    <Avatar sx={{ bgcolor: "white" }}>
-                                      <AttachMoneyRounded color="primary" />
-                                    </Avatar>
-                                  </ListItemAvatar>
-                                  <ListItemText primary="$420.69" secondary="June 6th, 2023" />
-                                </ListItem>
-                              </Skeleton>
-                              <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
-                                <ListItem sx={{width: '100vw'}}>
-                                  <ListItemAvatar>
-                                    <Avatar sx={{ bgcolor: "white" }}>
-                                      <AttachMoneyRounded color="primary" />
-                                    </Avatar>
-                                  </ListItemAvatar>
-                                  <ListItemText primary="$3.33" secondary="April 20th, 2023" />
-                                </ListItem>
-                              </Skeleton>
-                              <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
-                                <ListItem sx={{width: '100vw'}}>
-                                  <ListItemAvatar>
-                                    <Avatar sx={{ bgcolor: "white" }}>
-                                      <AttachMoneyRounded color="primary" />
-                                    </Avatar>
-                                  </ListItemAvatar>
-                                  <ListItemText primary="$69.42" secondary="May 4th, 2023" />
-                                </ListItem>
-                              </Skeleton>
-                            </>
-                          : <>
-                              {
-                                transactions ? <>
-                                                 {
-                                                    transactions.map(transaction => {
-                                                      const { transaction_id, account_id, amount, date, name, iso_currency_code } = transaction
-                                                      const newDate = new Date(date).toLocaleDateString('en-US', {
-                                                        year: 'numeric', month: 'long', day: 'numeric'
-                                                      })
+              {
+                accountType === 'investment'
+                  ? <>
+                      <Paper sx={{borderRadius: '2rem'}}>
+                        <Tabs value={value} onChange={handleChange} variant="fullWidth" sx={{
+                          margin: '0 22px'
+                        }}>
+                          <Tab label="Transactions" sx={{fontSize: '18px', color: 'black', fontWeight: 'bold'}} />
+                          <Tab label="Holdings" sx={{fontSize: '18px', color: 'black', fontWeight: 'bold'}} />
+                        </Tabs>
+                      </Paper>
 
-                                                      return (
-                                                        <ListItem key={transaction_id} secondaryAction={
-                                                          <Amount account_id={account_id} amount={amount} />
-                                                         } sx={{background:'white', borderRadius:'1rem', marginBottom:'0.5rem',
-                                                         boxShadow:'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'}}>
-                                                          <ListItemAvatar>
-                                                            <Avatar sx={{ bgcolor: "white" }}>
-                                                              <AttachMoneyRounded color="primary" />
-                                                            </Avatar>
-                                                          </ListItemAvatar>
-                                                          <ListItemText sx={{maxWidth: '60%'}} primary={name} secondary={newDate} />
-                                                        </ListItem>
-                                                      )
-                                                    })
-                                                 }
-                                               </>
-                                             : <></>
+                      <SwipeableViews index={value} onChangeIndex={handleChangeTab} slideStyle={{overflowX: 'hidden'}}>
+                        <TabPanel value={value} index={0}>
+                          <List sx={{marginTop: '1rem'}}>
+                            {
+                              loading ? <>
+                                          <Skeleton variant="rectangle" sx={{ margin: '8px 16px', borderRadius: '1rem' }}>
+                                            <ListItem sx={{ width: '100vw' }}>
+                                              <ListItemAvatar>
+                                                <Avatar sx={{ bgcolor: "white" }}>
+                                                  <AttachMoneyRounded color="primary" />
+                                                </Avatar>
+                                              </ListItemAvatar>
+                                              <ListItemText primary="$420.69" secondary="June 6th, 2023" />
+                                            </ListItem>
+                                          </Skeleton>
+                                          <Skeleton variant="rectangle" sx={{ margin: '8px 16px', borderRadius: '1rem' }}>
+                                            <ListItem sx={{ width: '100vw' }}>
+                                              <ListItemAvatar>
+                                                <Avatar sx={{ bgcolor: "white" }}>
+                                                  <AttachMoneyRounded color="primary" />
+                                                </Avatar>
+                                              </ListItemAvatar>
+                                              <ListItemText primary="$3.33" secondary="April 20th, 2023" />
+                                            </ListItem>
+                                          </Skeleton>
+                                          <Skeleton variant="rectangle" sx={{ margin: '8px 16px', borderRadius: '1rem' }}>
+                                            <ListItem sx={{ width: '100vw' }}>
+                                              <ListItemAvatar>
+                                                <Avatar sx={{ bgcolor: "white" }}>
+                                                  <AttachMoneyRounded color="primary" />
+                                                </Avatar>
+                                              </ListItemAvatar>
+                                              <ListItemText primary="$69.42" secondary="May 4th, 2023" />
+                                            </ListItem>
+                                          </Skeleton>
+                                        </>
+                                : <>
+                                  {
+                                    transactions && transactions.length > 0
+                                      ? <>
+                                          {
+                                            transactions.map(transaction => {
+                                              const { investment_transaction_id, account_id, amount, date, name, iso_currency_code } = transaction
+                                              const newDate = new Date(date).toLocaleDateString('en-US', {
+                                                year: 'numeric', month: 'long', day: 'numeric'
+                                              })
 
-                              }
-                            </>
-                }
-              </List>
+                                              return (
+                                                <ListItem key={investment_transaction_id} secondaryAction={
+                                                  <Amount account_id={account_id} amount={amount} />
+                                                } sx={{
+                                                  background: 'white', borderRadius: '1rem', marginBottom: '0.5rem',
+                                                  boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'
+                                                }}>
+                                                  <ListItemAvatar>
+                                                    <Avatar sx={{ bgcolor: "white" }}>
+                                                      <AttachMoneyRounded color="primary" />
+                                                    </Avatar>
+                                                  </ListItemAvatar>
+                                                  <ListItemText sx={{ maxWidth: '60%' }} primary={name} secondary={newDate} />
+                                                </ListItem>
+                                              )
+                                            })
+                                          }
+                                        </>
+                                      : <>
+                                          <div className="h6 m-1 d-flex justify-content-center" style={{ opacity: '0.7' }}>No transactions to show...</div>
+                                        </>
+
+                                  }
+                                  </>
+                            }
+                          </List>
+                        </TabPanel>
+
+                        <TabPanel value={value} index={1}>
+                        <div className="h4 m-3">Positions</div>
+                          <List>
+                            {
+                              loading ? <>
+                                          <Skeleton variant="rectangle" sx={{ margin: '8px 16px', borderRadius: '1rem' }}>
+                                            <ListItem sx={{ width: '100vw' }}>
+                                              <ListItemAvatar>
+                                                <Avatar sx={{ bgcolor: "white" }}>
+                                                  <ShowChartRounded color="primary" />
+                                                </Avatar>
+                                              </ListItemAvatar>
+                                              <ListItemText primary="Tesla" secondary="420 shares" />
+                                            </ListItem>
+                                          </Skeleton>
+                                          <Skeleton variant="rectangle" sx={{ margin: '8px 16px', borderRadius: '1rem' }}>
+                                            <ListItem sx={{ width: '100vw' }}>
+                                              <ListItemAvatar>
+                                                <Avatar sx={{ bgcolor: "white" }}>
+                                                  <ShowChartRounded color="primary" />
+                                                </Avatar>
+                                              </ListItemAvatar>
+                                              <ListItemText primary="Apple" secondary="333 shares" />
+                                            </ListItem>
+                                          </Skeleton>
+                                          <Skeleton variant="rectangle" sx={{ margin: '8px 16px', borderRadius: '1rem' }}>
+                                            <ListItem sx={{ width: '100vw' }}>
+                                              <ListItemAvatar>
+                                                <Avatar sx={{ bgcolor: "white" }}>
+                                                  <ShowChartRounded color="primary" />
+                                                </Avatar>
+                                              </ListItemAvatar>
+                                              <ListItemText primary="Dogecoin" secondary="30,000 shares" />
+                                            </ListItem>
+                                          </Skeleton>
+                                        </>
+                                : <>
+                                  {
+                                    holdings && holdings.length > 0
+                                      ? <>
+                                          {
+                                            holdings.map(security => {
+                                              const { security_id, account_id, institution_value, institution_price,
+                                                close_price, quantity, name, ticker_symbol, type, iso_currency_code,
+                                                institution_price_as_of } = security
+                                              const newDate = new Date(institution_price_as_of).toLocaleDateString('en-US', {
+                                                year: 'numeric', month: 'long', day: 'numeric'
+                                              })
+
+                                              return (
+                                                <ListItem key={security_id} secondaryAction={
+                                                  <div>{converter.format(institution_value)}</div>
+                                                } sx={{
+                                                  background: 'white', borderRadius: '1rem', marginBottom: '0.5rem',
+                                                  boxShadow: 'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'
+                                                }}>
+                                                  <ListItemAvatar>
+                                                    <Avatar sx={{ bgcolor: "white" }}>
+                                                      <ShowChartRounded color="primary" />
+                                                    </Avatar>
+                                                  </ListItemAvatar>
+                                                  <ListItemText sx={{ maxWidth: '60%' }} primary={name} secondary={
+                                                    <>
+                                                      <span className="d-block">{ticker_symbol}</span>
+                                                      <span className="d-block text-capitalize">{type}</span>
+                                                      <span className="d-block">{`${quantity} shares`}</span>
+                                                    </>
+                                                   } />
+                                                </ListItem>
+                                              )
+                                            })
+                                          }
+                                        </>
+                                      : <>
+                                          <div className="h6 m-1 d-flex justify-content-center" style={{ opacity: '0.7' }}>No holdings...</div>
+                                        </>
+
+                                  }
+                                  </>
+                            }
+                          </List>
+                        </TabPanel>
+                      </SwipeableViews>
+                    </>
+                  : <>
+                      <div className="h4 text-center m-3" style={{fontWeight: 'bold'}}>Transactions</div>
+                      <List>
+                        {
+                          loading ? <>
+                                      <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
+                                        <ListItem sx={{width: '100vw'}}>
+                                          <ListItemAvatar>
+                                            <Avatar sx={{ bgcolor: "white" }}>
+                                              <AttachMoneyRounded color="primary" />
+                                            </Avatar>
+                                          </ListItemAvatar>
+                                          <ListItemText primary="$420.69" secondary="June 6th, 2023" />
+                                        </ListItem>
+                                      </Skeleton>
+                                      <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
+                                        <ListItem sx={{width: '100vw'}}>
+                                          <ListItemAvatar>
+                                            <Avatar sx={{ bgcolor: "white" }}>
+                                              <AttachMoneyRounded color="primary" />
+                                            </Avatar>
+                                          </ListItemAvatar>
+                                          <ListItemText primary="$3.33" secondary="April 20th, 2023" />
+                                        </ListItem>
+                                      </Skeleton>
+                                      <Skeleton variant="rectangle" sx={{margin:'8px 16px', borderRadius: '1rem'}}>
+                                        <ListItem sx={{width: '100vw'}}>
+                                          <ListItemAvatar>
+                                            <Avatar sx={{ bgcolor: "white" }}>
+                                              <AttachMoneyRounded color="primary" />
+                                            </Avatar>
+                                          </ListItemAvatar>
+                                          <ListItemText primary="$69.42" secondary="May 4th, 2023" />
+                                        </ListItem>
+                                      </Skeleton>
+                                    </>
+                                  : <>
+                                      {
+                                        transactions && transactions.length > 0
+                                                    ? <>
+                                                        {
+                                                            transactions.map(transaction => {
+                                                              const { transaction_id, account_id, amount, date, name, iso_currency_code } = transaction
+                                                              const newDate = new Date(date).toLocaleDateString('en-US', {
+                                                                year: 'numeric', month: 'long', day: 'numeric'
+                                                              })
+
+                                                              return (
+                                                                <ListItem key={transaction_id} secondaryAction={
+                                                                  <Amount account_id={account_id} amount={amount} />
+                                                                } sx={{background:'white', borderRadius:'1rem', marginBottom:'0.5rem',
+                                                                boxShadow:'rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px'}}>
+                                                                  <ListItemAvatar>
+                                                                    <Avatar sx={{ bgcolor: "white" }}>
+                                                                      <AttachMoneyRounded color="primary" />
+                                                                    </Avatar>
+                                                                  </ListItemAvatar>
+                                                                  <ListItemText sx={{maxWidth: '60%'}} primary={name} secondary={newDate} />
+                                                                </ListItem>
+                                                              )
+                                                            })
+                                                        }
+                                                      </>
+                                                    : <>
+                                                        <div className="h6 m-1 d-flex justify-content-center" style={{opacity: '0.7'}}>No transactions to show...</div>
+                                                      </>
+
+                                      }
+                                    </>
+                        }
+                      </List>
+                    </>
+              }
             </CardContent>
             <CardActions></CardActions>
           </Card>
@@ -1016,10 +1473,13 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
             setOpen(false)
             setLoading(true)
             setTransactions(null)
+            setHoldings(null)
+            setValue(0)
 
             setAccountId(null)
             setAccountName(null)
             setAccountBalance(null)
+            setAccountType(null)
            }}>
             <Box className='d-flex align-items-center' sx={{
              color: 'white', textTransform: 'none', lineHeight: 1}}>
@@ -1045,6 +1505,7 @@ function Amount({amount, account_id}) {
       fetch(`/api/server/accounts/${account_id}`)
         .then(res => res.text())
         .then(type => {
+          //check investment transactions to see if the amount also needs to changed (sign change)
           if(JSON.parse(type).type === "depository") {
             setSign(-1)
             setLoading(false)

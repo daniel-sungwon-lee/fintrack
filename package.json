@@ -38,6 +38,7 @@
     "react-dom": "^18.2.0",
     "react-number-format": "^5.2.2",
     "react-plaid-link": "^3.4.0",
+    "react-swipeable-views": "^0.14.0",
     "typescript": "^5.0.3"
   },
   "devDependencies": {
