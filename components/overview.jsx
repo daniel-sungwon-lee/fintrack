@@ -1503,10 +1503,10 @@ function Amount({amount, account_id}) {
   useEffect(() => {
     if(loading) {
       fetch(`/api/server/accounts/${account_id}`)
-        .then(res => res.text())
-        .then(type => {
-          //check investment transactions to see if the amount also needs to changed (sign change)
-          if(JSON.parse(type).type === "depository") {
+        .then(res => res.json())
+        .then(account => {
+          //double-check investment transactions to see if the amount has correct sign (neg/pos)
+          if(account.type === "depository" || account.type === 'investment') {
             setSign(-1)
             setLoading(false)
 

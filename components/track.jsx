@@ -1552,7 +1552,7 @@ function TrackDialog({userId, open, setOpen, setTrackLoading, setTrackEnd, token
                 items: shortcutsItems,
               },
               actionBar: { actions: [] },
-             }} calendars={2} defaultCalendarMonth={dayjs().subtract(1,'month')} />
+             }} calendars={2} defaultCalendarMonth={dayjs().subtract(1,'month')} disableFuture />
           </LocalizationProvider>
 
           {
@@ -1870,9 +1870,9 @@ function Amount({amount, account_id}) {
   useEffect(() => {
     if(loading) {
       fetch(`/api/server/accounts/${account_id}`)
-        .then(res => res.text())
-        .then(type => {
-          if(JSON.parse(type).type === "depository") {
+        .then(res => res.json())
+        .then(account => {
+          if(account.type === "depository") {
             setSign(-1)
             setLoading(false)
 
