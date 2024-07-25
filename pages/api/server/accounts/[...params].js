@@ -8,14 +8,14 @@ export default function handler(req, res) {
   if(req.method === 'PATCH') {
     if(column) {
       //updating holdings data
-      const { updatedHoldings } = req.body
+      const { updatedHoldings, securitiesAmount } = req.body
 
       const sql = `
         update "accounts"
-        set "holdings" = $1
-        where "account_id" = $2
+        set "holdings" = $1, "securitiesAmount" = $2
+        where "account_id" = $3
       `
-      const params = [JSON.stringify(updatedHoldings), accountId]
+      const params = [JSON.stringify(updatedHoldings), securitiesAmount, accountId]
 
       db.query(sql, params)
         .then(result => {

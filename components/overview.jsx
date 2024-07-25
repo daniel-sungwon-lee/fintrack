@@ -1198,7 +1198,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
         fetch(`/api/server/accounts/${accountId}/holdings`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ updatedHoldings: updatedHoldingsJSON })
+          body: JSON.stringify({ updatedHoldings: updatedHoldingsJSON, securitiesAmount: updatedHoldings.length })
         })
           .then(() => {
             setHoldings(updatedHoldings)
