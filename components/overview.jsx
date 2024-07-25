@@ -5,7 +5,7 @@ import { Avatar, Card, CardContent, CardHeader, Dialog, DialogActions, DialogCon
          } from "@mui/material"
 import { AccountBalanceRounded, AttachMoneyRounded, CloseRounded, ShowChartRounded,
          RecommendRounded, RemoveCircleRounded, ThumbUpRounded, VisibilityOffRounded,
-         VisibilityRounded } from "@mui/icons-material"
+         VisibilityRounded, SyncRounded } from "@mui/icons-material"
 import { useEffect, useState, forwardRef, useRef } from "react"
 import dynamic from 'next/dynamic'
 import { gsap } from "gsap"
@@ -1180,6 +1180,42 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
     setValue(i)
   }
 
+  const handleUpdate = (accessToken) => {
+    const updateAni = gsap.to('.updateSyncIcon', {rotation: 1800, duration: 15, ease: 'none', paused: true})
+    updateAni.play()
+    setLoading(true)
+
+    fetch(`/api/server/plaid/investments?accessToken=${accessToken}`)
+      .then(res => res.json())
+      .then(response => {
+        const detailedHoldings = response.holdings.map(security => {
+          let i = response.securities.map(obj => obj.security_id).indexOf(security.security_id)
+          return { ...security, ...response.securities[i] }
+        })
+        const updatedHoldings = detailedHoldings.filter(security => security.account_id === accountId)
+        const updatedHoldingsJSON = { holdings: updatedHoldings }
+
+        fetch(`/api/server/accounts/${accountId}/holdings`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ updatedHoldings: updatedHoldingsJSON })
+        })
+          .then(() => {
+            setHoldings(updatedHoldings)
+            setLoading(false)
+            updateAni.pause()
+          })
+          .catch(error => {
+            window.alert(error)
+            console.error(error)
+          })
+      })
+      .catch(error => {
+        window.alert(error)
+        console.error(error)
+      })
+  }
+
   return (
     <>
       <Dialog open={open} TransitionComponent={Transition} onClose={() => {
@@ -1306,7 +1342,14 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
                         </TabPanel>
 
                         <TabPanel value={value} index={1}>
-                        <div className="h4 m-3">Positions</div>
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div className="h4 m-3">Positions</div>
+                            <Tooltip title='Update' placement="left" slotProps={{popper: {style:{zIndex: 1500}}}}>
+                              <IconButton onClick={() => handleUpdate(accessToken)} disabled={loading}>
+                                <SyncRounded className="updateSyncIcon" />
+                              </IconButton>
+                            </Tooltip>
+                          </div>
                           <List>
                             {
                               loading ? <>
