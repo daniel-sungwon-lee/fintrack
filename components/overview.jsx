@@ -204,6 +204,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
   const [accountType, setAccountType] = useState(null)
   const [rmOpen, setRmOpen] = useState(false)
   const [rmLoading, setRmLoading] = useState(false)
+  const [updatedSecuritiesAmount, setUpdatedSecuritiesAmount] = useState(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -894,7 +895,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                               <div className="d-flex justify-content-between">
                                                 <div>
                                                   <div className="h6 text-capitalize">{accountData.subtype}</div>
-                                                  <div className="h6">Positions: {accountData.amountOfSecurities}</div>
+                                                  <Positions securitiesAmount={accountData.amountOfSecurities} accountId={accountData.account_id} updatedSecuritiesAmount={updatedSecuritiesAmount} />
                                                   {/* price change update data here? */}
                                                 </div>
                                                 <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
@@ -985,8 +986,11 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
                                                                                         : <></>
                                                                         }
                                                                         {
-                                                                          securitiesAmount ? <div className="h6">Positions: {securitiesAmount}</div>
+                                                                          securitiesAmount ? <Positions securitiesAmount={securitiesAmount} accountId={account_id} updatedSecuritiesAmount={updatedSecuritiesAmount} />
                                                                                            : <></>
+                                                                        }
+                                                                        {
+                                                                          /*add price change/update here?*/
                                                                         }
                                                                       </div>
                                                                       <div className="d-flex align-items-center" style={{ fontSize: '24px' }}>
@@ -1007,7 +1011,8 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
           }
           <AccountDetails open={open} setOpen={setOpen} accountName={accountName} accountBalance={accountBalance}
            setAccountName={setAccountName} setAccountBalance={setAccountBalance} accessToken={accessToken}
-           accountId={accountId} setAccountId={setAccountId} accountType={accountType} setAccountType={setAccountType} />
+           accountId={accountId} setAccountId={setAccountId} accountType={accountType} setAccountType={setAccountType}
+           setUpdatedSecuritiesAmount={setUpdatedSecuritiesAmount} />
 
           <Dialog open={rmOpen} PaperProps={{style: {borderRadius: '1rem', padding: '1rem 2rem'}}}
            keepMounted onClose={(e,reason) => {
@@ -1084,6 +1089,24 @@ function AccountBalanceUpdate({balance, accountId, converter}) {
   )
 }
 
+function Positions({securitiesAmount, accountId, updatedSecuritiesAmount}) {
+  let posRef = useRef()
+
+  useEffect(() => {
+    if(updatedSecuritiesAmount) {
+      const {accountId:id, securitiesAmount:updatedAmount} = updatedSecuritiesAmount
+
+      if(id === accountId){
+        posRef.current.textContent = `Positions: ${updatedAmount}`
+      }
+    }
+  },[updatedSecuritiesAmount, accountId])
+
+  return (
+    <div className="h6" ref={posRef}>Positions: {securitiesAmount}</div>
+  )
+}
+
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide in direction="up" timeout={1000} ref={ref} {...props} />
@@ -1107,7 +1130,7 @@ function TabPanel(props) {
   );
 }
 
-function AccountDetails({ open, setOpen, accountName, accountBalance, setAccountName, setAccountBalance, accessToken, accountId, setAccountId, accountType, setAccountType }) {
+function AccountDetails({ open, setOpen, accountName, accountBalance, setAccountName, setAccountBalance, accessToken, accountId, setAccountId, accountType, setAccountType, setUpdatedSecuritiesAmount }) {
   const [end, setEnd] = useState(false)
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState(null)
@@ -1202,6 +1225,7 @@ function AccountDetails({ open, setOpen, accountName, accountBalance, setAccount
         })
           .then(() => {
             setHoldings(updatedHoldings)
+            setUpdatedSecuritiesAmount({ accountId: accountId, securitiesAmount: updatedHoldings.length })
             setLoading(false)
             updateAni.pause()
           })
