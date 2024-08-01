@@ -222,6 +222,7 @@ function Accounts({ itemId, accessToken, name, accountsPlaceholder, institutions
 
               //getting updated account balance(s) (look into making it not fire twice)
               //inconsistent balance update/render on /accounts??
+              //also quicker balance updates (updates in real-time)
               await fetch(`/api/server/plaid/accounts?accessToken=${accessToken}`)
                 .then(res => res.json())
                 .then(data => {
