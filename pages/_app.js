@@ -208,6 +208,11 @@ a:hover {
   text-transform: none;
 }
 
+.MuiTableCell-root {
+  font-family: ${Inter.style.fontFamily} !important;
+  border-bottom: none !important;
+}
+
 
 @media(max-width: 767px) {
   .tracker-fontsize-mobile {
