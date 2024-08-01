@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react"
 import Placeholder from "./placeholder"
-import { Button, Collapse, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Zoom } from "@mui/material"
-import { AddRounded, ArrowDropDownRounded, ArrowDropUpRounded, ArrowRightRounded } from "@mui/icons-material"
+import { Box, Button, CircularProgress, Collapse, Fab, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Zoom } from "@mui/material"
+import { AddCardRounded, AddRounded, ArrowDropDownRounded, ArrowDropUpRounded, ArrowRightRounded, PostAddRounded } from "@mui/icons-material"
 
 export default function Budget({userId}) {
   const [loading, setLoading] = useState(true)
+  const [ready, setReady] = useState(false)
   const [open, setOpen] = useState(true)
 
   useEffect(() => {
     if(loading) {
       setLoading(false)
+      setReady(true)
     }
 
   },[loading])
@@ -19,10 +21,11 @@ export default function Budget({userId}) {
       {
         loading ? <Placeholder />
                 : <Zoom in timeout={300}>
-                    <div style={{minHeight: '50vh', marginBottom: '7rem'}}>
+                    <div className="d-flex flex-column justify-content-center align-items-center"
+                     style={{minHeight: '50vh', marginBottom: '7rem'}}>
 
-                      <div className="w-100">
-                        <div className="h2 w-100 mb-0" style={{fontWeight: 'bold', marginTop: '2.5rem'}}>
+                      <div className="w-100" style={{marginBottom: '5rem'}}>
+                        <div className="h2 w-100 mb-0" style={{fontWeight: 'bold', marginTop: '2.25rem'}}>
                           Frequency
                         </div>
 
@@ -103,6 +106,26 @@ export default function Budget({userId}) {
                           </Table>
                         </TableContainer>
                       </div>
+
+                      <Fab variant="extended" size="medium" color="primary"
+                       sx={{padding: '1.5rem', borderRadius: '2rem'}} disabled={!ready}>
+                        <Box className='d-flex align-items-center' sx={{
+                          fontSize: '18px', textTransform: 'none', lineHeight: 1,
+                          color: 'white'
+                         }}>
+                          {
+                            ready ? <>
+                                      <AddCardRounded style={{marginRight: '0.5rem'}} />
+                                      Create new budget
+                                    </>
+                                  : <>
+                                      <CircularProgress color="inherit" size={25}
+                                       sx={{marginRight: '1rem'}} thickness={5} />
+                                      Loading...
+                                    </>
+                          }
+                        </Box>
+                      </Fab>
 
                     </div>
                   </Zoom>
