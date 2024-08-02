@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react"
 import Placeholder from "./placeholder"
-import { Box, Button, CircularProgress, Collapse, Fab, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Zoom } from "@mui/material"
-import { AddCardRounded, AddRounded, ArrowDropDownRounded, ArrowDropUpRounded, ArrowRightRounded, PostAddRounded } from "@mui/icons-material"
+import { Box, Button, CircularProgress, Collapse, Fab, FormControl, FormControlLabel,
+         FormHelperText, FormLabel, IconButton, Paper, Radio, RadioGroup, Table,
+         TableBody, TableCell, TableContainer, TableHead, TableRow, TextField,
+         Tooltip, Zoom } from "@mui/material"
+import { AddCardRounded, AddRounded, ArrowDropDownRounded, ArrowDropUpRounded,
+         ArrowRightRounded, CloseRounded, CreditCardOffRounded,
+         PostAddRounded } from "@mui/icons-material"
+import { LoadingButton } from "@mui/lab"
 
 export default function Budget({userId}) {
   const [loading, setLoading] = useState(true)
   const [ready, setReady] = useState(false)
   const [open, setOpen] = useState(true)
+  const [newBudget, setNewBudget] = useState(false)
 
   useEffect(() => {
     if(loading) {
@@ -34,7 +41,7 @@ export default function Budget({userId}) {
                         backgroundColor: '#ffe6c6', padding: '1rem'}}>
                           <Table>
                             <TableHead sx={{backgroundColor: '#00c169'}}>
-                              <TableRow>
+                              <TableRow sx={{backgroundColor: '#00c169'}}>
                                 <TableCell padding="checkbox" sx={{borderRadius: '0.75rem 0 0 0.75rem'}}>
                                   <IconButton disabled>
                                     <ArrowDropDownRounded sx={{visibility: 'hidden'}} />
@@ -81,7 +88,7 @@ export default function Budget({userId}) {
 
                                           <TableRow>
                                             <TableCell colSpan={5} sx={{padding: '8px'}} align="center">
-                                              <Tooltip title='Add sub-category' slotProps={{
+                                              <Tooltip title='Add category' slotProps={{
                                                 popper:{modifiers:[{name: 'offset', options:{offset: [0,-7]}}]}
                                               }}>
                                                 <IconButton>
@@ -99,7 +106,7 @@ export default function Budget({userId}) {
 
                               <TableRow>
                                 <TableCell colSpan={5} align="center">
-                                  <Button startIcon={<AddRounded />}>Add category</Button>
+                                  <Button startIcon={<AddRounded />}>Add category group</Button>
                                 </TableCell>
                               </TableRow>
                             </TableBody>
@@ -107,16 +114,31 @@ export default function Budget({userId}) {
                         </TableContainer>
                       </div>
 
+                      <div className="w-100">
+                        <Collapse in={newBudget} timeout='auto'>
+                          <NewBudget open={newBudget} setOpen={setNewBudget} />
+                        </Collapse>
+                      </div>
+
                       <Fab variant="extended" size="medium" color="primary"
-                       sx={{padding: '1.5rem', borderRadius: '2rem'}} disabled={!ready}>
+                       sx={{padding: '1.5rem', borderRadius: '2rem'}} disabled={!ready}
+                       onClick={() => setNewBudget(!newBudget)}>
                         <Box className='d-flex align-items-center' sx={{
                           fontSize: '18px', textTransform: 'none', lineHeight: 1,
                           color: 'white'
                          }}>
                           {
                             ready ? <>
-                                      <AddCardRounded style={{marginRight: '0.5rem'}} />
-                                      Create new budget
+                                      {
+                                        newBudget ? <>
+                                                      <CreditCardOffRounded style={{marginRight: '0.5rem'}} />
+                                                      Cancel
+                                                    </>
+                                                  : <>
+                                                      <AddCardRounded style={{marginRight: '0.5rem'}} />
+                                                      Create new budget
+                                                    </>
+                                      }
                                     </>
                                   : <>
                                       <CircularProgress color="inherit" size={25}
@@ -130,6 +152,70 @@ export default function Budget({userId}) {
                     </div>
                   </Zoom>
       }
+    </>
+  )
+}
+
+function NewBudget({open, setOpen}) {
+  const [name, setName] = useState('')
+  const [frequency, setFrequency] = useState('monthly')
+  const [addError, setAddError] = useState(false)
+  const [addLoading, setAddLoading] = useState(false)
+
+  useEffect(() => {
+    if(!open) {
+      setName('')
+      setFrequency('monthly')
+      setAddError(false)
+      setAddLoading(false)
+    }
+  },[open])
+
+  const handleAddNewBudget = (e) => {
+    e.preventDefault()
+    setAddLoading(true)
+
+    //setOpen(false)
+  }
+
+  const handleChange = (e) => {
+    if(e.target.type === 'radio') {
+      setFrequency(e.target.value)
+    }
+  }
+
+  return (
+    <>
+      <form className="d-flex flex-column justify-content-center"
+       onSubmit={handleAddNewBudget} style={{marginBottom: '2rem'}}>
+        <TextField value={name} type="name" id="name" required disabled={addLoading}
+          variant="standard" label="Budget name" onChange={(e) => setName(e.target.value)}
+          InputLabelProps={{ required: false }} error={addError} sx={{ marginBottom: '1rem' }}
+          helperText={addError ? 'Please try again' : 'Ex: 2024 Monthly Budget'} />
+
+        <FormControl disabled={addLoading} color={addError ? 'error' : 'primary'}>
+          <FormLabel focused>Frequency</FormLabel>
+          <RadioGroup value={frequency} onChange={handleChange} row>
+            <FormControlLabel value='monthly' control={<Radio />} label='Monthly' />
+            <FormControlLabel value='weekly' control={<Radio />} label='Weekly' />
+            <FormControlLabel value='daily' control={<Radio />} label='Daily' />
+            <FormControlLabel value='yearly' control={<Radio />} label='Yearly' />
+          </RadioGroup>
+          <FormHelperText error={addError} sx={{marginLeft: '0', marginBottom: '1rem'}}>
+            {
+              addError ? <>Please try again</>
+                       : <span className="invisible">This month</span>
+            }
+          </FormHelperText>
+        </FormControl>
+
+        <div className="d-flex justify-content-center">
+          <LoadingButton loading={addLoading} type="submit" sx={{textTransform: 'none', color: 'white'}}
+           loadingPosition="start" variant='contained' startIcon={<AddRounded />}>
+            Add
+          </LoadingButton>
+        </div>
+      </form>
     </>
   )
 }
