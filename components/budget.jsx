@@ -8,6 +8,10 @@ import { AddCardRounded, AddRounded, ArrowDropDownRounded, ArrowDropUpRounded,
          ArrowRightRounded, CloseRounded, CreditCardOffRounded,
          PostAddRounded } from "@mui/icons-material"
 import { LoadingButton } from "@mui/lab"
+import { LocalizationProvider } from "@mui/x-date-pickers"
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
+import { DateRangePicker, SingleInputDateRangeField } from "@mui/x-date-pickers-pro"
+import dayjs from "dayjs"
 
 export default function Budget({userId}) {
   const [loading, setLoading] = useState(true)
@@ -50,7 +54,7 @@ export default function Budget({userId}) {
                                 <TableCell padding="none" sx={{color: 'white'}}>Category</TableCell>
                                 <TableCell align="right" sx={{color: 'white'}}>Projected</TableCell>
                                 <TableCell align="right" sx={{color: 'white'}}>Actual</TableCell>
-                                <TableCell align="right" sx={{borderRadius: '0 0.75rem 0.75rem 0', color: 'white'}}>Available</TableCell>
+                                <TableCell align="right" sx={{borderRadius: '0 0.75rem 0.75rem 0', color: 'white'}}>Remaining</TableCell>
                               </TableRow>
                             </TableHead>
 
@@ -159,6 +163,7 @@ export default function Budget({userId}) {
 function NewBudget({open, setOpen}) {
   const [name, setName] = useState('')
   const [frequency, setFrequency] = useState('monthly')
+  const [dateRange, setDateRange] = useState([dayjs(), dayjs().add(1, 'month')])
   const [addError, setAddError] = useState(false)
   const [addLoading, setAddLoading] = useState(false)
 
@@ -166,6 +171,7 @@ function NewBudget({open, setOpen}) {
     if(!open) {
       setName('')
       setFrequency('monthly')
+      setDateRange([dayjs(), dayjs().add(1, 'month')])
       setAddError(false)
       setAddLoading(false)
     }
@@ -181,6 +187,19 @@ function NewBudget({open, setOpen}) {
   const handleChange = (e) => {
     if(e.target.type === 'radio') {
       setFrequency(e.target.value)
+
+      if(e.target.value === 'monthly') {
+        setDateRange([dayjs(), dayjs().add(1, 'month')])
+
+      } else if(e.target.value === 'weekly') {
+        setDateRange([dayjs(), dayjs().add(1, 'week')])
+
+      } else if(e.target.value === 'daily') {
+        setDateRange([dayjs(), dayjs().add(1, 'day')])
+
+      } else if(e.target.value === 'yearly') {
+        setDateRange([dayjs(), dayjs().add(1, 'year')])
+      }
     }
   }
 
@@ -191,7 +210,7 @@ function NewBudget({open, setOpen}) {
         <TextField value={name} type="name" id="name" required disabled={addLoading}
           variant="standard" label="Budget name" onChange={(e) => setName(e.target.value)}
           InputLabelProps={{ required: false }} error={addError} sx={{ marginBottom: '1rem' }}
-          helperText={addError ? 'Please try again' : 'Ex: 2024 Monthly Budget'} />
+          helperText={addError ? 'Please try again' : 'Ex: Monthly Life Budget'} />
 
         <FormControl disabled={addLoading} color={addError ? 'error' : 'primary'}>
           <FormLabel focused>Frequency</FormLabel>
@@ -209,7 +228,18 @@ function NewBudget({open, setOpen}) {
           </FormHelperText>
         </FormControl>
 
-        <div className="d-flex justify-content-center">
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DateRangePicker label='Date range' slots={{ field: SingleInputDateRangeField }}
+            calendars={1} value={dateRange} disablePast minDate={dateRange[0]} maxDate={dateRange[1]}
+            onChange={(newValue) => setDateRange(newValue)} disabled
+            slotProps={{
+              textField: {className: 'budgetDateRangePicker', variant: 'standard',
+              error: addError, helperText: addError ? 'Please try again' : 'Read-only (fixed, depending on frequency)',
+              InputLabelProps: {sx: {color: '#00000099 !important'}}, inputProps: {style: {cursor: 'inherit'}}}
+            }} sx={{'&.budgetDateRangePicker .Mui-disabled:before': {borderBottomStyle: 'solid'}}} />
+        </LocalizationProvider>
+
+        <div className="d-flex justify-content-center mb-5" style={{marginTop: '4rem'}}>
           <LoadingButton loading={addLoading} type="submit" sx={{textTransform: 'none', color: 'white'}}
            loadingPosition="start" variant='contained' startIcon={<AddRounded />}>
             Add
