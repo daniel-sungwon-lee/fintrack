@@ -233,10 +233,9 @@ function NewBudget({open, setOpen}) {
             calendars={1} value={dateRange} disablePast minDate={dateRange[0]} maxDate={dateRange[1]}
             onChange={(newValue) => setDateRange(newValue)} disabled
             slotProps={{
-              textField: {className: 'budgetDateRangePicker', variant: 'standard',
-              error: addError, helperText: addError ? 'Please try again' : 'Read-only (fixed, depending on frequency)',
-              InputLabelProps: {sx: {color: '#00000099 !important'}}, inputProps: {style: {cursor: 'inherit'}}}
-            }} sx={{'&.budgetDateRangePicker .Mui-disabled:before': {borderBottomStyle: 'solid'}}} />
+              textField: {variant: 'standard', error: addError, inputProps: {style: {cursor: 'inherit'}},
+              helperText: addError ? 'Please try again' : 'Read-only (fixed, depending on frequency)'}
+            }} />
         </LocalizationProvider>
 
         <div className="d-flex justify-content-center mb-5" style={{marginTop: '4rem'}}>
