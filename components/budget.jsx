@@ -145,7 +145,7 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen}) {
       frequency,
       fromDate: dayjs(dateRange[0].$d).format('MM/DD/YYYY'),
       toDate: dayjs(dateRange[1].$d).format('MM/DD/YYYY'),
-      rows: JSON.stringify({rows: []})
+      rows: JSON.stringify({rows: [], new: true})
     }
 
     await fetch('/api/server/budgets', {
@@ -153,15 +153,26 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen}) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(reqBody)
     })
-      .then(res => {
+      .then(async res => {
         if(res.status === 201) {
-          setOpen(false)
+          await fetch(`/api/server/budgets/${userId}`)
+            .then(res => res.json())
+            .then(data => {
+              setOpen(false)
 
-          if (!budgets) {
-            setBudgets([reqBody])
-          } else {
-            setBudgets([...budgets, reqBody])
-          }
+              if (!budgets) {
+                setBudgets([data[0]])
+              } else {
+                setBudgets([...budgets, data[0]])
+              }
+            })
+            .catch(error => {
+              setAddError(true)
+              setAddLoading(false)
+              window.alert(error)
+              console.error(error)
+            })
+
         } else {
           setAddError(true)
           setAddLoading(false)
@@ -244,7 +255,6 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
   const [loading, setLoading] = useState(true)
   const [defaultRows, setDefaultRows] = useState(null)
   const [tableRows, setTableRows] = useState(rows.rows)
-  const [expand, setExpand] = useState(true)
   const [category, setCategory] = useState('')
   const [projected, setProjected] = useState(0)
   const [actual, setActual] = useState(0)
@@ -258,107 +268,120 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
   }
 
   useEffect(() => {
-    //setting default table rows (if no rows)
-    if(tableRows.length === 0 && !defaultRows) {
-      setDefaultRows([
-        {
-          budgetId,
-          rowId: "row564000212156bae63c0a82b1a1ebf855",
-          category: 'Bills',
-          projected: 3000,
-          actual: 1860,
-          remaining: 1140,
-          type: 'group',
-          groupId: null
-        },
-        {
-          budgetId,
-          rowId: "row6567643dc469af2a5c73935524e087be",
-          category: 'Fun',
-          projected: 500,
-          actual: 180,
-          remaining: 320,
-          type: 'group',
-          groupId: null
-        },
-        {
-          budgetId,
-          rowId: "row64adc7c62c3b49892e1f71000d7fb185",
-          category: 'Food',
-          projected: 1000,
-          actual: 345,
-          remaining: 655,
-          type: 'group',
-          groupId: null
-        },
-        {
-          budgetId,
-          rowId: customIdGenerator(),
-          category: 'Groceries',
-          projected: 300,
-          actual: 145,
-          remaining: 155,
-          type: 'category',
-          groupId: "row64adc7c62c3b49892e1f71000d7fb185"
-        },
-        {
-          budgetId,
-          rowId: customIdGenerator(),
-          category: 'Thrifting',
-          projected: 100,
-          actual: 0,
-          remaining: 100,
-          type: 'category',
-          groupId: "row6567643dc469af2a5c73935524e087be"
-        },
-        {
-          budgetId,
-          rowId: customIdGenerator(),
-          category: 'Rent',
-          projected: 2000,
-          actual: 2000,
-          remaining: 0,
-          type: 'category',
-          groupId: "row564000212156bae63c0a82b1a1ebf855"
-        },
-        {
-          budgetId,
-          rowId: customIdGenerator(),
-          category: 'Utilities',
-          projected: 200,
-          actual: 45,
-          remaining: 155,
-          type: 'category',
-          groupId: "row564000212156bae63c0a82b1a1ebf855"
-        },
-        {
-          budgetId,
-          rowId: customIdGenerator(),
-          category: 'Shopping',
-          projected: 200,
-          actual: 156,
-          remaining: 44,
-          type: 'category',
-          groupId: "row6567643dc469af2a5c73935524e087be"
-        },
-        {
-          budgetId,
-          rowId: customIdGenerator(),
-          category: 'Subscriptions',
-          projected: 6,
-          actual: 6,
-          remaining: 0,
-          type: 'category',
-          groupId: "row564000212156bae63c0a82b1a1ebf855"
-        }
-      ])
+    const defaultTableRows = [
+      {
+        budgetId,
+        rowId: "row564000212156bae63c0a82b1a1ebf855",
+        category: 'Bills',
+        projected: 3000,
+        actual: 1860,
+        remaining: 1140,
+        type: 'group',
+        groupId: null
+      },
+      {
+        budgetId,
+        rowId: "row6567643dc469af2a5c73935524e087be",
+        category: 'Fun',
+        projected: 500,
+        actual: 180,
+        remaining: 320,
+        type: 'group',
+        groupId: null
+      },
+      {
+        budgetId,
+        rowId: "row64adc7c62c3b49892e1f71000d7fb185",
+        category: 'Food',
+        projected: 1000,
+        actual: 345,
+        remaining: 655,
+        type: 'group',
+        groupId: null
+      },
+      {
+        budgetId,
+        rowId: customIdGenerator(),
+        category: 'Groceries',
+        projected: 300,
+        actual: 145,
+        remaining: 155,
+        type: 'category',
+        groupId: "row64adc7c62c3b49892e1f71000d7fb185"
+      },
+      {
+        budgetId,
+        rowId: customIdGenerator(),
+        category: 'Thrifting',
+        projected: 100,
+        actual: 0,
+        remaining: 100,
+        type: 'category',
+        groupId: "row6567643dc469af2a5c73935524e087be"
+      },
+      {
+        budgetId,
+        rowId: customIdGenerator(),
+        category: 'Rent',
+        projected: 2000,
+        actual: 2000,
+        remaining: 0,
+        type: 'category',
+        groupId: "row564000212156bae63c0a82b1a1ebf855"
+      },
+      {
+        budgetId,
+        rowId: customIdGenerator(),
+        category: 'Utilities',
+        projected: 200,
+        actual: 45,
+        remaining: 155,
+        type: 'category',
+        groupId: "row564000212156bae63c0a82b1a1ebf855"
+      },
+      {
+        budgetId,
+        rowId: customIdGenerator(),
+        category: 'Shopping',
+        projected: 200,
+        actual: 156,
+        remaining: 44,
+        type: 'category',
+        groupId: "row6567643dc469af2a5c73935524e087be"
+      },
+      {
+        budgetId,
+        rowId: customIdGenerator(),
+        category: 'Subscriptions',
+        projected: 6,
+        actual: 6,
+        remaining: 0,
+        type: 'category',
+        groupId: "row564000212156bae63c0a82b1a1ebf855"
+      }
+    ]
+
+    if(rows.new && tableRows.length === 0 && !defaultRows) {
+      //setting default table rows (if no rows)
+      fetch(`/api/server/budgets/${userId}/${budgetId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ defaultRows: { rows: defaultTableRows, new: false } })
+      })
+        .then(res => {
+          setDefaultRows(defaultTableRows)
+          setLoading(false)
+        })
+        .catch(error => {
+          window.alert(error)
+          console.error(error)
+        })
+
+    } else {
+
     }
 
-  },[budgetId, defaultRows, tableRows.length])
-
-  const handleGroupExpand = (rowId) => {
-
-  }
+  },[budgetId, defaultRows, rows, tableRows, userId])
 
   const handleAddRowGroup = (e) => {
     e.preventDefault()
