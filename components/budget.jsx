@@ -16,16 +16,27 @@ import dayjs from "dayjs"
 export default function Budget({userId}) {
   const [loading, setLoading] = useState(true)
   const [ready, setReady] = useState(false)
-  const [open, setOpen] = useState(true)
-  const [newBudget, setNewBudget] = useState(false)
+  const [budgets, setBudgets] = useState(null)
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     if(loading) {
-      setLoading(false)
-      setReady(true)
-    }
+      fetch(`/api/server/budgets/${userId}`)
+        .then(res => res.json())
+        .then(data => {
+          if(data.length > 0) {
+            setBudgets(data)
+            setLoading(false)
+            setReady(true)
 
-  },[loading])
+          } else {
+            setBudgets(null)
+            setLoading(false)
+            setReady(true)
+          }
+        })
+    }
+  },[userId, loading])
 
   return (
     <>
@@ -35,98 +46,18 @@ export default function Budget({userId}) {
                     <div className="d-flex flex-column justify-content-center align-items-center"
                      style={{minHeight: '50vh', marginBottom: '7rem'}}>
 
-                      <div className="w-100" style={{marginBottom: '5rem'}}>
-                        <div className="h2 w-100 mb-0" style={{fontWeight: 'bold', marginTop: '2.25rem'}}>
-                          Frequency
-                        </div>
-
-                        <TableContainer component={Paper} sx={{
-                        minWidth: '80%', margin: '2rem 0rem 0rem', borderRadius: '8px',
-                        backgroundColor: '#ffe6c6', padding: '1rem'}}>
-                          <Table>
-                            <TableHead sx={{backgroundColor: '#00c169'}}>
-                              <TableRow sx={{backgroundColor: '#00c169'}}>
-                                <TableCell padding="checkbox" sx={{borderRadius: '0.75rem 0 0 0.75rem'}}>
-                                  <IconButton disabled>
-                                    <ArrowDropDownRounded sx={{visibility: 'hidden'}} />
-                                  </IconButton>
-                                </TableCell>
-                                <TableCell padding="none" sx={{color: 'white'}}>Category</TableCell>
-                                <TableCell align="right" sx={{color: 'white'}}>Projected</TableCell>
-                                <TableCell align="right" sx={{color: 'white'}}>Actual</TableCell>
-                                <TableCell align="right" sx={{borderRadius: '0 0.75rem 0.75rem 0', color: 'white'}}>Remaining</TableCell>
-                              </TableRow>
-                            </TableHead>
-
-                            <TableBody>
-                              <TableRow role='button' onClick={()=>setOpen(!open)}>
-                                <TableCell padding="checkbox">
-                                  <IconButton disabled sx={{color: '#0000008a !important'}}>
-                                    {
-                                      open ? <ArrowDropDownRounded /> : <ArrowRightRounded />
-                                    }
-                                  </IconButton>
-                                </TableCell>
-                                <TableCell padding="none">Bills</TableCell>
-                                <TableCell align="right">$3333</TableCell>
-                                <TableCell align="right">$1342</TableCell>
-                                <TableCell align="right">$1991</TableCell>
-                              </TableRow>
-                              <TableRow>
-                                <TableCell padding="none" colSpan={5}>
-                                  <Collapse in={open} timeout='auto'>
-                                    <div>
-                                      <Table sx={{borderRadius: '1rem', backgroundColor: 'white'}}>
-                                        <TableBody>
-                                          <TableRow>
-                                            <TableCell padding="checkbox">
-                                              <IconButton disabled>
-                                                <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
-                                              </IconButton>
-                                            </TableCell>
-                                            <TableCell padding="none">Rent</TableCell>
-                                            <TableCell align="right">$1000</TableCell>
-                                            <TableCell align="right">$1000</TableCell>
-                                            <TableCell align="right">$0</TableCell>
-                                          </TableRow>
-
-                                          <TableRow>
-                                            <TableCell colSpan={5} sx={{padding: '8px'}} align="center">
-                                              <Tooltip title='Add category' slotProps={{
-                                                popper:{modifiers:[{name: 'offset', options:{offset: [0,-7]}}]}
-                                              }}>
-                                                <IconButton>
-                                                  <AddRounded />
-                                                </IconButton>
-                                              </Tooltip>
-                                            </TableCell>
-                                          </TableRow>
-                                        </TableBody>
-                                      </Table>
-                                    </div>
-                                  </Collapse>
-                                </TableCell>
-                              </TableRow>
-
-                              <TableRow>
-                                <TableCell colSpan={5} align="center">
-                                  <Button startIcon={<AddRounded />}>Add category group</Button>
-                                </TableCell>
-                              </TableRow>
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
-                      </div>
+                      <BudgetTable />
 
                       <div className="w-100">
-                        <Collapse in={newBudget} timeout='auto'>
-                          <NewBudget open={newBudget} setOpen={setNewBudget} />
+                        <Collapse in={open} timeout='auto'>
+                          <NewBudget userId={userId} setBudgets={setBudgets}
+                           budgets={budgets} open={open} setOpen={setOpen} />
                         </Collapse>
                       </div>
 
                       <Fab variant="extended" size="medium" color="primary"
                        sx={{padding: '1.5rem', borderRadius: '2rem'}} disabled={!ready}
-                       onClick={() => setNewBudget(!newBudget)}>
+                       onClick={() => setOpen(!open)}>
                         <Box className='d-flex align-items-center' sx={{
                           fontSize: '18px', textTransform: 'none', lineHeight: 1,
                           color: 'white'
@@ -134,14 +65,14 @@ export default function Budget({userId}) {
                           {
                             ready ? <>
                                       {
-                                        newBudget ? <>
-                                                      <CreditCardOffRounded style={{marginRight: '0.5rem'}} />
-                                                      Cancel
-                                                    </>
-                                                  : <>
-                                                      <AddCardRounded style={{marginRight: '0.5rem'}} />
-                                                      Create new budget
-                                                    </>
+                                        open ? <>
+                                                 <CreditCardOffRounded style={{marginRight: '0.5rem'}} />
+                                                 Cancel
+                                               </>
+                                             : <>
+                                                 <AddCardRounded style={{marginRight: '0.5rem'}} />
+                                                 Create new budget
+                                               </>
                                       }
                                     </>
                                   : <>
@@ -160,7 +91,7 @@ export default function Budget({userId}) {
   )
 }
 
-function NewBudget({open, setOpen}) {
+function NewBudget({userId, budgets, setBudgets, open, setOpen}) {
   const [name, setName] = useState('')
   const [frequency, setFrequency] = useState('monthly')
   const [dateRange, setDateRange] = useState([dayjs(), dayjs().add(1, 'month')])
@@ -177,11 +108,44 @@ function NewBudget({open, setOpen}) {
     }
   },[open])
 
-  const handleAddNewBudget = (e) => {
+  const handleAddNewBudget = async (e) => {
     e.preventDefault()
     setAddLoading(true)
 
-    //setOpen(false)
+    const reqBody = {
+      userId,
+      name,
+      frequency,
+      fromDate: dayjs(dateRange[0].$d).format('MM/DD/YYYY'),
+      toDate: dayjs(dateRange[1].$d).format('MM/DD/YYYY'),
+      rows: JSON.stringify({rows: []})
+    }
+
+    await fetch('/api/server/budgets', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(reqBody)
+    })
+      .then(res => {
+        if(res.status === 201) {
+          setOpen(false)
+
+          if (!budgets) {
+            setBudgets([reqBody])
+          } else {
+            setBudgets([...budgets, reqBody])
+          }
+        } else {
+          setAddError(true)
+          setAddLoading(false)
+        }
+      })
+      .catch(error => {
+        setAddError(true)
+        setAddLoading(false)
+        window.alert(error)
+        console.error(error)
+      })
   }
 
   const handleChange = (e) => {
@@ -245,6 +209,131 @@ function NewBudget({open, setOpen}) {
           </LoadingButton>
         </div>
       </form>
+    </>
+  )
+}
+
+function BudgetTable({budgetId}) {
+  const [expand, setExpand] = useState(true)
+  const [category, setCategory] = useState('')
+  const [projected, setProjected] = useState(0)
+  const [actual, setActual] = useState(0)
+  const [addLoading, setAddLoading] = useState(false)
+
+  useEffect(() => {
+
+  })
+
+  const handleAddRow = (e) => {
+    e.preventDefault()
+
+    function customIdGenerator() {
+      var S4 = function () {
+        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+      };
+      return ('row' + S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4());
+    }
+
+    const newRow = {
+      budgetId,
+      rowId: customIdGenerator(),
+      category,
+      projected,
+      actual,
+      remaining: projected - actual,
+      type: undefined,
+    }
+
+  }
+
+  return (
+    <>
+      <div className="w-100" style={{ marginBottom: '5rem' }}>
+        <div className="h2 w-100 mb-0" style={{ fontWeight: 'bold', marginTop: '2.25rem' }}>
+          Frequency
+        </div>
+
+        <TableContainer component={Paper} sx={{
+          minWidth: '80%', margin: '2rem 0rem 0rem', borderRadius: '8px',
+          backgroundColor: '#ffe6c6', padding: '1rem'
+         }}>
+          <Table>
+            <TableHead sx={{ backgroundColor: '#00c169' }}>
+              <TableRow sx={{ backgroundColor: '#00c169' }}>
+                <TableCell padding="checkbox" sx={{ borderRadius: '0.75rem 0 0 0.75rem' }}>
+                  <IconButton disabled>
+                    <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
+                  </IconButton>
+                </TableCell>
+                <TableCell padding="none" sx={{ color: 'white' }}>Category</TableCell>
+                <TableCell align="right" sx={{ color: 'white' }}>Projected</TableCell>
+                <TableCell align="right" sx={{ color: 'white' }}>Actual</TableCell>
+                <TableCell align="right" sx={{ borderRadius: '0 0.75rem 0.75rem 0', color: 'white' }}>Remaining</TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+
+              <TableRow role='button' onClick={() => setExpand(!expand)}>
+                <TableCell padding="checkbox">
+                  <IconButton disabled sx={{ color: '#0000008a !important' }}>
+                    {
+                      expand ? <ArrowDropDownRounded /> : <ArrowRightRounded />
+                    }
+                  </IconButton>
+                </TableCell>
+                <TableCell padding="none">Bills</TableCell>
+                <TableCell align="right">$3333</TableCell>
+                <TableCell align="right">$1342</TableCell>
+                <TableCell align="right">$1991</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell padding="none" colSpan={5}>
+                  <Collapse in={expand} timeout='auto'>
+                    <div>
+                      <Table sx={{ borderRadius: '1rem', backgroundColor: 'white' }}>
+                        <TableBody>
+
+                          <TableRow>
+                            <TableCell padding="checkbox">
+                              <IconButton disabled>
+                                <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
+                              </IconButton>
+                            </TableCell>
+                            <TableCell padding="none">Rent</TableCell>
+                            <TableCell align="right">$1000</TableCell>
+                            <TableCell align="right">$1000</TableCell>
+                            <TableCell align="right">$0</TableCell>
+                          </TableRow>
+
+                          <TableRow>
+                            <TableCell colSpan={5} sx={{ padding: '8px' }} align="center">
+                              <Tooltip title='Add category' slotProps={{
+                                popper: { modifiers: [{ name: 'offset', options: { offset: [0, -7] } }] }
+                              }}>
+                                <IconButton>
+                                  <AddRounded />
+                                </IconButton>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </Collapse>
+                </TableCell>
+              </TableRow>
+
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  <Button startIcon={<AddRounded />}>Add category group</Button>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+
+          </Table>
+        </TableContainer>
+      </div>
     </>
   )
 }
