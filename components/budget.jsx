@@ -253,7 +253,6 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen}) {
 
 function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}) {
   const [loading, setLoading] = useState(true)
-  const [defaultRows, setDefaultRows] = useState(null)
   const [tableRows, setTableRows] = useState(rows.rows)
   const [category, setCategory] = useState('')
   const [projected, setProjected] = useState(0)
@@ -361,7 +360,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
       }
     ]
 
-    if(rows.new && tableRows.length === 0 && !defaultRows) {
+    if(rows.new && tableRows.length === 0) {
       //setting default table rows (if no rows)
       fetch(`/api/server/budgets/${userId}/${budgetId}`, {
         method: "PATCH",
@@ -369,7 +368,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
         body: JSON.stringify({ defaultRows: { rows: defaultTableRows, new: false } })
       })
         .then(res => {
-          setDefaultRows(defaultTableRows)
+          setTableRows(defaultTableRows)
           setLoading(false)
         })
         .catch(error => {
@@ -378,10 +377,10 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
         })
 
     } else {
-
+      setLoading(false)
     }
 
-  },[budgetId, defaultRows, rows, tableRows, userId])
+  },[budgetId, rows, tableRows, userId])
 
   const handleAddRowGroup = (e) => {
     e.preventDefault()
@@ -473,26 +472,19 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
 
                     <TableBody>
                       {
-                        tableRows.length > 0
-                          ? <></>
-                          : <>
-                              {
-                                defaultRows.map(row => {
-                                  const {budgetId, rowId, category, projected,
-                                    actual, remaining, type, groupId
-                                  } = row
+                        tableRows.map(row => {
+                          const {budgetId, rowId, category, projected,
+                            actual, remaining, type, groupId
+                          } = row
 
-                                  return (
-                                    <BudgetRowGroup key={rowId} budgetId={budgetId}
-                                     rowId={rowId} category={category} projected={projected}
-                                     actual={actual} remaining={remaining}
-                                     type={type} groupId={groupId} rows={defaultRows} />
-                                  )
-                                })
-                              }
-                            </>
+                          return (
+                            <BudgetRowGroup key={rowId} budgetId={budgetId}
+                             rowId={rowId} category={category} projected={projected}
+                             actual={actual} remaining={remaining}
+                             type={type} groupId={groupId} rows={tableRows} />
+                          )
+                        })
                       }
-
                       <TableRow>
                         <TableCell colSpan={5} align="center">
                           <Button startIcon={<AddRounded />}>Add category group</Button>
