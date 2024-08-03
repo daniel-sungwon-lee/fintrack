@@ -46,7 +46,33 @@ export default function Budget({userId}) {
                     <div className="d-flex flex-column justify-content-center align-items-center"
                      style={{minHeight: '50vh', marginBottom: '7rem'}}>
 
-                      <BudgetTable />
+                      <>
+                        {
+                          budgets ? <>
+                                      {
+                                        budgets.map(budget => {
+                                          const {budgetId, userId, name, frequency,
+                                            fromDate, toDate, rows
+                                          } = budget
+
+                                          return (
+                                            <BudgetTable key={budgetId} budgetId={budgetId}
+                                             userId={userId} name={name} frequency={frequency}
+                                             fromDate={fromDate} toDate={toDate} rows={rows} />
+                                          )
+                                        })
+                                      }
+                                    </>
+                                  : <div className="w-100 text-center">
+                                      {
+                                        open ? <></>
+                                             : <h2 className="mb-3" style={{opacity: '0.7'}}>
+                                                 Much empty...
+                                               </h2>
+                                      }
+                                    </div>
+                        }
+                      </>
 
                       <div className="w-100">
                         <Collapse in={open} timeout='auto'>
@@ -213,7 +239,7 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen}) {
   )
 }
 
-function BudgetTable({budgetId}) {
+function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}) {
   const [expand, setExpand] = useState(true)
   const [category, setCategory] = useState('')
   const [projected, setProjected] = useState(0)
