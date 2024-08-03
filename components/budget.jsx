@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Placeholder from "./placeholder"
 import { Box, Button, CircularProgress, Collapse, Fab, FormControl, FormControlLabel,
-         FormHelperText, FormLabel, IconButton, Paper, Radio, RadioGroup, Table,
+         FormHelperText, FormLabel, IconButton, Paper, Radio, RadioGroup, Skeleton, Table,
          TableBody, TableCell, TableContainer, TableHead, TableRow, TextField,
          Tooltip, Zoom } from "@mui/material"
 import { AddCardRounded, AddRounded, ArrowDropDownRounded, ArrowDropUpRounded,
@@ -12,6 +12,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { DateRangePicker, SingleInputDateRangeField } from "@mui/x-date-pickers-pro"
 import dayjs from "dayjs"
+import TablePlaceholder from "./tablePlaceholder"
 
 export default function Budget({userId}) {
   const [loading, setLoading] = useState(true)
@@ -240,25 +241,128 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen}) {
 }
 
 function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}) {
+  const [loading, setLoading] = useState(true)
+  const [defaultRows, setDefaultRows] = useState(null)
+  const [tableRows, setTableRows] = useState(rows.rows)
   const [expand, setExpand] = useState(true)
   const [category, setCategory] = useState('')
   const [projected, setProjected] = useState(0)
   const [actual, setActual] = useState(0)
   const [addLoading, setAddLoading] = useState(false)
 
+  const customIdGenerator = () => {
+    var S4 = function () {
+      return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+    };
+    return ('row' + S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4());
+  }
+
   useEffect(() => {
-
-  })
-
-  const handleAddRow = (e) => {
-    e.preventDefault()
-
-    function customIdGenerator() {
-      var S4 = function () {
-        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-      };
-      return ('row' + S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4());
+    //setting default table rows (if no rows)
+    if(tableRows.length === 0 && !defaultRows) {
+      setDefaultRows([
+        {
+          budgetId,
+          rowId: "row564000212156bae63c0a82b1a1ebf855",
+          category: 'Bills',
+          projected: 3000,
+          actual: 1860,
+          remaining: 1140,
+          type: 'group',
+          groupId: null
+        },
+        {
+          budgetId,
+          rowId: "row6567643dc469af2a5c73935524e087be",
+          category: 'Fun',
+          projected: 500,
+          actual: 180,
+          remaining: 320,
+          type: 'group',
+          groupId: null
+        },
+        {
+          budgetId,
+          rowId: "row64adc7c62c3b49892e1f71000d7fb185",
+          category: 'Food',
+          projected: 1000,
+          actual: 345,
+          remaining: 655,
+          type: 'group',
+          groupId: null
+        },
+        {
+          budgetId,
+          rowId: customIdGenerator(),
+          category: 'Groceries',
+          projected: 300,
+          actual: 145,
+          remaining: 155,
+          type: 'category',
+          groupId: "row64adc7c62c3b49892e1f71000d7fb185"
+        },
+        {
+          budgetId,
+          rowId: customIdGenerator(),
+          category: 'Thrifting',
+          projected: 100,
+          actual: 0,
+          remaining: 100,
+          type: 'category',
+          groupId: "row6567643dc469af2a5c73935524e087be"
+        },
+        {
+          budgetId,
+          rowId: customIdGenerator(),
+          category: 'Rent',
+          projected: 2000,
+          actual: 2000,
+          remaining: 0,
+          type: 'category',
+          groupId: "row564000212156bae63c0a82b1a1ebf855"
+        },
+        {
+          budgetId,
+          rowId: customIdGenerator(),
+          category: 'Utilities',
+          projected: 200,
+          actual: 45,
+          remaining: 155,
+          type: 'category',
+          groupId: "row564000212156bae63c0a82b1a1ebf855"
+        },
+        {
+          budgetId,
+          rowId: customIdGenerator(),
+          category: 'Shopping',
+          projected: 200,
+          actual: 156,
+          remaining: 44,
+          type: 'category',
+          groupId: "row6567643dc469af2a5c73935524e087be"
+        },
+        {
+          budgetId,
+          rowId: customIdGenerator(),
+          category: 'Subscriptions',
+          projected: 6,
+          actual: 6,
+          remaining: 0,
+          type: 'category',
+          groupId: "row564000212156bae63c0a82b1a1ebf855"
+        }
+      ])
     }
+
+  },[budgetId, defaultRows, tableRows.length])
+
+  const handleGroupExpand = (rowId) => {
+
+  }
+
+  const handleAddRowGroup = (e) => {
+    e.preventDefault()
+    setAddLoading(true)
 
     const newRow = {
       budgetId,
@@ -267,7 +371,25 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
       projected,
       actual,
       remaining: projected - actual,
-      type: undefined,
+      type: 'group',
+      groupId: null
+    }
+
+  }
+
+  const handleAddRowCat = (e) => {
+    e.preventDefault()
+    setAddLoading(true)
+
+    const newRow = {
+      budgetId,
+      rowId: customIdGenerator(),
+      category,
+      projected,
+      actual,
+      remaining: projected - actual,
+      type: 'category',
+      groupId: e.target.key
     }
 
   }
@@ -275,31 +397,103 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
   return (
     <>
       <div className="w-100" style={{ marginBottom: '5rem' }}>
-        <div className="h2 w-100 mb-0" style={{ fontWeight: 'bold', marginTop: '2.25rem' }}>
-          Frequency
-        </div>
+        {
+          loading
+            ? <>
+                <div>
+                  <Skeleton variant='rounded'>
+                    <div className="h1 w-100" style={{ fontWeight: 'bold', marginTop: '2.25rem' }}>
+                      Unemployed life monthly budget
+                    </div>
+                  </Skeleton>
+                  <Skeleton variant='rounded'>
+                    <div className="h4 w-100">
+                      Monthly
+                    </div>
+                  </Skeleton>
+                  <Skeleton variant='rounded'>
+                    <div className="h4 w-100 mb-0">
+                      8/1/2024 to 9/1/2024
+                    </div>
+                  </Skeleton>
+                </div>
 
-        <TableContainer component={Paper} sx={{
-          minWidth: '80%', margin: '2rem 0rem 0rem', borderRadius: '8px',
-          backgroundColor: '#ffe6c6', padding: '1rem'
-         }}>
-          <Table>
-            <TableHead sx={{ backgroundColor: '#00c169' }}>
-              <TableRow sx={{ backgroundColor: '#00c169' }}>
-                <TableCell padding="checkbox" sx={{ borderRadius: '0.75rem 0 0 0.75rem' }}>
-                  <IconButton disabled>
-                    <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
-                  </IconButton>
-                </TableCell>
-                <TableCell padding="none" sx={{ color: 'white' }}>Category</TableCell>
-                <TableCell align="right" sx={{ color: 'white' }}>Projected</TableCell>
-                <TableCell align="right" sx={{ color: 'white' }}>Actual</TableCell>
-                <TableCell align="right" sx={{ borderRadius: '0 0.75rem 0.75rem 0', color: 'white' }}>Remaining</TableCell>
-              </TableRow>
-            </TableHead>
+                <TablePlaceholder />
+              </>
+            : <>
+                <div>
+                  <div className="h2 w-100" style={{ fontWeight: 'bold', marginTop: '2.25rem' }}>
+                    {name}
+                  </div>
+                  <div className="h4 w-100 text-capitalize">{frequency}</div>
+                  <div className="h4 w-100 mb-0">{`${fromDate} to ${toDate}`}</div>
+                </div>
 
-            <TableBody>
+                <TableContainer component={Paper} sx={{
+                  minWidth: '80%', margin: '2rem 0rem 0rem', borderRadius: '8px',
+                  backgroundColor: '#ffe6c6', padding: '1rem'
+                 }}>
+                  <Table>
+                    <TableHead sx={{ backgroundColor: '#00c169' }}>
+                      <TableRow sx={{ backgroundColor: '#00c169' }}>
+                        <TableCell padding="checkbox" sx={{ borderRadius: '0.75rem 0 0 0.75rem' }}>
+                          <IconButton disabled>
+                            <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
+                          </IconButton>
+                        </TableCell>
+                        <TableCell padding="none" sx={{ color: 'white' }}>Category</TableCell>
+                        <TableCell align="right" sx={{ color: 'white' }}>Projected</TableCell>
+                        <TableCell align="right" sx={{ color: 'white' }}>Actual</TableCell>
+                        <TableCell align="right" sx={{ borderRadius: '0 0.75rem 0.75rem 0', color: 'white' }}>Remaining</TableCell>
+                      </TableRow>
+                    </TableHead>
 
+                    <TableBody>
+                      {
+                        tableRows.length > 0
+                          ? <></>
+                          : <>
+                              {
+                                defaultRows.map(row => {
+                                  const {budgetId, rowId, category, projected,
+                                    actual, remaining, type, groupId
+                                  } = row
+
+                                  return (
+                                    <BudgetRowGroup key={rowId} budgetId={budgetId}
+                                     rowId={rowId} category={category} projected={projected}
+                                     actual={actual} remaining={remaining}
+                                     type={type} groupId={groupId} rows={defaultRows} />
+                                  )
+                                })
+                              }
+                            </>
+                      }
+
+                      <TableRow>
+                        <TableCell colSpan={5} align="center">
+                          <Button startIcon={<AddRounded />}>Add category group</Button>
+                        </TableCell>
+                      </TableRow>
+
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </>
+        }
+      </div>
+    </>
+  )
+}
+
+function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining, type, groupId, rows}) {
+  const [expand, setExpand] = useState(true)
+
+  return (
+    <>
+      {
+        type === 'group'
+          ? <>
               <TableRow role='button' onClick={() => setExpand(!expand)}>
                 <TableCell padding="checkbox">
                   <IconButton disabled sx={{ color: '#0000008a !important' }}>
@@ -308,10 +502,10 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
                     }
                   </IconButton>
                 </TableCell>
-                <TableCell padding="none">Bills</TableCell>
-                <TableCell align="right">$3333</TableCell>
-                <TableCell align="right">$1342</TableCell>
-                <TableCell align="right">$1991</TableCell>
+                <TableCell padding="none">{category}</TableCell>
+                <TableCell align="right">{projected}</TableCell>
+                <TableCell align="right">{actual}</TableCell>
+                <TableCell align="right">{remaining}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell padding="none" colSpan={5}>
@@ -319,19 +513,27 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
                     <div>
                       <Table sx={{ borderRadius: '1rem', backgroundColor: 'white' }}>
                         <TableBody>
+                          {
+                            rows.filter(row => row.groupId === rowId).map(catRow => {
+                              const {
+                                rowId, category, projected, actual, remaining
+                              } = catRow
 
-                          <TableRow>
-                            <TableCell padding="checkbox">
-                              <IconButton disabled>
-                                <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
-                              </IconButton>
-                            </TableCell>
-                            <TableCell padding="none">Rent</TableCell>
-                            <TableCell align="right">$1000</TableCell>
-                            <TableCell align="right">$1000</TableCell>
-                            <TableCell align="right">$0</TableCell>
-                          </TableRow>
-
+                              return (
+                                <TableRow key={rowId}>
+                                  <TableCell padding="checkbox">
+                                    <IconButton disabled>
+                                      <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
+                                    </IconButton>
+                                  </TableCell>
+                                  <TableCell padding="none">{category}</TableCell>
+                                  <TableCell align="right">{projected}</TableCell>
+                                  <TableCell align="right">{actual}</TableCell>
+                                  <TableCell align="right">{remaining}</TableCell>
+                                </TableRow>
+                              )
+                            })
+                          }
                           <TableRow>
                             <TableCell colSpan={5} sx={{ padding: '8px' }} align="center">
                               <Tooltip title='Add category' slotProps={{
@@ -349,17 +551,9 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
                   </Collapse>
                 </TableCell>
               </TableRow>
-
-              <TableRow>
-                <TableCell colSpan={5} align="center">
-                  <Button startIcon={<AddRounded />}>Add category group</Button>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-
-          </Table>
-        </TableContainer>
-      </div>
+            </>
+          : <></>
+      }
     </>
   )
 }
