@@ -393,7 +393,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
 
   },[addGroupOpen, budgetId, rows, tableRows, userId])
 
-  const handleAddGroup = (e) => {
+  const handleAddGroup = async (e) => {
     e.preventDefault()
     setAddGroupLoading(true)
 
@@ -408,6 +408,27 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
       groupId: null
     }
 
+    await fetch(`/api/server/budgets/${userId}/${budgetId}?rowType=group`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({updatedRows: {rows: [...tableRows, newRow], new: false}})
+    })
+      .then(async res => {
+        if(res.status === 200) {
+          setTableRows([...tableRows, newRow])
+          setAddGroupOpen(false)
+
+        } else {
+          setAddGroupError(true)
+          setAddGroupLoading(false)
+        }
+      })
+      .catch(error => {
+        setAddGroupError(true)
+        setAddGroupLoading(false)
+        window.alert(error)
+        console.error(error)
+      })
   }
 
   return (
