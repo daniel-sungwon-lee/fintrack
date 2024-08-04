@@ -383,7 +383,15 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
       setLoading(false)
     }
 
-  },[budgetId, rows, tableRows, userId])
+    if(!addGroupOpen) {
+      setGroupCategory('')
+      setGroupProjected('')
+      setGroupActual('')
+      setAddGroupLoading(false)
+      setAddGroupError(false)
+    }
+
+  },[addGroupOpen, budgetId, rows, tableRows, userId])
 
   const handleAddGroup = (e) => {
     e.preventDefault()
