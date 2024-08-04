@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { forwardRef, useEffect, useMemo, useState } from "react"
 import Placeholder from "./placeholder"
 import { Box, Button, CircularProgress, Collapse, Fab, FormControl, FormControlLabel,
          FormHelperText, FormLabel, IconButton, Paper, Radio, RadioGroup, Skeleton, Table,
@@ -13,6 +13,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { DateRangePicker, SingleInputDateRangeField } from "@mui/x-date-pickers-pro"
 import dayjs from "dayjs"
 import TablePlaceholder from "./tablePlaceholder"
+import { NumericFormat } from "react-number-format"
 
 export default function Budget({userId}) {
   const [loading, setLoading] = useState(true)
@@ -501,16 +502,40 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
   )
 }
 
+const NumericFormatCustom = forwardRef(function NumericFormatCustom(props, ref) {
+  const { onChange, ...other } = props
+
+  return (
+    <NumericFormat {...other} getInputRef={ref} onValueChange={(values) => {
+      onChange({ target: { name: props.name, value: values.value }, })
+    }} thousandSeparator valueIsNumericString prefix="$" />
+  )
+})
+NumericFormatCustom.propTypes = {
+  name: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+}
+
 function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining, type, groupId, rows}) {
   const [expand, setExpand] = useState(true)
+  const [addExpand, setAddExpand] = useState(false)
+  const [catCategory, setCatCategory] = useState('')
+  const [catProjected, setCatProjected] = useState('')
+
+  const [addCatLoading, setAddCatLoading] = useState(false)
+  const [addCatError, setAddCatError] = useState(false)
+
+  useEffect(() => {
+
+  })
 
   return (
     <>
       {
         type === 'group'
           ? <>
-              <TableRow role='button' onClick={() => setExpand(!expand)}>
-                <TableCell padding="checkbox">
+              <TableRow role='button' hover onClick={() => setExpand(!expand)}>
+                <TableCell padding="checkbox" sx={{borderRadius: '1rem 0 0 1rem'}}>
                   <IconButton disabled sx={{ color: '#0000008a !important' }}>
                     {
                       expand ? <ArrowDropDownRounded /> : <ArrowRightRounded />
@@ -520,7 +545,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                 <TableCell padding="none">{category}</TableCell>
                 <TableCell align="right">{projected}</TableCell>
                 <TableCell align="right">{actual}</TableCell>
-                <TableCell align="right">{remaining}</TableCell>
+                <TableCell align="right" sx={{borderRadius: '0 1rem 1rem 0'}}>{remaining}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell padding="none" colSpan={5}>
@@ -549,13 +574,47 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                               )
                             })
                           }
+
+                          <TableRow>
+                            <TableCell colSpan={5} padding="none">
+                              <Collapse in={addExpand} timeout='auto'>
+                                <div className="d-flex">
+                                  <div style={{width: '48px'}}>
+                                    <IconButton disabled>
+                                      <ArrowDropDownRounded sx={{visibility: 'hidden'}} />
+                                    </IconButton>
+                                  </div>
+                                  <div>
+                                    <TextField value={catCategory} id="category" required disabled={addCatLoading}
+                                      variant="standard" label="Category" onChange={(e) => setCatCategory(e.target.value)}
+                                      InputLabelProps={{ required: false }} error={addCatError} sx={{ marginBottom: '0.5rem' }}
+                                      helperText={addCatError ? 'Please try again' : 'Ex: Mortgage'} />
+                                  </div>
+                                  <div>
+                                    <TextField value={catProjected} type="currency" id="projected" required disabled={addCatLoading}
+                                      variant="standard" label="Projected" onChange={(e) => setCatProjected(e.target.value)}
+                                      InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormatCustom }}
+                                      helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
+                                  </div>
+                                  <div>
+
+                                  </div>
+                                  <div></div>
+                                </div>
+                              </Collapse>
+                            </TableCell>
+                          </TableRow>
+
                           <TableRow>
                             <TableCell colSpan={5} sx={{ padding: '8px' }} align="center">
-                              <Tooltip title='Add category' slotProps={{
+                              <Tooltip title={addExpand ? '' : 'Add category'} slotProps={{
                                 popper: { modifiers: [{ name: 'offset', options: { offset: [0, -7] } }] }
                               }}>
-                                <IconButton>
-                                  <AddRounded />
+                                <IconButton onClick={() => setAddExpand(!addExpand)}>
+                                  {
+                                    addExpand ? <CloseRounded />
+                                              : <AddRounded />
+                                  }
                                 </IconButton>
                               </Tooltip>
                             </TableCell>
