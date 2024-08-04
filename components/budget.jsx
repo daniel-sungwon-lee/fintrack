@@ -383,7 +383,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
 
   },[budgetId, rows, tableRows, userId])
 
-  const handleAddRowGroup = (e) => {
+  const handleAddGroup = (e) => {
     e.preventDefault()
     setAddLoading(true)
 
@@ -396,23 +396,6 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
       remaining: projected - actual,
       type: 'group',
       groupId: null
-    }
-
-  }
-
-  const handleAddRowCat = (e) => {
-    e.preventDefault()
-    setAddLoading(true)
-
-    const newRow = {
-      budgetId,
-      rowId: customIdGenerator(),
-      category,
-      projected,
-      actual,
-      remaining: projected - actual,
-      type: 'category',
-      groupId: e.target.key
     }
 
   }
@@ -482,7 +465,8 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
                             <BudgetRowGroup key={rowId} budgetId={budgetId}
                              rowId={rowId} category={category} projected={projected}
                              actual={actual} remaining={remaining}
-                             type={type} groupId={groupId} rows={tableRows} />
+                             type={type} groupId={groupId} rows={tableRows}
+                             setRows={setTableRows} userId={userId} />
                           )
                         })
                       }
@@ -502,32 +486,87 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
   )
 }
 
-const NumericFormatCustom = forwardRef(function NumericFormatCustom(props, ref) {
-  const { onChange, ...other } = props
+// const NumericFormatCustom = forwardRef(function NumericFormatCustom(props, ref) {
+//   const { onChange, ...other } = props
 
-  return (
-    <NumericFormat {...other} getInputRef={ref} onValueChange={(values) => {
-      onChange({ target: { name: props.name, value: values.value }, })
-    }} thousandSeparator valueIsNumericString prefix="$" />
-  )
-})
-NumericFormatCustom.propTypes = {
-  name: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-}
+//   return (
+//     <NumericFormat {...other} getInputRef={ref} onValueChange={(values) => {
+//       onChange({ target: { name: props.name, value: values.value }, })
+//     }} thousandSeparator valueIsNumericString prefix="$" />
+//   )
+// })
+// NumericFormatCustom.propTypes = {
+//   name: PropTypes.string.isRequired,
+//   onChange: PropTypes.func.isRequired,
+// }
 
-function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining, type, groupId, rows}) {
+function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining, type, groupId, rows, setRows, userId}) {
   const [expand, setExpand] = useState(true)
   const [addExpand, setAddExpand] = useState(false)
   const [catCategory, setCatCategory] = useState('')
   const [catProjected, setCatProjected] = useState('')
-
+  const [catActual, setCatActual] = useState('')
   const [addCatLoading, setAddCatLoading] = useState(false)
   const [addCatError, setAddCatError] = useState(false)
 
   useEffect(() => {
+    if(!expand) {
+      setAddExpand(false)
+    }
+    if(!addExpand){
+      setCatCategory('')
+      setCatProjected('')
+      setCatActual('')
+      setAddCatLoading(false)
+      setAddCatError(false)
+    }
 
-  })
+  },[addExpand, expand])
+
+  const customIdGenerator = () => {
+    var S4 = function () {
+      return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+    };
+    return ('row' + S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4());
+  }
+
+  const handleAddCat = async (e) => {
+    e.preventDefault()
+    setAddCatLoading(true)
+
+    const newRow = {
+      budgetId,
+      rowId: customIdGenerator(),
+      category: catCategory,
+      projected: catProjected,
+      actual: catActual,
+      remaining: catProjected - catActual,
+      type: 'category',
+      groupId: rowId
+    }
+
+    await fetch(`/api/server/budgets/${userId}/${budgetId}?rowType=category`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({updatedRows: {rows: [...rows, newRow], new: false}})
+    })
+      .then(async res => {
+        if(res.status === 200) {
+          setRows([...rows, newRow])
+          setAddExpand(false)
+
+        } else {
+          setAddCatError(true)
+          setAddCatLoading(false)
+        }
+      })
+      .catch(error => {
+        setAddCatError(true)
+        setAddCatLoading(false)
+        window.alert(error)
+        console.error(error)
+      })
+  }
 
   return (
     <>
@@ -578,29 +617,44 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                           <TableRow>
                             <TableCell colSpan={5} padding="none">
                               <Collapse in={addExpand} timeout='auto'>
-                                <div className="d-flex">
-                                  <div style={{width: '48px'}}>
-                                    <IconButton disabled>
-                                      <ArrowDropDownRounded sx={{visibility: 'hidden'}} />
-                                    </IconButton>
+                                <form onSubmit={handleAddCat}>
+                                  <div className="d-flex w-100">
+                                    <div style={{width: '48px'}}>
+                                      <IconButton disabled>
+                                        <ArrowDropDownRounded sx={{visibility: 'hidden'}} />
+                                      </IconButton>
+                                    </div>
+                                    <div className="d-flex justify-content-between w-100">
+                                      <div className="w-100" style={{maxWidth: '50%'}}>
+                                        <TextField value={catCategory} id="category" required disabled={addCatLoading}
+                                          variant="standard" label="Category" onChange={(e) => setCatCategory(e.target.value)}
+                                          InputLabelProps={{ required: false }} error={addCatError} sx={{ marginBottom: '0.5rem' }}
+                                          helperText={addCatError ? 'Please try again' : 'Ex: Mortgage'} fullWidth />
+                                      </div>
+                                      <div className="d-flex" style={{marginRight: '16px'}}>
+                                        <div>
+                                          <TextField value={catProjected} type="currency" id="projected" required disabled={addCatLoading}
+                                            variant="standard" label="Projected" onChange={(e) => setCatProjected(e.target.value)}
+                                            InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
+                                            helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
+                                        </div>
+                                        <div>
+                                          <TextField value={catActual} type="currency" id="actual" required disabled={addCatLoading}
+                                            variant="standard" label="Actual" onChange={(e) => setCatActual(e.target.value)}
+                                            InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
+                                            helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <TextField value={catCategory} id="category" required disabled={addCatLoading}
-                                      variant="standard" label="Category" onChange={(e) => setCatCategory(e.target.value)}
-                                      InputLabelProps={{ required: false }} error={addCatError} sx={{ marginBottom: '0.5rem' }}
-                                      helperText={addCatError ? 'Please try again' : 'Ex: Mortgage'} />
-                                  </div>
-                                  <div>
-                                    <TextField value={catProjected} type="currency" id="projected" required disabled={addCatLoading}
-                                      variant="standard" label="Projected" onChange={(e) => setCatProjected(e.target.value)}
-                                      InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormatCustom }}
-                                      helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
-                                  </div>
-                                  <div>
 
+                                  <div className="w-100 d-flex justify-content-center mb-2">
+                                    <LoadingButton loading={addCatLoading} type="submit" sx={{ textTransform: 'none' }}
+                                      loadingPosition="start" startIcon={<AddRounded />}>
+                                      Add category
+                                    </LoadingButton>
                                   </div>
-                                  <div></div>
-                                </div>
+                                </form>
                               </Collapse>
                             </TableCell>
                           </TableRow>
@@ -610,9 +664,10 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                               <Tooltip title={addExpand ? '' : 'Add category'} slotProps={{
                                 popper: { modifiers: [{ name: 'offset', options: { offset: [0, -7] } }] }
                               }}>
-                                <IconButton onClick={() => setAddExpand(!addExpand)}>
+                                <IconButton onClick={() => setAddExpand(!addExpand)}
+                                 color={addExpand ? 'error' : 'default'}>
                                   {
-                                    addExpand ? <CloseRounded />
+                                    addExpand ? <CloseRounded color="error" />
                                               : <AddRounded />
                                   }
                                 </IconButton>
