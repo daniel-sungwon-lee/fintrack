@@ -1,12 +1,13 @@
 import { forwardRef, useEffect, useMemo, useState } from "react"
 import Placeholder from "./placeholder"
 import { Box, Button, CircularProgress, Collapse, Fab, FormControl, FormControlLabel,
-         FormHelperText, FormLabel, IconButton, Paper, Radio, RadioGroup, Skeleton, Table,
-         TableBody, TableCell, TableContainer, TableHead, TableRow, TextField,
-         Tooltip, Zoom } from "@mui/material"
+         FormHelperText, FormLabel, IconButton, Paper, Radio, RadioGroup, Skeleton,
+         SpeedDial, SpeedDialAction, SpeedDialIcon, Table, TableBody, TableCell,
+         TableContainer, TableHead, TableRow, TextField, Tooltip,
+         Zoom } from "@mui/material"
 import { AddCardRounded, AddRounded, ArrowDropDownRounded, ArrowDropUpRounded,
-         ArrowRightRounded, CloseRounded, CreditCardOffRounded,
-         PostAddRounded } from "@mui/icons-material"
+         ArrowRightRounded, CloseRounded, CreditCardOffRounded, DeleteRounded,
+         EditRounded, MoreVertRounded, PostAddRounded } from "@mui/icons-material"
 import { LoadingButton } from "@mui/lab"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
@@ -594,6 +595,9 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
   const [addCatLoading, setAddCatLoading] = useState(false)
   const [addCatError, setAddCatError] = useState(false)
 
+  const [speedDialLoading, setSpeedDialLoading] = useState(false)
+  const [editModeId, setEditModeId] = useState(null)
+
   useEffect(() => {
     if(!expand) {
       setAddExpand(false)
@@ -653,6 +657,31 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
       })
   }
 
+  const handleSpeedDial = async (type, action, rowId, e) => {
+    if(type === 'category' && action === 'delete') {
+      setSpeedDialLoading(true)
+
+      const newRows = rows.filter(row => row.rowId !== rowId)
+
+      await fetch(`/api/server/budgets/${userId}/${budgetId}?rowType=category`, {
+        method: 'PATCH',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({updatedRows: {rows : newRows, new: false}})
+        //check if deleting all rows after creation resets to default
+      })
+        .then(res => {
+          setRows(newRows)
+          setSpeedDialLoading(false)
+        })
+        .catch(error => {
+          setSpeedDialLoading(false)
+          window.alert(error)
+          console.error(error)
+        })
+
+    }
+  }
+
   return (
     <>
       {
@@ -685,10 +714,24 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
 
                               return (
                                 <TableRow key={rowId}>
-                                  <TableCell padding="checkbox">
-                                    <IconButton disabled>
-                                      <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
-                                    </IconButton>
+                                  <TableCell padding="checkbox" sx={{position: 'relative'}}>
+                                    <SpeedDial ariaLabel="Row Category SpeedDial"
+                                     icon={<SpeedDialIcon icon={<MoreVertRounded sx={{color: '#0000008a'}} fontSize="small" />}
+                                     openIcon={<CloseRounded color="error" />} />}
+                                     sx={{ position: 'absolute', top: '-15px', left: '-4px' }}
+                                     FabProps={{ sx: { boxShadow: 'none !important',
+                                      background: 'transparent !important' }, disableRipple: true }}
+                                     direction="right">
+                                      <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />}
+                                        onClick={(e) => handleSpeedDial('category', 'edit', rowId, e)}
+                                        disabled={editModeId !== null && editModeId !== rowId} />
+                                      <SpeedDialAction tooltipTitle='Delete'
+                                        icon={speedDialLoading
+                                        ? <CircularProgress color="inherit" size={20} thickness={5} />
+                                        : <DeleteRounded color="error" />}
+                                        onClick={(e) => handleSpeedDial('category', 'delete', rowId, e)}
+                                        FabProps={{ disabled: speedDialLoading }} />
+                                    </SpeedDial>
                                   </TableCell>
                                   <TableCell padding="none">{category}</TableCell>
                                   <TableCell align="right">{projected}</TableCell>
@@ -702,7 +745,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                           <TableRow>
                             <TableCell colSpan={5} padding="none">
                               <Collapse in={addExpand} timeout='auto'>
-                                <form onSubmit={handleAddCat}>
+                                <form onSubmit={handleAddCat} className="mt-3">
                                   <div className="d-flex w-100">
                                     <div style={{width: '48px'}}>
                                       <IconButton disabled>
