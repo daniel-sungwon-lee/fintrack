@@ -255,10 +255,12 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen}) {
 function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}) {
   const [loading, setLoading] = useState(true)
   const [tableRows, setTableRows] = useState(rows.rows)
-  const [category, setCategory] = useState('')
-  const [projected, setProjected] = useState(0)
-  const [actual, setActual] = useState(0)
-  const [addLoading, setAddLoading] = useState(false)
+  const [addGroupOpen, setAddGroupOpen] = useState(false)
+  const [groupCategory, setGroupCategory] = useState('')
+  const [groupProjected, setGroupProjected] = useState('')
+  const [groupActual, setGroupActual] = useState('')
+  const [addGroupLoading, setAddGroupLoading] = useState(false)
+  const [addGroupError, setAddGroupError] = useState(false)
 
   const customIdGenerator = () => {
     var S4 = function () {
@@ -385,15 +387,15 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
 
   const handleAddGroup = (e) => {
     e.preventDefault()
-    setAddLoading(true)
+    setAddGroupLoading(true)
 
     const newRow = {
       budgetId,
       rowId: customIdGenerator(),
-      category,
-      projected,
-      actual,
-      remaining: projected - actual,
+      category: groupCategory,
+      projected: groupProjected,
+      actual: groupActual,
+      remaining: groupProjected - groupActual,
       type: 'group',
       groupId: null
     }
@@ -470,9 +472,63 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
                           )
                         })
                       }
+
+                      <TableRow>
+                        <TableCell colSpan={5} padding="none">
+                          <Collapse in={addGroupOpen} timeout='auto'>
+                            <form onSubmit={handleAddGroup} className="mt-3">
+                              <div className="d-flex w-100">
+                                <div style={{ width: '48px' }}>
+                                  <IconButton disabled>
+                                    <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
+                                  </IconButton>
+                                </div>
+                                <div className="d-flex justify-content-between w-100">
+                                  <div className="w-100" style={{ maxWidth: '50%' }}>
+                                    <TextField value={groupCategory} id="category" required disabled={addGroupLoading}
+                                      variant="standard" label="Category" onChange={(e) => setGroupCategory(e.target.value)}
+                                      InputLabelProps={{ required: false }} error={addGroupError} sx={{ marginBottom: '0.5rem' }}
+                                      helperText={addGroupError ? 'Please try again' : 'Ex: Child'} fullWidth />
+                                  </div>
+                                  <div className="d-flex" style={{ marginRight: '16px' }}>
+                                    <div>
+                                      <TextField value={groupProjected} type="currency" id="projected" required disabled={addGroupLoading}
+                                        variant="standard" label="Projected" onChange={(e) => setGroupProjected(e.target.value)}
+                                        InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormat }}
+                                        helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" />
+                                    </div>
+                                    <div>
+                                      <TextField value={groupActual} type="currency" id="actual" required disabled={addGroupLoading}
+                                        variant="standard" label="Actual" onChange={(e) => setGroupActual(e.target.value)}
+                                        InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormat }}
+                                        helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="w-100 d-flex justify-content-center mb-3 mt-1">
+                                <LoadingButton loading={addGroupLoading} type="submit"
+                                 sx={{ textTransform: 'none', color: 'white', marginTop: '0.5rem' }}
+                                 loadingPosition="start" startIcon={<AddRounded />} variant='contained'>
+                                  Add category group
+                                </LoadingButton>
+                              </div>
+                            </form>
+                          </Collapse>
+                        </TableCell>
+                      </TableRow>
+
                       <TableRow>
                         <TableCell colSpan={5} align="center">
-                          <Button startIcon={<AddRounded />}>Add category group</Button>
+                          <Button onClick={() => setAddGroupOpen(!addGroupOpen)}
+                           startIcon={addGroupOpen ? <CloseRounded color="error" /> : <AddRounded />}
+                           color={addGroupOpen ? 'error' : 'primary'}>
+                            {
+                              addGroupOpen ? <>Cancel</>
+                                           : <>Add category group</>
+                            }
+                          </Button>
                         </TableCell>
                       </TableRow>
 
