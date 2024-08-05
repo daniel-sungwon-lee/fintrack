@@ -21,6 +21,7 @@ export default function Budget({userId}) {
   const [ready, setReady] = useState(false)
   const [budgets, setBudgets] = useState(null)
   const [open, setOpen] = useState(false)
+  const [addBudgetLoading, setAddBudgetLoading] = useState(false)
 
   useEffect(() => {
     if(loading) {
@@ -80,12 +81,13 @@ export default function Budget({userId}) {
                       <div className="w-100">
                         <Collapse in={open} timeout='auto'>
                           <NewBudget userId={userId} setBudgets={setBudgets}
-                           budgets={budgets} open={open} setOpen={setOpen} />
+                           budgets={budgets} open={open} setOpen={setOpen}
+                           setAddBudgetLoading={setAddBudgetLoading} />
                         </Collapse>
                       </div>
 
                       <Fab variant="extended" size="medium" color="primary"
-                       sx={{padding: '1.5rem', borderRadius: '2rem'}} disabled={!ready}
+                       sx={{padding: '1.5rem', borderRadius: '2rem'}} disabled={!ready || addBudgetLoading}
                        onClick={() => setOpen(!open)}>
                         <Box className='d-flex align-items-center' sx={{
                           fontSize: '18px', textTransform: 'none', lineHeight: 1,
@@ -120,7 +122,7 @@ export default function Budget({userId}) {
   )
 }
 
-function NewBudget({userId, budgets, setBudgets, open, setOpen}) {
+function NewBudget({userId, budgets, setBudgets, open, setOpen, setAddBudgetLoading}) {
   const [name, setName] = useState('')
   const [frequency, setFrequency] = useState('monthly')
   const [dateRange, setDateRange] = useState([dayjs(), dayjs().add(1, 'month')])
@@ -140,6 +142,7 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen}) {
   const handleAddNewBudget = async (e) => {
     e.preventDefault()
     setAddLoading(true)
+    setAddBudgetLoading(true)
 
     const reqBody = {
       userId,
@@ -161,6 +164,7 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen}) {
             .then(res => res.json())
             .then(data => {
               setOpen(false)
+              setAddBudgetLoading(false)
 
               if (!budgets) {
                 setBudgets([data[0]])
@@ -171,6 +175,7 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen}) {
             .catch(error => {
               setAddError(true)
               setAddLoading(false)
+              setAddBudgetLoading(false)
               window.alert(error)
               console.error(error)
             })
@@ -178,11 +183,13 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen}) {
         } else {
           setAddError(true)
           setAddLoading(false)
+          setAddBudgetLoading(false)
         }
       })
       .catch(error => {
         setAddError(true)
         setAddLoading(false)
+        setAddBudgetLoading(false)
         window.alert(error)
         console.error(error)
       })
@@ -256,6 +263,7 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen}) {
 function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}) {
   const [loading, setLoading] = useState(true)
   const [tableRows, setTableRows] = useState(rows.rows)
+  const [newRows, setNewRows] = useState(rows.new)
   const [addGroupOpen, setAddGroupOpen] = useState(false)
   const [groupCategory, setGroupCategory] = useState('')
   const [groupProjected, setGroupProjected] = useState('')
@@ -364,7 +372,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
       }
     ]
 
-    if(rows.new && tableRows.length === 0) {
+    if(newRows && tableRows.length === 0) {
       //setting default table rows (if no rows)
       fetch(`/api/server/budgets/${userId}/${budgetId}`, {
         method: "PATCH",
@@ -392,7 +400,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
       setAddGroupError(false)
     }
 
-  },[addGroupOpen, budgetId, rows, tableRows, userId])
+  },[addGroupOpen, budgetId, newRows, tableRows, userId])
 
   const handleAddGroup = async (e) => {
     e.preventDefault()
@@ -498,7 +506,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
                              rowId={rowId} category={category} projected={projected}
                              actual={actual} remaining={remaining}
                              type={type} groupId={groupId} rows={tableRows}
-                             setRows={setTableRows} userId={userId} />
+                             setRows={setTableRows} userId={userId} setNewRows={setNewRows} />
                           )
                         })
                       }
@@ -586,7 +594,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
 //   onChange: PropTypes.func.isRequired,
 // }
 
-function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining, type, groupId, rows, setRows, userId}) {
+function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining, type, groupId, rows, setRows, userId, setNewRows}) {
   const [expand, setExpand] = useState(true)
   const [addExpand, setAddExpand] = useState(false)
   const [catCategory, setCatCategory] = useState('')
@@ -714,9 +722,9 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
         method: 'PATCH',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({updatedRows: {rows : newRows, new: false}})
-        //check if deleting all rows after creation resets to default
       })
         .then(res => {
+          setNewRows(false)
           setRows(newRows)
           setSpeedDialLoading(false)
         })
@@ -729,6 +737,30 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
     } else if(type === 'category' && action === 'edit') {
       setAddExpand(false)
       setEditModeId(rowId)
+
+    } else if(type === 'group' && action === 'delete') {
+      setSpeedDialLoading(true)
+
+      const newRows = rows.filter(row => row.groupId !== rowId).filter(row => row.rowId !== rowId)
+
+      await fetch(`/api/server/budgets/${userId}/${budgetId}?rowType=group`, {
+        method: 'PATCH',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({updatedRows: {rows : newRows, new: false}})
+      })
+        .then(res => {
+          setNewRows(false)
+          setRows(newRows)
+          setSpeedDialLoading(false)
+        })
+        .catch(error => {
+          setSpeedDialLoading(false)
+          window.alert(error)
+          console.error(error)
+        })
+
+    } else if(type === 'group' && action === 'edit') {
+
     }
   }
 
