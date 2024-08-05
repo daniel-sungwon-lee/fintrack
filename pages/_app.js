@@ -217,6 +217,10 @@ a:hover {
   background-color: #d32f2f;
 }
 
+#RowGroupSpeedDial-action-1 .MuiTooltip-tooltip {
+  background-color: #d32f2f;
+}
+
 
 @media(max-width: 767px) {
   .tracker-fontsize-mobile {

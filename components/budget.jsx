@@ -552,8 +552,8 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
                       <TableRow>
                         <TableCell colSpan={5} align="center">
                           <Button onClick={() => setAddGroupOpen(!addGroupOpen)}
-                           startIcon={addGroupOpen ? <CloseRounded color="error" /> : <AddRounded />}
-                           color={addGroupOpen ? 'error' : 'primary'}>
+                           startIcon={addGroupOpen ? <CloseRounded color={addGroupLoading ? 'disabled' : 'error'} /> : <AddRounded />}
+                           color={addGroupOpen ? 'error' : 'primary'} disabled={addGroupLoading}>
                             {
                               addGroupOpen ? <>Cancel</>
                                            : <>Add category group</>
@@ -748,8 +748,37 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                 <TableCell padding="none">{category}</TableCell>
                 <TableCell align="right">{projected}</TableCell>
                 <TableCell align="right">{actual}</TableCell>
-                <TableCell align="right" sx={{borderRadius: '0 1rem 1rem 0'}}>{remaining}</TableCell>
+                <TableCell align="right" sx={{borderRadius: '0 1rem 1rem 0', paddingRight: '40px'}}>
+                  {remaining}
+                </TableCell>
               </TableRow>
+
+              <TableRow sx={{position: 'relative'}}>
+                <TableCell padding="none" sx={{ position: 'absolute', right: '20px', top: '-27px',
+                 width: '0px' }} colSpan={5}>
+                  <SpeedDial ariaLabel="Row Group SpeedDial"
+                    icon={<SpeedDialIcon icon={<MoreVertRounded sx={{ color: '#0000008a' }} fontSize="small" />}
+                      openIcon={<CloseRounded color="error" />} />}
+                    FabProps={{
+                      sx: {
+                        boxShadow: 'none !important',
+                        background: 'transparent !important'
+                      }, disableRipple: true
+                    }}
+                    direction="left" sx={{height: '0px'}}>
+                    <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />}
+                      onClick={(e) => handleSpeedDial('group', 'edit', rowId, e)}
+                      disabled={editModeId !== null && editModeId !== rowId} />
+                    <SpeedDialAction tooltipTitle='Delete'
+                      icon={speedDialLoading
+                        ? <CircularProgress color="inherit" size={20} thickness={5} />
+                        : <DeleteRounded color="error" />}
+                      onClick={(e) => handleSpeedDial('group', 'delete', rowId, e)}
+                      FabProps={{ disabled: speedDialLoading }} />
+                  </SpeedDial>
+                </TableCell>
+              </TableRow>
+
               <TableRow>
                 <TableCell padding="none" colSpan={5}>
                   <Collapse in={expand} timeout='auto'>
@@ -823,7 +852,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                                             <SpeedDial ariaLabel="Row Category SpeedDial"
                                              icon={<SpeedDialIcon icon={<MoreVertRounded sx={{color: '#0000008a'}} fontSize="small" />}
                                              openIcon={<CloseRounded color="error" />} />}
-                                             sx={{ position: 'absolute', top: '-15px', left: '-4px' }}
+                                             sx={{ position: 'absolute', top: '-15px', left: '24px', width: '0px' }}
                                              FabProps={{ sx: { boxShadow: 'none !important',
                                               background: 'transparent !important' }, disableRipple: true }}
                                              direction="right">
@@ -900,9 +929,9 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                                 popper: { modifiers: [{ name: 'offset', options: { offset: [0, -7] } }] }
                               }}>
                                 <IconButton onClick={() => setAddExpand(!addExpand)}
-                                 color={addExpand ? 'error' : 'default'} disabled={editModeId !== null}>
+                                 color={addExpand ? 'error' : 'default'} disabled={editModeId !== null || addCatLoading}>
                                   {
-                                    addExpand ? <CloseRounded color="error" />
+                                    addExpand ? <CloseRounded color={addCatLoading ? 'disabled' : 'error'} />
                                               : <AddRounded />
                                   }
                                 </IconButton>
