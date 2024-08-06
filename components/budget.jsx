@@ -1,9 +1,9 @@
 import { forwardRef, useEffect, useMemo, useState } from "react"
 import Placeholder from "./placeholder"
 import { Box, Button, CircularProgress, Collapse, Fab, FormControl, FormControlLabel,
-         FormHelperText, FormLabel, IconButton, Paper, Radio, RadioGroup, Skeleton,
+         FormHelperText, FormLabel, IconButton, Pagination, Paper, Radio, RadioGroup, Skeleton,
          SpeedDial, SpeedDialAction, SpeedDialIcon, Table, TableBody, TableCell,
-         TableContainer, TableHead, TableRow, TextField, Tooltip,
+         TableContainer, TableHead, TablePagination, TableRow, TextField, Tooltip,
          Zoom } from "@mui/material"
 import { AddCardRounded, AddRounded, ArrowDropDownRounded, ArrowDropUpRounded,
          ArrowRightRounded, CheckRounded, CloseRounded, CreditCardOffRounded, DeleteRounded,
@@ -22,6 +22,7 @@ export default function Budget({userId}) {
   const [budgets, setBudgets] = useState(null)
   const [open, setOpen] = useState(false)
   const [addBudgetLoading, setAddBudgetLoading] = useState(false)
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     if(loading) {
@@ -54,7 +55,7 @@ export default function Budget({userId}) {
                         {
                           budgets ? <>
                                       {
-                                        budgets.map(budget => {
+                                        budgets.map((budget, index) => {
                                           const {budgetId, userId, name, frequency,
                                             fromDate, toDate, rows
                                           } = budget
@@ -63,10 +64,16 @@ export default function Budget({userId}) {
                                             <BudgetTable key={budgetId} budgetId={budgetId}
                                              userId={userId} name={name} frequency={frequency}
                                              fromDate={fromDate} toDate={toDate} rows={rows}
-                                             budgets={budgets} setBudgets={setBudgets} />
+                                             budgets={budgets} setBudgets={setBudgets}
+                                             page={page} display={index+1} />
                                           )
                                         })
                                       }
+                                      <div className="w-100 d-flex justify-content-center">
+                                        <Pagination count={budgets.length} page={page}
+                                         onChange={(e,newPage) => setPage(newPage)}
+                                         sx={{marginBottom: '3rem'}} size="large" />
+                                      </div>
                                     </>
                                   : <div className="w-100 text-center">
                                       {
@@ -261,7 +268,7 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen, setAddBudgetLoad
   )
 }
 
-function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows, budgets, setBudgets}) {
+function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows, budgets, setBudgets, page, display}) {
   const [loading, setLoading] = useState(true)
   const [tableRows, setTableRows] = useState(rows.rows)
   const [newRows, setNewRows] = useState(rows.new)
@@ -555,7 +562,8 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
 
   return (
     <>
-      <div className="w-100" style={{ marginBottom: '5rem', position: 'relative' }}>
+      <div className={`w-100 ${display === page ? '' : 'd-none'}`}
+       style={{ marginBottom: '5rem', position: 'relative' }}>
         {
           loading
             ? <>

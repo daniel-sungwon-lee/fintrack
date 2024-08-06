@@ -228,6 +228,10 @@ a:hover {
   padding-top: 44px !important
 }
 
+.MuiButtonBase-root.MuiPaginationItem-root {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+
 
 @media(max-width: 767px) {
   .tracker-fontsize-mobile {
