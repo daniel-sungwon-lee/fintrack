@@ -53,36 +53,37 @@ export default function Budget({userId}) {
 
                       <>
                         {
-                          budgets ? <>
-                                      {
-                                        budgets.map((budget, index) => {
-                                          const {budgetId, userId, name, frequency,
-                                            fromDate, toDate, rows
-                                          } = budget
+                          budgets && budgets.length > 0
+                            ? <>
+                                {
+                                  budgets.map((budget, index) => {
+                                    const {budgetId, userId, name, frequency,
+                                      fromDate, toDate, rows
+                                     } = budget
 
-                                          return (
-                                            <BudgetTable key={budgetId} budgetId={budgetId}
-                                             userId={userId} name={name} frequency={frequency}
-                                             fromDate={fromDate} toDate={toDate} rows={rows}
-                                             budgets={budgets} setBudgets={setBudgets}
-                                             page={page} display={index+1} />
-                                          )
-                                        })
-                                      }
-                                      <div className="w-100 d-flex justify-content-center">
-                                        <Pagination count={budgets.length} page={page}
-                                         onChange={(e,newPage) => setPage(newPage)}
-                                         sx={{marginBottom: '3rem'}} size="large" />
-                                      </div>
-                                    </>
-                                  : <div className="w-100 text-center">
-                                      {
-                                        open ? <></>
-                                             : <h2 className="mb-3" style={{opacity: '0.7'}}>
-                                                 Much empty...
-                                               </h2>
-                                      }
-                                    </div>
+                                    return (
+                                      <BudgetTable key={budgetId} budgetId={budgetId}
+                                        userId={userId} name={name} frequency={frequency}
+                                        fromDate={fromDate} toDate={toDate} rows={rows}
+                                        budgets={budgets} setBudgets={setBudgets}
+                                        page={page} display={index+1} />
+                                    )
+                                  })
+                                }
+                                <div className="w-100 d-flex justify-content-center">
+                                  <Pagination count={budgets.length} page={page}
+                                   onChange={(e,newPage) => setPage(newPage)}
+                                   sx={{marginBottom: '3rem'}} size="large" />
+                                </div>
+                              </>
+                            : <div className="w-100 text-center">
+                                {
+                                  open ? <></>
+                                       : <h2 className="mb-3" style={{opacity: '0.7'}}>
+                                           Much empty...
+                                         </h2>
+                                }
+                              </div>
                         }
                       </>
 
