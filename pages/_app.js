@@ -221,6 +221,13 @@ a:hover {
   background-color: #d32f2f;
 }
 
+#BudgetTableSpeedDial-action-1 .MuiTooltip-tooltip {
+  background-color: #d32f2f;
+}
+#BudgetTableSpeedDial-actions {
+  padding-top: 44px !important
+}
+
 
 @media(max-width: 767px) {
   .tracker-fontsize-mobile {

@@ -73,6 +73,25 @@ export default function handler(req, res) {
         })
     }
 
+  } else if(req.method === 'DELETE') {
+    const sql = `
+      delete from "budgets"
+      where "userId" = $1
+      and "budgetId" = $2
+    `
+    const params = [userId, budgetId]
+
+    db.query(sql, params)
+      .then(result => {
+        res.status(204).json(result.rows[0])
+      })
+      .catch(err => {
+        console.error(err)
+        res.status(500).json({
+          error: 'an unexpected error occurred'
+        })
+      });
+
   } else {
     const sql = `
       select * from "budgets"
