@@ -87,7 +87,7 @@ export default function Budget({userId}) {
                         </Collapse>
                       </div>
 
-                      <Fab variant="extended" size="medium" color="primary"
+                      <Fab variant="extended" size="medium" color={open ? 'error' : 'primary'}
                        sx={{padding: '1.5rem', borderRadius: '2rem'}} disabled={!ready || addBudgetLoading}
                        onClick={() => setOpen(!open)}>
                         <Box className='d-flex align-items-center' sx={{
@@ -276,6 +276,12 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
   const [speedDialLoading, setSpeedDialLoading] = useState(false)
   const [editModeId, setEditModeId] = useState(null)
 
+  const [editName, setEditName] = useState('')
+  const [editFrequency, setEditFrequency] = useState('monthly')
+  const [editDateRange, setEditDateRange] = useState([dayjs(), dayjs().add(1, 'month')])
+  const [editLoading, setEditLoading] = useState(false)
+  const [editError, setEditError] = useState(false)
+
   const customIdGenerator = () => {
     var S4 = function () {
       return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
@@ -378,7 +384,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
     ]
 
     if(newRows && tableRows.length === 0) {
-      //setting default table rows (if no rows)
+      //setting default table rows (if no rows/freshly created)
       fetch(`/api/server/budgets/${userId}/${budgetId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -405,7 +411,15 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
       setAddGroupError(false)
     }
 
-  },[addGroupOpen, budgetId, newRows, tableRows, userId])
+    if(!editModeId) {
+      setEditName('')
+      setEditFrequency('monthly')
+      setEditDateRange([dayjs(), dayjs().add(1, 'month')])
+      setEditLoading(false)
+      setEditError(false)
+    }
+
+  },[addGroupOpen, budgetId, editModeId, newRows, tableRows, userId])
 
   const handleAddGroup = async (e) => {
     e.preventDefault()
@@ -446,9 +460,9 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
   }
 
   const handleSpeedDial = async (action) => {
-    setSpeedDialLoading(true)
-
     if(action === 'delete') {
+      setSpeedDialLoading(true)
+
       await fetch(`/api/server/budgets/${userId}/${budgetId}`, {
         method: 'DELETE',
         headers: { "Content-Type": "application/json" }
@@ -466,7 +480,76 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
         })
 
     } else {
+      setEditName(name)
+      setEditFrequency(frequency)
+      if(frequency === 'monthly') {
+        setEditDateRange([dayjs(), dayjs().add(1, 'month')])
+      } else if(frequency === 'weekly') {
+        setEditDateRange([dayjs(), dayjs().add(1, 'week')])
+      } else if(frequency === 'daily') {
+        setEditDateRange([dayjs(), dayjs().add(1, 'day')])
+      } else if(frequency === 'yearly') {
+        setEditDateRange([dayjs(), dayjs().add(1, 'year')])
+      }
+      setEditModeId(budgetId)
+    }
+  }
 
+  const handleEditBudget = async (e) => {
+    e.preventDefault()
+    setEditLoading(true)
+
+    const reqBody = {
+      budgetId,
+      userId,
+      name: editName,
+      frequency: editFrequency,
+      fromDate: dayjs(editDateRange[0].$d).format('MM/DD/YYYY'),
+      toDate: dayjs(editDateRange[1].$d).format('MM/DD/YYYY'),
+      rows: {rows: tableRows, new: false}
+    }
+
+    await fetch(`/api/server/budgets/${userId}/${budgetId}?tableEdit=true`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(reqBody)
+    })
+      .then(res => {
+        if (res.status === 200) {
+          const updatedBudgets = budgets.filter(budget => budget.budgetId !== budgetId)
+
+          setBudgets([reqBody, ...updatedBudgets])
+          setEditModeId(null)
+
+        } else {
+          setEditError(true)
+          setEditLoading(false)
+        }
+      })
+      .catch(error => {
+        setEditError(true)
+        setEditLoading(false)
+        window.alert(error)
+        console.error(error)
+      })
+  }
+
+  const handleEditChange = (e) => {
+    if(e.target.type === 'radio') {
+      setEditFrequency(e.target.value)
+
+      if(e.target.value === 'monthly') {
+        setEditDateRange([dayjs(), dayjs().add(1, 'month')])
+
+      } else if(e.target.value === 'weekly') {
+        setEditDateRange([dayjs(), dayjs().add(1, 'week')])
+
+      } else if(e.target.value === 'daily') {
+        setEditDateRange([dayjs(), dayjs().add(1, 'day')])
+
+      } else if(e.target.value === 'yearly') {
+        setEditDateRange([dayjs(), dayjs().add(1, 'year')])
+      }
     }
   }
 
@@ -498,34 +581,92 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
               </>
             : <>
                 <div>
-                  <div className="h2 w-100" style={{ fontWeight: 'bold', marginTop: '2.25rem' }}>
-                    {name}
-                  </div>
-                  <div className="h4 w-100 text-capitalize">{frequency}</div>
-                  <div className="h4 w-100 mb-0">{`${fromDate} to ${toDate}`}</div>
+                  {
+                    editModeId === budgetId
+                      ? <form onSubmit={handleEditBudget} style={{marginTop: '2.5rem'}}>
+                          <div className="d-flex flex-column justify-content-center w-75">
+                            <TextField value={editName} type="name" id="name" required disabled={editLoading}
+                             variant="standard" label="Budget name" onChange={(e) => setEditName(e.target.value)}
+                             InputLabelProps={{ required: false }} error={editError} sx={{ marginBottom: '1rem' }}
+                             helperText={editError ? 'Please try again' : 'Ex: Marrakesh Travel Budget'}
+                             className="mb-3" />
+
+                            <FormControl disabled={editLoading} color={editError ? 'error' : 'primary'}
+                            className="mb-2">
+                              <FormLabel focused>Frequency</FormLabel>
+                              <RadioGroup value={editFrequency} onChange={handleEditChange} row>
+                                <FormControlLabel value='monthly' control={<Radio />} label='Monthly' />
+                                <FormControlLabel value='weekly' control={<Radio />} label='Weekly' />
+                                <FormControlLabel value='daily' control={<Radio />} label='Daily' />
+                                <FormControlLabel value='yearly' control={<Radio />} label='Yearly' />
+                              </RadioGroup>
+                            </FormControl>
+
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                              <DateRangePicker label='Date range' slots={{ field: SingleInputDateRangeField }}
+                                calendars={1} value={editDateRange} disablePast minDate={editDateRange[0]} maxDate={editDateRange[1]}
+                                onChange={(newValue) => setEditDateRange(newValue)} disabled
+                                slotProps={{
+                                  textField: {
+                                    variant: 'standard', error: editError, inputProps: { style: { cursor: 'inherit' } },
+                                    helperText: editError ? 'Please try again' : 'Read-only'
+                                  }
+                                }} />
+                            </LocalizationProvider>
+                          </div>
+
+                          <div className="d-flex justify-content-center mb-3">
+                            <div className="d-flex flex-column">
+                              <LoadingButton loading={editLoading} type="submit" sx={{ textTransform: 'none', color: 'white' }}
+                                loadingPosition="start" variant='contained' startIcon={<CheckRounded />}>
+                                Submit
+                              </LoadingButton>
+
+                              <Button onClick={() => setEditModeId(null)} className="mt-2"
+                               startIcon={<CloseRounded color={editLoading ? 'disabled' : 'error'} />}
+                               color='error' disabled={editLoading}>
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        </form>
+                      : <>
+                          <div className="h2 w-100" style={{ fontWeight: 'bold', marginTop: '2.25rem' }}>
+                            {name}
+                          </div>
+                          <div className="h4 w-100 text-capitalize">{frequency}</div>
+                          <div className="h4 w-100 mb-0">{`${fromDate} to ${toDate}`}</div>
+                        </>
+                  }
                 </div>
 
-                <SpeedDial ariaLabel="Budget Table SpeedDial"
-                  icon={<SpeedDialIcon icon={<MoreVertRounded sx={{ color: '#0000008a' }} fontSize='large' />}
-                    openIcon={<CloseRounded color="error" fontSize="large" />} />}
-                  sx={{ position: 'absolute', top: '16px', right: '0px' }}
-                  FabProps={{
-                    sx: {
-                      boxShadow: 'none !important',
-                      background: 'transparent !important'
-                    }, disableRipple: true
-                   }}
-                  direction="down" >
-                  <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />}
-                    onClick={() => handleSpeedDial('edit')}
-                    disabled={editModeId !== null && editModeId !== budgetId} />
-                  <SpeedDialAction tooltipTitle='Delete'
-                    icon={speedDialLoading
-                      ? <CircularProgress color="inherit" size={20} thickness={5} />
-                      : <DeleteRounded color="error" />}
-                    onClick={() => handleSpeedDial('delete')}
-                    FabProps={{ disabled: speedDialLoading }} />
-                </SpeedDial>
+                {
+                  editModeId === budgetId
+                    ? <></>
+                    : <>
+                        <SpeedDial ariaLabel="Budget Table SpeedDial"
+                          icon={<SpeedDialIcon icon={<MoreVertRounded sx={{ color: '#0000008a' }} fontSize='large' />}
+                            openIcon={<CloseRounded color="error" fontSize="large" />} />}
+                          sx={{ position: 'absolute', top: '16px', right: '0px' }}
+                          FabProps={{
+                            sx: {
+                              boxShadow: 'none !important',
+                              background: 'transparent !important'
+                            }, disableRipple: true
+                          }}
+                          direction="down" >
+                          <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />}
+                            onClick={() => handleSpeedDial('edit')}
+                            disabled={editModeId !== null && editModeId !== budgetId} />
+                          <SpeedDialAction tooltipTitle='Delete'
+                            icon={speedDialLoading
+                              ? <CircularProgress color="inherit" size={20} thickness={5} />
+                              : <DeleteRounded color="error" />}
+                            onClick={() => handleSpeedDial('delete')}
+                            FabProps={{ disabled: speedDialLoading }} />
+                        </SpeedDial>
+                      </>
+                }
 
                 <TableContainer component={Paper} sx={{
                   minWidth: '80%', margin: '2rem 0rem 0rem', borderRadius: '8px',

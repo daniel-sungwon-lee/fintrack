@@ -1,12 +1,34 @@
 import db from '../index'
 
 export default function handler(req, res) {
-  const { params, rowType } = req.query
+  const { params, tableEdit, rowType } = req.query
   const userId = parseInt(params[0])
   const budgetId = parseInt(params[1])
 
   if(req.method === 'PATCH') {
-    if(rowType === 'group') {
+    if(tableEdit) {
+      const {name, frequency, fromDate, toDate} = req.body
+
+      const sql = `
+        update "budgets"
+        set "name" = $1, "frequency" = $2, "fromDate" = $3, "toDate" = $4
+        where "userId" = $5
+        and "budgetId" = $6
+      `
+      const params = [name, frequency, fromDate, toDate, userId, budgetId]
+
+      db.query(sql, params)
+        .then(result => {
+          res.status(200).json(result.rows[0])
+        })
+        .catch(err => {
+          console.error(err)
+          res.status(500).json({
+            error: 'an unexpected error occurred'
+          })
+        })
+
+    } else if(rowType === 'group') {
       const {updatedRows} = req.body
 
       const sql = `
