@@ -766,7 +766,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
     }
   }
 
-  const handleSpeedDial = async (type, action, rowId, e) => {
+  const handleSpeedDial = async (type, action, rowId, values) => {
     if(type === 'category' && action === 'delete') {
       setSpeedDialLoading(true)
 
@@ -790,6 +790,9 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
 
     } else if(type === 'category' && action === 'edit') {
       setAddExpand(false)
+      setCatCategory(values[0])
+      setCatProjected(values[1])
+      setCatActual(values[2])
       setEditModeId(rowId)
 
     } else if(type === 'group' && action === 'delete') {
@@ -816,6 +819,9 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
     } else if(type === 'group' && action === 'edit') {
       setAddExpand(false)
       setAddGroupOpen(false)
+      setGroupCategory(values[0])
+      setGroupProjected(values[1])
+      setGroupActual(values[2])
       setGroupRowEdit(true)
       setEditModeId(rowId)
     }
@@ -916,13 +922,13 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                           }}
                           direction="left" sx={{height: '0px'}}>
                           <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />}
-                            onClick={(e) => handleSpeedDial('group', 'edit', rowId, e)}
+                            onClick={() => handleSpeedDial('group', 'edit', rowId, [category, projected, actual])}
                             disabled={editModeId !== null && editModeId !== rowId} />
                           <SpeedDialAction tooltipTitle='Delete'
                             icon={speedDialLoading
                               ? <CircularProgress color="inherit" size={20} thickness={5} />
                               : <DeleteRounded color="error" />}
-                            onClick={(e) => handleSpeedDial('group', 'delete', rowId, e)}
+                            onClick={() => handleSpeedDial('group', 'delete', rowId, [category, projected, actual])}
                             FabProps={{ disabled: speedDialLoading }} />
                         </SpeedDial>
                       </TableCell>
@@ -1007,13 +1013,13 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                                               background: 'transparent !important' }, disableRipple: true }}
                                              direction="right">
                                               <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />}
-                                                onClick={(e) => handleSpeedDial('category', 'edit', rowId, e)}
+                                                onClick={() => handleSpeedDial('category', 'edit', rowId, [category, projected, actual])}
                                                 disabled={editModeId !== null && editModeId !== rowId} />
                                               <SpeedDialAction tooltipTitle='Delete'
                                                 icon={speedDialLoading
                                                 ? <CircularProgress color="inherit" size={20} thickness={5} />
                                                 : <DeleteRounded color="error" />}
-                                                onClick={(e) => handleSpeedDial('category', 'delete', rowId, e)}
+                                                onClick={() => handleSpeedDial('category', 'delete', rowId, [category, projected, actual])}
                                                 FabProps={{ disabled: speedDialLoading }} />
                                             </SpeedDial>
                                           </TableCell>
