@@ -245,7 +245,7 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen, setAddBudgetLoad
             onChange={(newValue) => setDateRange(newValue)} disabled
             slotProps={{
               textField: {variant: 'standard', error: addError, inputProps: {style: {cursor: 'inherit'}},
-              helperText: addError ? 'Please try again' : 'Read-only (fixed, depending on frequency)'}
+              helperText: addError ? 'Please try again' : 'Read-only'}
             }} />
         </LocalizationProvider>
 
@@ -270,6 +270,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
   const [groupActual, setGroupActual] = useState('')
   const [addGroupLoading, setAddGroupLoading] = useState(false)
   const [addGroupError, setAddGroupError] = useState(false)
+  const [groupRowEdit, setGroupRowEdit] = useState(false)
 
   const customIdGenerator = () => {
     var S4 = function () {
@@ -506,7 +507,8 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
                              rowId={rowId} category={category} projected={projected}
                              actual={actual} remaining={remaining}
                              type={type} groupId={groupId} rows={tableRows}
-                             setRows={setTableRows} userId={userId} setNewRows={setNewRows} />
+                             setRows={setTableRows} userId={userId} setNewRows={setNewRows}
+                             setGroupRowEdit={setGroupRowEdit} setAddGroupOpen={setAddGroupOpen} />
                           )
                         })
                       }
@@ -561,7 +563,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
                         <TableCell colSpan={5} align="center">
                           <Button onClick={() => setAddGroupOpen(!addGroupOpen)}
                            startIcon={addGroupOpen ? <CloseRounded color={addGroupLoading ? 'disabled' : 'error'} /> : <AddRounded />}
-                           color={addGroupOpen ? 'error' : 'primary'} disabled={addGroupLoading}>
+                           color={addGroupOpen ? 'error' : 'primary'} disabled={addGroupLoading || groupRowEdit}>
                             {
                               addGroupOpen ? <>Cancel</>
                                            : <>Add category group</>
@@ -594,7 +596,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows}
 //   onChange: PropTypes.func.isRequired,
 // }
 
-function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining, type, groupId, rows, setRows, userId, setNewRows}) {
+function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining, type, groupId, rows, setRows, userId, setNewRows, setGroupRowEdit, setAddGroupOpen}) {
   const [expand, setExpand] = useState(true)
   const [addExpand, setAddExpand] = useState(false)
   const [catCategory, setCatCategory] = useState('')
@@ -605,6 +607,12 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
 
   const [speedDialLoading, setSpeedDialLoading] = useState(false)
   const [editModeId, setEditModeId] = useState(null)
+
+  const [groupCategory, setGroupCategory] = useState('')
+  const [groupProjected, setGroupProjected] = useState('')
+  const [groupActual, setGroupActual] = useState('')
+  const [addGroupLoading, setAddGroupLoading] = useState(false)
+  const [addGroupError, setAddGroupError] = useState(false)
 
   useEffect(() => {
     if(!expand) {
@@ -626,6 +634,52 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
       return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
     };
     return ('row' + S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4());
+  }
+
+  const handleEditGroup = async (e) => {
+    e.preventDefault()
+    setAddGroupLoading(true)
+
+    const editedRow = {
+      budgetId,
+      rowId: rowId,
+      category: groupCategory,
+      projected: groupProjected,
+      actual: groupActual,
+      remaining: groupProjected - groupActual,
+      type: 'group',
+      groupId: null
+    }
+
+    const editedRows = rows.filter(row => row.rowId !== rowId)
+
+    await fetch(`/api/server/budgets/${userId}/${budgetId}?rowType=group`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ updatedRows: { rows: [...editedRows, editedRow], new: false } })
+    })
+      .then(async res => {
+        if (res.status === 200) {
+          setRows([...editedRows, editedRow])
+          setGroupCategory('')
+          setGroupProjected('')
+          setGroupActual('')
+          setAddGroupLoading(false)
+          setAddGroupError(false)
+          setEditModeId(null)
+          setGroupRowEdit(false)
+
+        } else {
+          setAddGroupError(true)
+          setAddGroupLoading(false)
+        }
+      })
+      .catch(error => {
+        setAddGroupError(true)
+        setAddGroupLoading(false)
+        window.alert(error)
+        console.error(error)
+      })
   }
 
   const handleAddCat = async (action, catRowId, e) => {
@@ -760,7 +814,10 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
         })
 
     } else if(type === 'group' && action === 'edit') {
-
+      setAddExpand(false)
+      setAddGroupOpen(false)
+      setGroupRowEdit(true)
+      setEditModeId(rowId)
     }
   }
 
@@ -769,47 +826,108 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
       {
         type === 'group'
           ? <>
-              <TableRow role='button' hover onClick={() => setExpand(!expand)}>
-                <TableCell padding="checkbox" sx={{borderRadius: '1rem 0 0 1rem'}}>
-                  <IconButton disabled sx={{ color: '#0000008a !important' }}>
-                    {
-                      expand ? <ArrowDropDownRounded /> : <ArrowRightRounded />
-                    }
-                  </IconButton>
-                </TableCell>
-                <TableCell padding="none">{category}</TableCell>
-                <TableCell align="right">{projected}</TableCell>
-                <TableCell align="right">{actual}</TableCell>
-                <TableCell align="right" sx={{borderRadius: '0 1rem 1rem 0', paddingRight: '40px'}}>
-                  {remaining}
-                </TableCell>
-              </TableRow>
+              {
+                editModeId === rowId
+                  ? <TableRow>
+                      <TableCell padding="none" colSpan={5}>
+                        <form onSubmit={handleEditGroup} className="mt-3">
+                          <div className="d-flex w-100">
+                            <div style={{ width: '48px' }}>
+                              <IconButton disabled>
+                                <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
+                              </IconButton>
+                            </div>
+                            <div className="d-flex justify-content-between w-100">
+                              <div className="w-100" style={{ maxWidth: '50%' }}>
+                                <TextField value={groupCategory} id="category" required disabled={addGroupLoading}
+                                  variant="standard" label="Category" onChange={(e) => setGroupCategory(e.target.value)}
+                                  InputLabelProps={{ required: false }} error={addGroupError} sx={{ marginBottom: '0.5rem' }}
+                                  helperText={addGroupError ? 'Please try again' : 'Ex: Child'} fullWidth />
+                              </div>
+                              <div className="d-flex" style={{ marginRight: '16px' }}>
+                                <div>
+                                  <TextField value={groupProjected} type="currency" id="projected" required disabled={addGroupLoading}
+                                    variant="standard" label="Projected" onChange={(e) => setGroupProjected(e.target.value)}
+                                    InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormat }}
+                                    helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" />
+                                </div>
+                                <div>
+                                  <TextField value={groupActual} type="currency" id="actual" required disabled={addGroupLoading}
+                                    variant="standard" label="Actual" onChange={(e) => setGroupActual(e.target.value)}
+                                    InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormat }}
+                                    helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
 
-              <TableRow sx={{position: 'relative'}}>
-                <TableCell padding="none" sx={{ position: 'absolute', right: '20px', top: '-27px',
-                 width: '0px' }} colSpan={5}>
-                  <SpeedDial ariaLabel="Row Group SpeedDial"
-                    icon={<SpeedDialIcon icon={<MoreVertRounded sx={{ color: '#0000008a' }} fontSize="small" />}
-                      openIcon={<CloseRounded color="error" />} />}
-                    FabProps={{
-                      sx: {
-                        boxShadow: 'none !important',
-                        background: 'transparent !important'
-                      }, disableRipple: true
-                    }}
-                    direction="left" sx={{height: '0px'}}>
-                    <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />}
-                      onClick={(e) => handleSpeedDial('group', 'edit', rowId, e)}
-                      disabled={editModeId !== null && editModeId !== rowId} />
-                    <SpeedDialAction tooltipTitle='Delete'
-                      icon={speedDialLoading
-                        ? <CircularProgress color="inherit" size={20} thickness={5} />
-                        : <DeleteRounded color="error" />}
-                      onClick={(e) => handleSpeedDial('group', 'delete', rowId, e)}
-                      FabProps={{ disabled: speedDialLoading }} />
-                  </SpeedDial>
-                </TableCell>
-              </TableRow>
+                          <div className="w-100 d-flex justify-content-center align-items-center mb-4 mt-1">
+                            <LoadingButton loading={addGroupLoading} type="submit"
+                              sx={{ textTransform: 'none', color: 'white', marginBottom: '0.5rem' }}
+                              loadingPosition="start" startIcon={<CheckRounded />} variant='contained'>
+                              Submit
+                            </LoadingButton>
+                            <IconButton color="error" sx={{marginLeft: '0.5rem'}} onClick={() => {
+                              setEditModeId(null)
+                              setGroupRowEdit(false)
+                              setGroupCategory('')
+                              setGroupProjected('')
+                              setGroupActual('')
+                              setAddGroupLoading(false)
+                              setAddGroupError(false)
+                             }} disabled={addGroupLoading} className="mb-2">
+                              <CloseRounded color={addGroupLoading ? 'disabled' : 'error'} />
+                            </IconButton>
+                          </div>
+                        </form>
+                      </TableCell>
+                    </TableRow>
+                  : <TableRow role='button' hover onClick={() => setExpand(!expand)}>
+                      <TableCell padding="checkbox" sx={{ borderRadius: '1rem 0 0 1rem' }}>
+                        <IconButton disabled sx={{ color: '#0000008a !important' }}>
+                          {
+                            expand ? <ArrowDropDownRounded /> : <ArrowRightRounded />
+                          }
+                        </IconButton>
+                      </TableCell>
+                      <TableCell padding="none">{category}</TableCell>
+                      <TableCell align="right">{projected}</TableCell>
+                      <TableCell align="right">{actual}</TableCell>
+                      <TableCell align="right" sx={{ borderRadius: '0 1rem 1rem 0', paddingRight: '40px' }}>
+                        {remaining}
+                      </TableCell>
+                    </TableRow>
+              }
+
+              {
+                editModeId === rowId
+                  ? <></>
+                  : <TableRow sx={{position: 'relative'}}>
+                      <TableCell padding="none" sx={{ position: 'absolute', right: '20px', top: '-27px',
+                      width: '0px' }} colSpan={5}>
+                        <SpeedDial ariaLabel="Row Group SpeedDial"
+                          icon={<SpeedDialIcon icon={<MoreVertRounded sx={{ color: '#0000008a' }} fontSize="small" />}
+                            openIcon={<CloseRounded color="error" />} />}
+                          FabProps={{
+                            sx: {
+                              boxShadow: 'none !important',
+                              background: 'transparent !important'
+                            }, disableRipple: true
+                          }}
+                          direction="left" sx={{height: '0px'}}>
+                          <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded />}
+                            onClick={(e) => handleSpeedDial('group', 'edit', rowId, e)}
+                            disabled={editModeId !== null && editModeId !== rowId} />
+                          <SpeedDialAction tooltipTitle='Delete'
+                            icon={speedDialLoading
+                              ? <CircularProgress color="inherit" size={20} thickness={5} />
+                              : <DeleteRounded color="error" />}
+                            onClick={(e) => handleSpeedDial('group', 'delete', rowId, e)}
+                            FabProps={{ disabled: speedDialLoading }} />
+                        </SpeedDial>
+                      </TableCell>
+                    </TableRow>
+              }
 
               <TableRow>
                 <TableCell padding="none" colSpan={5}>
