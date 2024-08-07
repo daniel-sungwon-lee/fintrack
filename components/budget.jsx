@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useMemo, useState } from "react"
 import Placeholder from "./placeholder"
 import { Box, Button, CircularProgress, Collapse, Fab, FormControl, FormControlLabel,
          FormHelperText, FormLabel, IconButton, Pagination, Paper, Radio, RadioGroup, Skeleton,
-         SpeedDial, SpeedDialAction, SpeedDialIcon, Table, TableBody, TableCell,
+         SpeedDial, SpeedDialAction, SpeedDialIcon, styled, Table, TableBody, TableCell,
          TableContainer, TableHead, TablePagination, TableRow, TextField, Tooltip,
          Zoom } from "@mui/material"
 import { AddCardRounded, AddRounded, ArrowDropDownRounded, ArrowDropUpRounded,
@@ -15,6 +15,12 @@ import { DateRangePicker, SingleInputDateRangeField } from "@mui/x-date-pickers-
 import dayjs from "dayjs"
 import TablePlaceholder from "./tablePlaceholder"
 import { NumericFormat } from "react-number-format"
+import { closeSnackbar, enqueueSnackbar, MaterialDesignContent, SnackbarProvider } from "notistack"
+
+const StyledSnackbar = styled(MaterialDesignContent)(() => ({
+  '&.notistack-MuiContent-success': {backgroundColor: '#00c169'},
+  '&.notistack-MuiContent-error': {backgroundColor: '#d32f2f'}
+}))
 
 export default function Budget({userId}) {
   const [loading, setLoading] = useState(true)
@@ -50,6 +56,14 @@ export default function Budget({userId}) {
                 : <Zoom in timeout={300}>
                     <div className="d-flex flex-column justify-content-center align-items-center"
                      style={{minHeight: '50vh', marginBottom: '7rem'}}>
+
+                      <SnackbarProvider autoHideDuration={3000} variant='success'
+                       Components={{success: StyledSnackbar, error: StyledSnackbar}}
+                       action={snackbarId => (
+                        <IconButton onClick={() => closeSnackbar(snackbarId)}>
+                          <CloseRounded sx={{color: 'white'}} />
+                        </IconButton>
+                       )} />
 
                       <>
                         {
@@ -174,6 +188,7 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen, setAddBudgetLoad
             .then(data => {
               setOpen(false)
               setAddBudgetLoading(false)
+              enqueueSnackbar('Added budget!')
 
               if (!budgets) {
                 setBudgets([data[0]])
@@ -453,6 +468,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
         if(res.status === 200) {
           setTableRows([...tableRows, newRow])
           setAddGroupOpen(false)
+          enqueueSnackbar('Added category group!')
 
         } else {
           setAddGroupError(true)
@@ -480,6 +496,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
 
           setBudgets(newBudgets)
           setSpeedDialLoading(false)
+          enqueueSnackbar('Deleted budget', {variant: 'error'})
         })
         .catch(error => {
           setSpeedDialLoading(false)
@@ -528,6 +545,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
 
           setBudgets([reqBody, ...updatedBudgets])
           setEditModeId(null)
+          enqueueSnackbar('Updated budget!')
 
         } else {
           setEditError(true)
@@ -869,6 +887,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
           setAddGroupError(false)
           setEditModeId(null)
           setGroupRowEdit(false)
+          enqueueSnackbar('Updated category group!')
 
         } else {
           setAddGroupError(true)
@@ -915,6 +934,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
             setAddCatLoading(false)
             setAddCatError(false)
             setEditModeId(null)
+            enqueueSnackbar('Updated category!')
 
           } else {
             setAddCatError(true)
@@ -952,6 +972,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
           if(res.status === 200) {
             setRows([...rows, newRow])
             setAddExpand(false)
+            enqueueSnackbar('Added category!')
 
           } else {
             setAddCatError(true)
@@ -982,6 +1003,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
           setNewRows(false)
           setRows(newRows)
           setSpeedDialLoading(false)
+          enqueueSnackbar('Deleted category', {variant: 'error'})
         })
         .catch(error => {
           setSpeedDialLoading(false)
@@ -1010,6 +1032,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
           setNewRows(false)
           setRows(newRows)
           setSpeedDialLoading(false)
+          enqueueSnackbar('Deleted category group', {variant: 'error'})
         })
         .catch(error => {
           setSpeedDialLoading(false)
