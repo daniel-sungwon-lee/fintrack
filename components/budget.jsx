@@ -816,11 +816,6 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
 function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining, type, groupId, rows, setRows, userId, setNewRows, setGroupRowEdit, setAddGroupOpen}) {
   const [expand, setExpand] = useState(true)
   const [addExpand, setAddExpand] = useState(false)
-  const [catCategory, setCatCategory] = useState('')
-  const [catProjected, setCatProjected] = useState('')
-  const [catActual, setCatActual] = useState('')
-  const [addCatLoading, setAddCatLoading] = useState(false)
-  const [addCatError, setAddCatError] = useState(false)
 
   const [speedDialLoading, setSpeedDialLoading] = useState(false)
   const [editModeId, setEditModeId] = useState(null)
@@ -835,15 +830,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
       setAddExpand(false)
       setEditModeId(null)
     }
-    if(!addExpand){
-      setCatCategory('')
-      setCatProjected('')
-      setCatActual('')
-      setAddCatLoading(false)
-      setAddCatError(false)
-    }
-
-  },[addExpand, expand])
+  },[expand])
 
   const customIdGenerator = () => {
     var S4 = function () {
@@ -907,125 +894,8 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
       })
   }
 
-  const handleAddCat = async (action, catRowId, e) => {
-    if(action ==='edit') {
-      e.preventDefault()
-      setAddCatLoading(true)
-
-      const editedRow = {
-        budgetId,
-        rowId: catRowId,
-        category: catCategory,
-        projected: catProjected,
-        actual: catActual,
-        remaining: catProjected - catActual,
-        type: 'category',
-        groupId: rowId
-      }
-
-      const rowIds = rows.map(row => row.rowId)
-      const currentRowIndex = rowIds.indexOf(catRowId)
-      const editedRows = rows.toSpliced(currentRowIndex, 1, editedRow)
-
-      await fetch(`/api/server/budgets/${userId}/${budgetId}?rowType=category`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({updatedRows: {rows: editedRows, new: false}})
-      })
-        .then(async res => {
-          if(res.status === 200) {
-            setRows(editedRows)
-            setCatCategory('')
-            setCatProjected('')
-            setCatActual('')
-            setAddCatLoading(false)
-            setAddCatError(false)
-            setEditModeId(null)
-            enqueueSnackbar('Updated category!')
-
-          } else {
-            setAddCatError(true)
-            setAddCatLoading(false)
-          }
-        })
-        .catch(error => {
-          setAddCatError(true)
-          setAddCatLoading(false)
-          window.alert(error)
-          console.error(error)
-        })
-
-    } else {
-      e.preventDefault()
-      setAddCatLoading(true)
-
-      const newRow = {
-        budgetId,
-        rowId: customIdGenerator(),
-        category: catCategory,
-        projected: catProjected,
-        actual: catActual,
-        remaining: catProjected - catActual,
-        type: 'category',
-        groupId: rowId
-      }
-
-      await fetch(`/api/server/budgets/${userId}/${budgetId}?rowType=category`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({updatedRows: {rows: [...rows, newRow], new: false}})
-      })
-        .then(async res => {
-          if(res.status === 200) {
-            setRows([...rows, newRow])
-            setAddExpand(false)
-            enqueueSnackbar('Added category!')
-
-          } else {
-            setAddCatError(true)
-            setAddCatLoading(false)
-          }
-        })
-        .catch(error => {
-          setAddCatError(true)
-          setAddCatLoading(false)
-          window.alert(error)
-          console.error(error)
-        })
-    }
-  }
-
-  const handleSpeedDial = async (type, action, rowId, values) => {
-    if(type === 'category' && action === 'delete') {
-      setSpeedDialLoading(true)
-
-      const newRows = rows.filter(row => row.rowId !== rowId)
-
-      await fetch(`/api/server/budgets/${userId}/${budgetId}?rowType=category`, {
-        method: 'PATCH',
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({updatedRows: {rows : newRows, new: false}})
-      })
-        .then(res => {
-          setNewRows(false)
-          setRows(newRows)
-          setSpeedDialLoading(false)
-          enqueueSnackbar('Deleted category', {variant: 'error'})
-        })
-        .catch(error => {
-          setSpeedDialLoading(false)
-          window.alert(error)
-          console.error(error)
-        })
-
-    } else if(type === 'category' && action === 'edit') {
-      setAddExpand(false)
-      setCatCategory(values[0])
-      setCatProjected(values[1])
-      setCatActual(values[2])
-      setEditModeId(rowId)
-
-    } else if(type === 'group' && action === 'delete') {
+  const handleSpeedDial = async (action, rowId, values) => {
+    if(action === 'delete') {
       setSpeedDialLoading(true)
 
       const newRows = rows.filter(row => row.groupId !== rowId).filter(row => row.rowId !== rowId)
@@ -1047,7 +917,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
           console.error(error)
         })
 
-    } else if(type === 'group' && action === 'edit') {
+    } else if(action === 'edit') {
       setAddExpand(false)
       setAddGroupOpen(false)
       setGroupCategory(values[0])
@@ -1143,13 +1013,13 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                           }}
                           direction="left" sx={{height: '0px'}}>
                           <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded fontSize="small" />}
-                            onClick={() => handleSpeedDial('group', 'edit', rowId, [category, projected, actual])}
+                            onClick={() => handleSpeedDial('edit', rowId, [category, projected, actual])}
                             disabled={editModeId !== null && editModeId !== rowId} />
                           <SpeedDialAction tooltipTitle='Delete'
                             icon={speedDialLoading
                               ? <CircularProgress color="inherit" size={18} thickness={5} />
                               : <DeleteRounded color="error" fontSize="small" />}
-                            onClick={() => handleSpeedDial('group', 'delete', rowId, [category, projected, actual])}
+                            onClick={() => handleSpeedDial('delete', rowId, [category, projected, actual])}
                             FabProps={{ disabled: speedDialLoading }} />
                         </SpeedDial>
                       </TableCell>
@@ -1159,165 +1029,10 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
               <TableRow>
                 <TableCell padding="none" colSpan={5}>
                   <Collapse in={expand} timeout='auto'>
-                    <div>
-                      <Table sx={{ borderRadius: '1rem', backgroundColor: 'white' }}>
-                        <TableBody>
-                          {
-                            rows.filter(row => row.groupId === rowId).map(catRow => {
-                              const {
-                                rowId, category, projected, actual, remaining
-                              } = catRow
-
-                              return (
-                                <TableRow key={rowId}>
-                                  {
-                                    editModeId === rowId
-                                      ? <TableCell colSpan={5} padding="none">
-                                          <form onSubmit={(e) => handleAddCat('edit', rowId, e)} className="mt-3">
-                                            <div className="d-flex w-100">
-                                              <div style={{ width: '48px' }}>
-                                                <IconButton disabled>
-                                                  <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
-                                                </IconButton>
-                                              </div>
-                                              <div className="d-flex justify-content-between w-100">
-                                                <div className="w-100" style={{ maxWidth: '50%' }}>
-                                                  <TextField value={catCategory} id="category" required disabled={addCatLoading}
-                                                    variant="standard" label="Category" onChange={(e) => setCatCategory(e.target.value)}
-                                                    InputLabelProps={{ required: false }} error={addCatError} sx={{ marginBottom: '0.5rem' }}
-                                                    helperText={addCatError ? 'Please try again' : 'Ex: Mortgage'} fullWidth />
-                                                </div>
-                                                <div className="d-flex" style={{ marginRight: '16px' }}>
-                                                  <div>
-                                                    <TextField value={catProjected} type="currency" id="projected" required disabled={addCatLoading}
-                                                      variant="standard" label="Projected" onChange={(e) => setCatProjected(e.target.value)}
-                                                      InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
-                                                      helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
-                                                  </div>
-                                                  <div>
-                                                    <TextField value={catActual} type="currency" id="actual" required disabled={addCatLoading}
-                                                      variant="standard" label="Actual" onChange={(e) => setCatActual(e.target.value)}
-                                                      InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
-                                                      helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
-
-                                            <div className="w-100 d-flex justify-content-center mb-2">
-                                              <div>
-                                                <LoadingButton loading={addCatLoading} type="submit" sx={{ textTransform: 'none' }}
-                                                  loadingPosition="start" startIcon={<CheckRounded />}>
-                                                  Submit
-                                                </LoadingButton>
-                                                <IconButton color="error" onClick={() => {
-                                                  setEditModeId(null)
-                                                  setCatCategory('')
-                                                  setCatProjected('')
-                                                  setCatActual('')
-                                                  setAddCatLoading(false)
-                                                  setAddCatError(false)
-                                                }} disabled={addCatLoading}>
-                                                  <CloseRounded color={addCatLoading ? 'disabled' : 'error'} />
-                                                </IconButton>
-                                              </div>
-                                            </div>
-                                          </form>
-                                        </TableCell>
-                                      : <>
-                                          <TableCell padding="checkbox" sx={{position: 'relative'}}>
-                                            <SpeedDial ariaLabel="Row Category SpeedDial"
-                                             icon={<SpeedDialIcon icon={<MoreVertRounded sx={{color: '#0000008a'}} fontSize="small" />}
-                                             openIcon={<CloseRounded color="error" />} />}
-                                             sx={{ position: 'absolute', top: '-15px', left: '24px', width: '0px' }}
-                                             FabProps={{ sx: { boxShadow: 'none !important',
-                                              background: 'transparent !important' }, disableRipple: true }}
-                                             direction="right">
-                                              <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded fontSize="small" />}
-                                                onClick={() => handleSpeedDial('category', 'edit', rowId, [category, projected, actual])}
-                                                disabled={editModeId !== null && editModeId !== rowId} />
-                                              <SpeedDialAction tooltipTitle='Delete'
-                                                icon={speedDialLoading
-                                                ? <CircularProgress color="inherit" size={18} thickness={5} />
-                                                : <DeleteRounded color="error" fontSize="small" />}
-                                                onClick={() => handleSpeedDial('category', 'delete', rowId, [category, projected, actual])}
-                                                FabProps={{ disabled: speedDialLoading }} />
-                                            </SpeedDial>
-                                          </TableCell>
-                                          <TableCell padding="none">{category}</TableCell>
-                                          <TableCell align="right">{converter.format(projected)}</TableCell>
-                                          <TableCell align="right">{converter.format(actual)}</TableCell>
-                                          <TableCell align="right">{converter.format(remaining)}</TableCell>
-                                        </>
-                                  }
-                                </TableRow>
-                              )
-                            })
-                          }
-
-                          <TableRow>
-                            <TableCell colSpan={5} padding="none">
-                              <Collapse in={addExpand} timeout='auto'>
-                                <form onSubmit={(e) => handleAddCat('add', null, e)} className="mt-3">
-                                  <div className="d-flex w-100">
-                                    <div style={{width: '48px'}}>
-                                      <IconButton disabled>
-                                        <ArrowDropDownRounded sx={{visibility: 'hidden'}} />
-                                      </IconButton>
-                                    </div>
-                                    <div className="d-flex justify-content-between w-100">
-                                      <div className="w-100" style={{maxWidth: '50%'}}>
-                                        <TextField value={catCategory} id="category" required disabled={addCatLoading}
-                                          variant="standard" label="Category" onChange={(e) => setCatCategory(e.target.value)}
-                                          InputLabelProps={{ required: false }} error={addCatError} sx={{ marginBottom: '0.5rem' }}
-                                          helperText={addCatError ? 'Please try again' : 'Ex: Mortgage'} fullWidth />
-                                      </div>
-                                      <div className="d-flex" style={{marginRight: '16px'}}>
-                                        <div>
-                                          <TextField value={catProjected} type="currency" id="projected" required disabled={addCatLoading}
-                                            variant="standard" label="Projected" onChange={(e) => setCatProjected(e.target.value)}
-                                            InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
-                                            helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
-                                        </div>
-                                        <div>
-                                          <TextField value={catActual} type="currency" id="actual" required disabled={addCatLoading}
-                                            variant="standard" label="Actual" onChange={(e) => setCatActual(e.target.value)}
-                                            InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
-                                            helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div className="w-100 d-flex justify-content-center mb-2">
-                                    <LoadingButton loading={addCatLoading} type="submit" sx={{ textTransform: 'none' }}
-                                      loadingPosition="start" startIcon={<AddRounded />}>
-                                      Add category
-                                    </LoadingButton>
-                                  </div>
-                                </form>
-                              </Collapse>
-                            </TableCell>
-                          </TableRow>
-
-                          <TableRow>
-                            <TableCell colSpan={5} sx={{ padding: '8px' }} align="center">
-                              <Tooltip title={addExpand ? '' : 'Add category'} slotProps={{
-                                popper: { modifiers: [{ name: 'offset', options: { offset: [0, -7] } }] }
-                              }}>
-                                <IconButton onClick={() => setAddExpand(!addExpand)}
-                                 color={addExpand ? 'error' : 'default'} disabled={editModeId !== null || addCatLoading}>
-                                  {
-                                    addExpand ? <CloseRounded color={addCatLoading ? 'disabled' : 'error'} />
-                                              : <AddRounded />
-                                  }
-                                </IconButton>
-                              </Tooltip>
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </div>
+                    <BudgetRowCategory rows={rows} budgetId={budgetId} groupRowId={rowId}
+                     userId={userId} setRows={setRows} addExpand={addExpand}
+                     setAddExpand={setAddExpand} editModeId={editModeId}
+                     setEditModeId={setEditModeId} setNewRows={setNewRows} />
                   </Collapse>
                 </TableCell>
               </TableRow>
@@ -1325,5 +1040,320 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
           : <></>
       }
     </>
+  )
+}
+
+function BudgetRowCategory({rows, budgetId, groupRowId, userId, setRows, addExpand, setAddExpand, editModeId, setEditModeId, setNewRows}) {
+  const [catCategory, setCatCategory] = useState('')
+  const [catProjected, setCatProjected] = useState('')
+  const [catActual, setCatActual] = useState('')
+  const [addCatLoading, setAddCatLoading] = useState(false)
+  const [addCatError, setAddCatError] = useState(false)
+
+  const [speedDialLoading, setSpeedDialLoading] = useState(false)
+
+  const customIdGenerator = () => {
+    var S4 = function () {
+      return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+    };
+    return ('row' + S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4());
+  }
+
+  const handleAddCat = async (action, catRowId, e) => {
+    if(action ==='edit') {
+      e.preventDefault()
+      setAddCatLoading(true)
+
+      const editedRow = {
+        budgetId,
+        rowId: catRowId,
+        category: catCategory,
+        projected: catProjected,
+        actual: catActual,
+        remaining: catProjected - catActual,
+        type: 'category',
+        groupId: groupRowId
+      }
+
+      const rowIds = rows.map(row => row.rowId)
+      const currentRowIndex = rowIds.indexOf(catRowId)
+      const editedRows = rows.toSpliced(currentRowIndex, 1, editedRow)
+
+      await fetch(`/api/server/budgets/${userId}/${budgetId}?rowType=category`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({updatedRows: {rows: editedRows, new: false}})
+      })
+        .then(async res => {
+          if(res.status === 200) {
+            setRows(editedRows)
+            setCatCategory('')
+            setCatProjected('')
+            setCatActual('')
+            setAddCatLoading(false)
+            setAddCatError(false)
+            setEditModeId(null)
+            enqueueSnackbar('Updated category!')
+
+          } else {
+            setAddCatError(true)
+            setAddCatLoading(false)
+          }
+        })
+        .catch(error => {
+          setAddCatError(true)
+          setAddCatLoading(false)
+          window.alert(error)
+          console.error(error)
+        })
+
+    } else {
+      e.preventDefault()
+      setAddCatLoading(true)
+
+      const newRow = {
+        budgetId,
+        rowId: customIdGenerator(),
+        category: catCategory,
+        projected: catProjected,
+        actual: catActual,
+        remaining: catProjected - catActual,
+        type: 'category',
+        groupId: groupRowId
+      }
+
+      await fetch(`/api/server/budgets/${userId}/${budgetId}?rowType=category`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({updatedRows: {rows: [...rows, newRow], new: false}})
+      })
+        .then(async res => {
+          if(res.status === 200) {
+            setRows([...rows, newRow])
+            setAddExpand(false)
+            setCatCategory('')
+            setCatProjected('')
+            setCatActual('')
+            setAddCatLoading(false)
+            setAddCatError(false)
+            enqueueSnackbar('Added category!')
+
+          } else {
+            setAddCatError(true)
+            setAddCatLoading(false)
+          }
+        })
+        .catch(error => {
+          setAddCatError(true)
+          setAddCatLoading(false)
+          window.alert(error)
+          console.error(error)
+        })
+    }
+  }
+
+  const handleSpeedDial = async (action, rowId, values) => {
+    if(action === 'delete') {
+      setSpeedDialLoading(true)
+
+      const newRows = rows.filter(row => row.rowId !== rowId)
+
+      await fetch(`/api/server/budgets/${userId}/${budgetId}?rowType=category`, {
+        method: 'PATCH',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({updatedRows: {rows : newRows, new: false}})
+      })
+        .then(res => {
+          setNewRows(false)
+          setRows(newRows)
+          setSpeedDialLoading(false)
+          enqueueSnackbar('Deleted category', {variant: 'error'})
+        })
+        .catch(error => {
+          setSpeedDialLoading(false)
+          window.alert(error)
+          console.error(error)
+        })
+
+    } else if(action === 'edit') {
+      setAddExpand(false)
+      setCatCategory(values[0])
+      setCatProjected(values[1])
+      setCatActual(values[2])
+      setEditModeId(rowId)
+    }
+  }
+
+  return (
+    <div>
+      <Table sx={{ borderRadius: '1rem', backgroundColor: 'white' }}>
+        <TableBody>
+          {
+            rows.filter(row => row.groupId === groupRowId).map(catRow => {
+              const {
+                rowId, category, projected, actual, remaining
+              } = catRow
+
+              return (
+                <TableRow key={rowId}>
+                  {
+                    editModeId === rowId
+                      ? <TableCell colSpan={5} padding="none">
+                          <form onSubmit={(e) => handleAddCat('edit', rowId, e)} className="mt-3">
+                            <div className="d-flex w-100">
+                              <div style={{ width: '48px' }}>
+                                <IconButton disabled>
+                                  <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
+                                </IconButton>
+                              </div>
+                              <div className="d-flex justify-content-between w-100">
+                                <div className="w-100" style={{ maxWidth: '50%' }}>
+                                  <TextField value={catCategory} id="category" required disabled={addCatLoading}
+                                    variant="standard" label="Category" onChange={(e) => setCatCategory(e.target.value)}
+                                    InputLabelProps={{ required: false }} error={addCatError} sx={{ marginBottom: '0.5rem' }}
+                                    helperText={addCatError ? 'Please try again' : 'Ex: Mortgage'} fullWidth />
+                                </div>
+                                <div className="d-flex" style={{ marginRight: '16px' }}>
+                                  <div>
+                                    <TextField value={catProjected} type="currency" id="projected" required disabled={addCatLoading}
+                                      variant="standard" label="Projected" onChange={(e) => setCatProjected(e.target.value)}
+                                      InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
+                                      helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
+                                  </div>
+                                  <div>
+                                    <TextField value={catActual} type="currency" id="actual" required disabled={addCatLoading}
+                                      variant="standard" label="Actual" onChange={(e) => setCatActual(e.target.value)}
+                                      InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
+                                      helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="w-100 d-flex justify-content-center mb-2">
+                              <div>
+                                <LoadingButton loading={addCatLoading} type="submit" sx={{ textTransform: 'none' }}
+                                  loadingPosition="start" startIcon={<CheckRounded />}>
+                                  Submit
+                                </LoadingButton>
+                                <IconButton color="error" onClick={() => {
+                                  setEditModeId(null)
+                                  setCatCategory('')
+                                  setCatProjected('')
+                                  setCatActual('')
+                                  setAddCatLoading(false)
+                                  setAddCatError(false)
+                                }} disabled={addCatLoading}>
+                                  <CloseRounded color={addCatLoading ? 'disabled' : 'error'} />
+                                </IconButton>
+                              </div>
+                            </div>
+                          </form>
+                        </TableCell>
+                      : <>
+                          <TableCell padding="checkbox" sx={{ position: 'relative' }}>
+                            <SpeedDial ariaLabel="Row Category SpeedDial"
+                              icon={<SpeedDialIcon icon={<MoreVertRounded sx={{ color: '#0000008a' }} fontSize="small" />}
+                                openIcon={<CloseRounded color="error" />} />}
+                              sx={{ position: 'absolute', top: '-15px', left: '24px', width: '0px' }}
+                              FabProps={{
+                                sx: {
+                                  boxShadow: 'none !important',
+                                  background: 'transparent !important'
+                                }, disableRipple: true
+                              }}
+                              direction="right">
+                              <SpeedDialAction tooltipTitle='Edit' icon={<EditRounded fontSize="small" />}
+                                onClick={() => handleSpeedDial('edit', rowId, [category, projected, actual])}
+                                disabled={editModeId !== null && editModeId !== rowId} />
+                              <SpeedDialAction tooltipTitle='Delete'
+                                icon={speedDialLoading
+                                  ? <CircularProgress color="inherit" size={18} thickness={5} />
+                                  : <DeleteRounded color="error" fontSize="small" />}
+                                onClick={() => handleSpeedDial('delete', rowId, [category, projected, actual])}
+                                FabProps={{ disabled: speedDialLoading }} />
+                            </SpeedDial>
+                          </TableCell>
+                          <TableCell padding="none">{category}</TableCell>
+                          <TableCell align="right">{converter.format(projected)}</TableCell>
+                          <TableCell align="right">{converter.format(actual)}</TableCell>
+                          <TableCell align="right">{converter.format(remaining)}</TableCell>
+                        </>
+                  }
+                </TableRow>
+              )
+            })
+          }
+
+          <TableRow>
+            <TableCell colSpan={5} padding="none">
+              <Collapse in={addExpand} timeout='auto'>
+                <form onSubmit={(e) => handleAddCat('add', null, e)} className="mt-3">
+                  <div className="d-flex w-100">
+                    <div style={{ width: '48px' }}>
+                      <IconButton disabled>
+                        <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
+                      </IconButton>
+                    </div>
+                    <div className="d-flex justify-content-between w-100">
+                      <div className="w-100" style={{ maxWidth: '50%' }}>
+                        <TextField value={catCategory} id="category" required disabled={addCatLoading}
+                          variant="standard" label="Category" onChange={(e) => setCatCategory(e.target.value)}
+                          InputLabelProps={{ required: false }} error={addCatError} sx={{ marginBottom: '0.5rem' }}
+                          helperText={addCatError ? 'Please try again' : 'Ex: Mortgage'} fullWidth />
+                      </div>
+                      <div className="d-flex" style={{ marginRight: '16px' }}>
+                        <div>
+                          <TextField value={catProjected} type="currency" id="projected" required disabled={addCatLoading}
+                            variant="standard" label="Projected" onChange={(e) => setCatProjected(e.target.value)}
+                            InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
+                            helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
+                        </div>
+                        <div>
+                          <TextField value={catActual} type="currency" id="actual" required disabled={addCatLoading}
+                            variant="standard" label="Actual" onChange={(e) => setCatActual(e.target.value)}
+                            InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
+                            helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="w-100 d-flex justify-content-center mb-2">
+                    <LoadingButton loading={addCatLoading} type="submit" sx={{ textTransform: 'none' }}
+                      loadingPosition="start" startIcon={<AddRounded />}>
+                      Add category
+                    </LoadingButton>
+                  </div>
+                </form>
+              </Collapse>
+            </TableCell>
+          </TableRow>
+
+          <TableRow>
+            <TableCell colSpan={5} sx={{ padding: '8px' }} align="center">
+              <Tooltip title={addExpand ? '' : 'Add category'} slotProps={{
+                popper: { modifiers: [{ name: 'offset', options: { offset: [0, -7] } }] }
+              }}>
+                <IconButton onClick={() => {
+                  setAddExpand(!addExpand)
+                  setCatCategory('')
+                  setCatProjected('')
+                  setCatActual('')
+                  setAddCatLoading(false)
+                  setAddCatError(false)
+                 }}
+                  color={addExpand ? 'error' : 'default'} disabled={editModeId !== null || addCatLoading}>
+                  {
+                    addExpand ? <CloseRounded color={addCatLoading ? 'disabled' : 'error'} />
+                              : <AddRounded />
+                  }
+                </IconButton>
+              </Tooltip>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </div>
   )
 }
