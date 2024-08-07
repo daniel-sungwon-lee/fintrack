@@ -80,7 +80,7 @@ export default function Budget({userId}) {
                                         userId={userId} name={name} frequency={frequency}
                                         fromDate={fromDate} toDate={toDate} rows={rows}
                                         budgets={budgets} setBudgets={setBudgets}
-                                        page={page} display={index+1} />
+                                        page={page} setPage={setPage} display={index+1} />
                                     )
                                   })
                                 }
@@ -105,7 +105,7 @@ export default function Budget({userId}) {
                         <Collapse in={open} timeout='auto'>
                           <NewBudget userId={userId} setBudgets={setBudgets}
                            budgets={budgets} open={open} setOpen={setOpen}
-                           setAddBudgetLoading={setAddBudgetLoading} />
+                           setAddBudgetLoading={setAddBudgetLoading} setPage={setPage} />
                         </Collapse>
                       </div>
 
@@ -145,7 +145,7 @@ export default function Budget({userId}) {
   )
 }
 
-function NewBudget({userId, budgets, setBudgets, open, setOpen, setAddBudgetLoading}) {
+function NewBudget({userId, budgets, setBudgets, open, setOpen, setAddBudgetLoading, setPage}) {
   const [name, setName] = useState('')
   const [frequency, setFrequency] = useState('monthly')
   const [dateRange, setDateRange] = useState([dayjs(), dayjs().add(1, 'month')])
@@ -193,7 +193,8 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen, setAddBudgetLoad
               if (!budgets) {
                 setBudgets([data[0]])
               } else {
-                setBudgets([...budgets, data[0]])
+                setPage(1)
+                setBudgets([data[0], ...budgets])
               }
             })
             .catch(error => {
@@ -284,7 +285,7 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen, setAddBudgetLoad
   )
 }
 
-function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows, budgets, setBudgets, page, display}) {
+function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows, budgets, setBudgets, page, setPage, display}) {
   const [loading, setLoading] = useState(true)
   const [tableRows, setTableRows] = useState(rows.rows)
   const [newRows, setNewRows] = useState(rows.new)
@@ -543,6 +544,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
         if (res.status === 200) {
           const updatedBudgets = budgets.filter(budget => budget.budgetId !== budgetId)
 
+          setPage(1)
           setBudgets([reqBody, ...updatedBudgets])
           setEditModeId(null)
           enqueueSnackbar('Updated budget!')
