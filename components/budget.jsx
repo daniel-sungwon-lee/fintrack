@@ -17,6 +17,22 @@ import TablePlaceholder from "./tablePlaceholder"
 import { NumericFormat } from "react-number-format"
 import { closeSnackbar, enqueueSnackbar, MaterialDesignContent, SnackbarProvider } from "notistack"
 
+const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+
+// const NumericFormatCustom = forwardRef(function NumericFormatCustom(props, ref) {
+//   const { onChange, ...other } = props
+
+//   return (
+//     <NumericFormat {...other} getInputRef={ref} onValueChange={(values) => {
+//       onChange({ target: { name: props.name, value: values.value }, })
+//     }} thousandSeparator valueIsNumericString prefix="$" />
+//   )
+// })
+// NumericFormatCustom.propTypes = {
+//   name: PropTypes.string.isRequired,
+//   onChange: PropTypes.func.isRequired,
+// }
+
 const StyledSnackbar = styled(MaterialDesignContent)(() => ({
   '&.notistack-MuiContent-success': {backgroundColor: '#00c169'},
   '&.notistack-MuiContent-error': {backgroundColor: '#d32f2f'}
@@ -320,8 +336,8 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
         rowId: "row564000212156bae63c0a82b1a1ebf855",
         category: 'Bills',
         projected: 3000,
-        actual: 1860,
-        remaining: 1140,
+        actual: 2745,
+        remaining: 255,
         type: 'group',
         groupId: null
       },
@@ -330,8 +346,8 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
         rowId: "row6567643dc469af2a5c73935524e087be",
         category: 'Fun',
         projected: 500,
-        actual: 180,
-        remaining: 320,
+        actual: 156,
+        remaining: 344,
         type: 'group',
         groupId: null
       },
@@ -339,9 +355,9 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
         budgetId,
         rowId: "row64adc7c62c3b49892e1f71000d7fb185",
         category: 'Food',
-        projected: 1000,
-        actual: 345,
-        remaining: 655,
+        projected: 300,
+        actual: 145,
+        remaining: 155,
         type: 'group',
         groupId: null
       },
@@ -359,9 +375,9 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
         budgetId,
         rowId: customIdGenerator(),
         category: 'Thrifting',
-        projected: 100,
+        projected: 200,
         actual: 0,
-        remaining: 100,
+        remaining: 200,
         type: 'category',
         groupId: "row6567643dc469af2a5c73935524e087be"
       },
@@ -369,8 +385,8 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
         budgetId,
         rowId: customIdGenerator(),
         category: 'Rent',
-        projected: 2000,
-        actual: 2000,
+        projected: 2500,
+        actual: 2500,
         remaining: 0,
         type: 'category',
         groupId: "row564000212156bae63c0a82b1a1ebf855"
@@ -379,9 +395,9 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
         budgetId,
         rowId: customIdGenerator(),
         category: 'Utilities',
-        projected: 200,
+        projected: 300,
         actual: 45,
-        remaining: 155,
+        remaining: 255,
         type: 'category',
         groupId: "row564000212156bae63c0a82b1a1ebf855"
       },
@@ -389,18 +405,18 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
         budgetId,
         rowId: customIdGenerator(),
         category: 'Shopping',
-        projected: 200,
+        projected: 300,
         actual: 156,
-        remaining: 44,
+        remaining: 144,
         type: 'category',
         groupId: "row6567643dc469af2a5c73935524e087be"
       },
       {
         budgetId,
         rowId: customIdGenerator(),
-        category: 'Subscriptions',
-        projected: 6,
-        actual: 6,
+        category: 'Insurance',
+        projected: 200,
+        actual: 200,
         remaining: 0,
         type: 'category',
         groupId: "row564000212156bae63c0a82b1a1ebf855"
@@ -536,6 +552,10 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
       rows: {rows: tableRows, new: false}
     }
 
+    const budgetIds = budgets.map(budget => budget.budgetId)
+    const currentBudgetIndex = budgetIds.indexOf(budgetId)
+    const updatedBudgets = budgets.toSpliced(currentBudgetIndex, 1, reqBody)
+
     await fetch(`/api/server/budgets/${userId}/${budgetId}?tableEdit=true`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -543,10 +563,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
     })
       .then(res => {
         if (res.status === 200) {
-          const updatedBudgets = budgets.filter(budget => budget.budgetId !== budgetId)
-
-          setPage(1)
-          setBudgets([reqBody, ...updatedBudgets])
+          setBudgets(updatedBudgets)
           setEditModeId(null)
           enqueueSnackbar('Updated budget!')
 
@@ -713,7 +730,9 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
                         <TableCell padding="none" sx={{ color: 'white' }}>Category</TableCell>
                         <TableCell align="right" sx={{ color: 'white' }}>Projected</TableCell>
                         <TableCell align="right" sx={{ color: 'white' }}>Actual</TableCell>
-                        <TableCell align="right" sx={{ borderRadius: '0 0.75rem 0.75rem 0', color: 'white' }}>Remaining</TableCell>
+                        <TableCell align="right" sx={{ borderRadius: '0 0.75rem 0.75rem 0', color: 'white', paddingRight: '40px' }}>
+                          Remaining
+                        </TableCell>
                       </TableRow>
                     </TableHead>
 
@@ -804,20 +823,6 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
   )
 }
 
-// const NumericFormatCustom = forwardRef(function NumericFormatCustom(props, ref) {
-//   const { onChange, ...other } = props
-
-//   return (
-//     <NumericFormat {...other} getInputRef={ref} onValueChange={(values) => {
-//       onChange({ target: { name: props.name, value: values.value }, })
-//     }} thousandSeparator valueIsNumericString prefix="$" />
-//   )
-// })
-// NumericFormatCustom.propTypes = {
-//   name: PropTypes.string.isRequired,
-//   onChange: PropTypes.func.isRequired,
-// }
-
 function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining, type, groupId, rows, setRows, userId, setNewRows, setGroupRowEdit, setAddGroupOpen}) {
   const [expand, setExpand] = useState(true)
   const [addExpand, setAddExpand] = useState(false)
@@ -873,16 +878,18 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
       groupId: null
     }
 
-    const editedRows = rows.filter(row => row.rowId !== rowId)
+    const rowIds = rows.map(row => row.rowId)
+    const currentRowIndex = rowIds.indexOf(rowId)
+    const editedRows = rows.toSpliced(currentRowIndex, 1, editedRow)
 
     await fetch(`/api/server/budgets/${userId}/${budgetId}?rowType=group`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ updatedRows: { rows: [...editedRows, editedRow], new: false } })
+      body: JSON.stringify({ updatedRows: { rows: editedRows, new: false } })
     })
       .then(async res => {
         if (res.status === 200) {
-          setRows([...editedRows, editedRow])
+          setRows(editedRows)
           setGroupCategory('')
           setGroupProjected('')
           setGroupActual('')
@@ -921,16 +928,18 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
         groupId: rowId
       }
 
-      const editedRows = rows.filter(row => row.rowId !== catRowId)
+      const rowIds = rows.map(row => row.rowId)
+      const currentRowIndex = rowIds.indexOf(catRowId)
+      const editedRows = rows.toSpliced(currentRowIndex, 1, editedRow)
 
       await fetch(`/api/server/budgets/${userId}/${budgetId}?rowType=category`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({updatedRows: {rows: [...editedRows, editedRow], new: false}})
+        body: JSON.stringify({updatedRows: {rows: editedRows, new: false}})
       })
         .then(async res => {
           if(res.status === 200) {
-            setRows([...editedRows, editedRow])
+            setRows(editedRows)
             setCatCategory('')
             setCatProjected('')
             setCatActual('')
@@ -1124,10 +1133,10 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                         </IconButton>
                       </TableCell>
                       <TableCell padding="none">{category}</TableCell>
-                      <TableCell align="right">{projected}</TableCell>
-                      <TableCell align="right">{actual}</TableCell>
+                      <TableCell align="right">{converter.format(projected)}</TableCell>
+                      <TableCell align="right">{converter.format(actual)}</TableCell>
                       <TableCell align="right" sx={{ borderRadius: '0 1rem 1rem 0', paddingRight: '40px' }}>
-                        {remaining}
+                        {converter.format(remaining)}
                       </TableCell>
                     </TableRow>
               }
@@ -1251,9 +1260,9 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                                             </SpeedDial>
                                           </TableCell>
                                           <TableCell padding="none">{category}</TableCell>
-                                          <TableCell align="right">{projected}</TableCell>
-                                          <TableCell align="right">{actual}</TableCell>
-                                          <TableCell align="right">{remaining}</TableCell>
+                                          <TableCell align="right">{converter.format(projected)}</TableCell>
+                                          <TableCell align="right">{converter.format(actual)}</TableCell>
+                                          <TableCell align="right">{converter.format(remaining)}</TableCell>
                                         </>
                                   }
                                 </TableRow>
