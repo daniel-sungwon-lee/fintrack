@@ -188,7 +188,7 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen, setAddBudgetLoad
             .then(data => {
               setOpen(false)
               setAddBudgetLoading(false)
-              enqueueSnackbar('Added budget!')
+              enqueueSnackbar('Created budget!')
 
               if (!budgets) {
                 setBudgets([data[0]])
@@ -274,10 +274,10 @@ function NewBudget({userId, budgets, setBudgets, open, setOpen, setAddBudgetLoad
             }} />
         </LocalizationProvider>
 
-        <div className="d-flex justify-content-center mb-5" style={{marginTop: '4rem'}}>
+        <div className="d-flex justify-content-center" style={{marginTop: '4rem', marginBottom: '2rem'}}>
           <LoadingButton loading={addLoading} type="submit" sx={{textTransform: 'none', color: 'white'}}
            loadingPosition="start" variant='contained' startIcon={<AddRounded />}>
-            Add
+            Create
           </LoadingButton>
         </div>
       </form>
@@ -495,6 +495,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
         .then(res => {
           const newBudgets = budgets.filter(budget => budget.budgetId !== budgetId)
 
+          setPage(display === 1 ? 1 : display-1)
           setBudgets(newBudgets)
           setSpeedDialLoading(false)
           enqueueSnackbar('Deleted budget', {variant: 'error'})
