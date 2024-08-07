@@ -308,7 +308,6 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
   const [addGroupOpen, setAddGroupOpen] = useState(false)
   const [groupCategory, setGroupCategory] = useState('')
   const [groupProjected, setGroupProjected] = useState('')
-  const [groupActual, setGroupActual] = useState('')
   const [addGroupLoading, setAddGroupLoading] = useState(false)
   const [addGroupError, setAddGroupError] = useState(false)
   const [groupRowEdit, setGroupRowEdit] = useState(false)
@@ -446,7 +445,6 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
     if(!addGroupOpen) {
       setGroupCategory('')
       setGroupProjected('')
-      setGroupActual('')
       setAddGroupLoading(false)
       setAddGroupError(false)
     }
@@ -470,8 +468,8 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
       rowId: customIdGenerator(),
       category: groupCategory,
       projected: groupProjected,
-      actual: groupActual,
-      remaining: groupProjected - groupActual,
+      actual: 0,
+      remaining: groupProjected - 0,
       type: 'group',
       groupId: null
     }
@@ -764,26 +762,18 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
                                     <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
                                   </IconButton>
                                 </div>
-                                <div className="d-flex justify-content-between w-100">
-                                  <div className="w-100" style={{ maxWidth: '50%' }}>
+                                <div className="d-flex w-100">
+                                  <div className="w-100">
                                     <TextField value={groupCategory} id="category" required disabled={addGroupLoading}
                                       variant="standard" label="Category" onChange={(e) => setGroupCategory(e.target.value)}
                                       InputLabelProps={{ required: false }} error={addGroupError} sx={{ marginBottom: '0.5rem' }}
                                       helperText={addGroupError ? 'Please try again' : 'Ex: Child'} fullWidth />
                                   </div>
-                                  <div className="d-flex" style={{ marginRight: '16px' }}>
-                                    <div>
-                                      <TextField value={groupProjected} type="currency" id="projected" required disabled={addGroupLoading}
-                                        variant="standard" label="Projected" onChange={(e) => setGroupProjected(e.target.value)}
-                                        InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormat }}
-                                        helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" />
-                                    </div>
-                                    <div>
-                                      <TextField value={groupActual} type="currency" id="actual" required disabled={addGroupLoading}
-                                        variant="standard" label="Actual" onChange={(e) => setGroupActual(e.target.value)}
-                                        InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormat }}
-                                        helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" />
-                                    </div>
+                                  <div className="w-100" style={{ marginRight: '16px' }}>
+                                    <TextField value={groupProjected} type="currency" id="projected" required disabled={addGroupLoading}
+                                      variant="standard" label="Projected" onChange={(e) => setGroupProjected(e.target.value)}
+                                      InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormat }}
+                                      helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" fullWidth />
                                   </div>
                                 </div>
                               </div>
@@ -837,7 +827,6 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
 
   const [groupCategory, setGroupCategory] = useState('')
   const [groupProjected, setGroupProjected] = useState('')
-  const [groupActual, setGroupActual] = useState('')
   const [addGroupLoading, setAddGroupLoading] = useState(false)
   const [addGroupError, setAddGroupError] = useState(false)
 
@@ -867,6 +856,13 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
     e.preventDefault()
     setAddGroupLoading(true)
 
+    const groupCatRows = rows.filter(row => row.groupId === rowId)
+    const groupCatRowsActual = groupCatRows.map(row => parseFloat(row.actual))
+    let groupActual = 0
+    if(groupCatRowsActual.length > 0) {
+      groupActual = groupCatRowsActual.reduce((a,b) => a+b, groupActual)
+    }
+
     const editedRow = {
       budgetId,
       rowId: rowId,
@@ -892,7 +888,6 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
           setRows(editedRows)
           setGroupCategory('')
           setGroupProjected('')
-          setGroupActual('')
           setAddGroupLoading(false)
           setAddGroupError(false)
           setEditModeId(null)
@@ -1057,7 +1052,6 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
       setAddGroupOpen(false)
       setGroupCategory(values[0])
       setGroupProjected(values[1])
-      setGroupActual(values[2])
       setGroupRowEdit(true)
       setEditModeId(rowId)
     }
@@ -1079,26 +1073,18 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                                 <ArrowDropDownRounded sx={{ visibility: 'hidden' }} />
                               </IconButton>
                             </div>
-                            <div className="d-flex justify-content-between w-100">
-                              <div className="w-100" style={{ maxWidth: '50%' }}>
+                            <div className="d-flex w-100">
+                              <div className="w-100">
                                 <TextField value={groupCategory} id="category" required disabled={addGroupLoading}
                                   variant="standard" label="Category" onChange={(e) => setGroupCategory(e.target.value)}
                                   InputLabelProps={{ required: false }} error={addGroupError} sx={{ marginBottom: '0.5rem' }}
                                   helperText={addGroupError ? 'Please try again' : 'Ex: Child'} fullWidth />
                               </div>
-                              <div className="d-flex" style={{ marginRight: '16px' }}>
-                                <div>
-                                  <TextField value={groupProjected} type="currency" id="projected" required disabled={addGroupLoading}
-                                    variant="standard" label="Projected" onChange={(e) => setGroupProjected(e.target.value)}
-                                    InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormat }}
-                                    helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" />
-                                </div>
-                                <div>
-                                  <TextField value={groupActual} type="currency" id="actual" required disabled={addGroupLoading}
-                                    variant="standard" label="Actual" onChange={(e) => setGroupActual(e.target.value)}
-                                    InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormat }}
-                                    helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" />
-                                </div>
+                              <div className="w-100" style={{ marginRight: '16px' }}>
+                                <TextField value={groupProjected} type="currency" id="projected" required disabled={addGroupLoading}
+                                  variant="standard" label="Projected" onChange={(e) => setGroupProjected(e.target.value)}
+                                  InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormat }}
+                                  helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" fullWidth />
                               </div>
                             </div>
                           </div>
@@ -1114,7 +1100,6 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                               setGroupRowEdit(false)
                               setGroupCategory('')
                               setGroupProjected('')
-                              setGroupActual('')
                               setAddGroupLoading(false)
                               setAddGroupError(false)
                              }} disabled={addGroupLoading} className="mb-2">
