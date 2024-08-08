@@ -825,6 +825,8 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
   const [addGroupLoading, setAddGroupLoading] = useState(false)
   const [addGroupError, setAddGroupError] = useState(false)
 
+  const [actualTotal, setActualTotal] = useState(parseFloat(actual))
+
   useEffect(() => {
     if(!expand) {
       setAddExpand(false)
@@ -988,10 +990,14 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                         </IconButton>
                       </TableCell>
                       <TableCell padding="none">{category}</TableCell>
-                      <TableCell align="right">{converter.format(projected)}</TableCell>
-                      <TableCell align="right">{converter.format(actual)}</TableCell>
-                      <TableCell align="right" sx={{ borderRadius: '0 1rem 1rem 0', paddingRight: '40px' }}>
-                        {converter.format(remaining)}
+                      <TableCell sx={{color: Math.sign(projected) === -1 ? 'red' : ''}}
+                       align="right">{converter.format(projected)}</TableCell>
+                      <TableCell sx={{color: Math.sign(actualTotal) === -1 ? 'red' : ''}}
+                       align="right">{converter.format(actualTotal)}</TableCell>
+                      <TableCell align="right" sx={{ borderRadius: '0 1rem 1rem 0', paddingRight: '40px',
+                        color: Math.sign(projected - actualTotal) === -1 ? 'red' : ''
+                       }}>
+                        {converter.format(projected - actualTotal)}
                       </TableCell>
                     </TableRow>
               }
@@ -1032,7 +1038,8 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                     <BudgetRowCategory rows={rows} budgetId={budgetId} groupRowId={rowId}
                      userId={userId} setRows={setRows} addExpand={addExpand}
                      setAddExpand={setAddExpand} editModeId={editModeId}
-                     setEditModeId={setEditModeId} setNewRows={setNewRows} />
+                     setEditModeId={setEditModeId} setNewRows={setNewRows}
+                     setActualTotal={setActualTotal} />
                   </Collapse>
                 </TableCell>
               </TableRow>
@@ -1043,7 +1050,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
   )
 }
 
-function BudgetRowCategory({rows, budgetId, groupRowId, userId, setRows, addExpand, setAddExpand, editModeId, setEditModeId, setNewRows}) {
+function BudgetRowCategory({rows, budgetId, groupRowId, userId, setRows, addExpand, setAddExpand, editModeId, setEditModeId, setNewRows, setActualTotal}) {
   const [catCategory, setCatCategory] = useState('')
   const [catProjected, setCatProjected] = useState('')
   const [catActual, setCatActual] = useState('')
@@ -1051,6 +1058,17 @@ function BudgetRowCategory({rows, budgetId, groupRowId, userId, setRows, addExpa
   const [addCatError, setAddCatError] = useState(false)
 
   const [speedDialLoading, setSpeedDialLoading] = useState(false)
+
+  useEffect(() => {
+    const actuals = rows.filter(row => row.groupId === groupRowId).map(row => parseFloat(row.actual))
+    if(actuals.length > 0) {
+      setActualTotal(actuals.reduce((a,b) => a+b),0)
+    } else {
+      setActualTotal(0)
+    }
+
+    //patch data with updated group row amounts?
+  },[rows, groupRowId, setActualTotal])
 
   const customIdGenerator = () => {
     var S4 = function () {
@@ -1275,9 +1293,12 @@ function BudgetRowCategory({rows, budgetId, groupRowId, userId, setRows, addExpa
                             </SpeedDial>
                           </TableCell>
                           <TableCell padding="none">{category}</TableCell>
-                          <TableCell align="right">{converter.format(projected)}</TableCell>
-                          <TableCell align="right">{converter.format(actual)}</TableCell>
-                          <TableCell align="right">{converter.format(remaining)}</TableCell>
+                          <TableCell sx={{color: Math.sign(projected) === -1 ? 'red' : ''}}
+                           align="right">{converter.format(projected)}</TableCell>
+                          <TableCell sx={{color: Math.sign(actual) === -1 ? 'red' : ''}}
+                           align="right">{converter.format(actual)}</TableCell>
+                          <TableCell sx={{color: Math.sign(remaining) === -1 ? 'red' : ''}}
+                           align="right">{converter.format(remaining)}</TableCell>
                         </>
                   }
                 </TableRow>
