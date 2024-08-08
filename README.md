@@ -9,8 +9,7 @@ https://fintrack-beta.vercel.app/
 https://youtu.be/pIRV4APBsnI
 
 ## Database Schema
-![Screenshot 2024-07-23 150059](https://github.com/user-attachments/assets/a779dc97-9c64-404c-b07f-c70b6b9d3e0f)
-
+![Screenshot 2024-08-07 230353](https://github.com/user-attachments/assets/6f748e77-caab-4b39-935e-66f87f03b614)
 
 https://dbdesigner.page.link/faZYRT9T1x6oNBkJ9
 
