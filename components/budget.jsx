@@ -756,7 +756,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
                                       helperText={addGroupError ? 'Please try again' : 'Ex: Child'} fullWidth />
                                   </div>
                                   <div className="w-100" style={{ marginRight: '16px' }}>
-                                    <NumericFormat value={groupProjected} id='projected' type='currency' required disabled={addGroupLoading} prefix="$"
+                                    <NumericFormat value={groupProjected} id='projected' type='tel' required disabled={addGroupLoading} prefix="$"
                                       variant="standard" label='Projected' onValueChange={(values) => setGroupProjected(values.floatValue)}
                                       InputLabelProps={{ required: false }} customInput={TextField} thousandSeparator fullWidth
                                       error={addGroupError} helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" />
@@ -939,7 +939,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                                   helperText={addGroupError ? 'Please try again' : 'Ex: Child'} fullWidth />
                               </div>
                               <div className="w-100" style={{ marginRight: '16px' }}>
-                                <NumericFormat value={groupProjected} id='projected' type="currency" required disabled={addGroupLoading} prefix="$"
+                                <NumericFormat value={groupProjected} id='projected' type="tel" required disabled={addGroupLoading} prefix="$"
                                   variant="standard" label='Projected' onValueChange={(values) => setGroupProjected(values.floatValue)}
                                   InputLabelProps={{ required: false }} customInput={TextField} thousandSeparator fullWidth
                                   error={addGroupError} helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" />
@@ -1218,11 +1218,11 @@ function BudgetRowCategory({rows, budgetId, groupRowId, userId, setRows, addExpa
                                     helperText={addCatError ? 'Please try again' : 'Ex: Mortgage'} fullWidth />
                                 </div>
                                 <div className="d-flex w-100" style={{ marginRight: '16px' }}>
-                                  <NumericFormat value={catProjected} id='projected' type="currency" required disabled={addCatLoading} prefix="$"
+                                  <NumericFormat value={catProjected} id='projected' type="tel" required disabled={addCatLoading} prefix="$"
                                    variant="standard" label='Projected' onValueChange={(values) => setCatProjected(values.floatValue)}
                                    InputLabelProps={{ required: false }} customInput={TextField} thousandSeparator fullWidth
                                    error={addCatError} helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
-                                  <NumericFormat value={catActual} id='actual' type="currency" required disabled={addCatLoading} prefix="$"
+                                  <NumericFormat value={catActual} id='actual' type="tel" required disabled={addCatLoading} prefix="$"
                                    variant="standard" label='Actual' onValueChange={(values) => setCatActual(values.floatValue)}
                                    InputLabelProps={{required: false}} customInput={TextField} thousandSeparator fullWidth
                                    error={addCatError} helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
@@ -1306,11 +1306,11 @@ function BudgetRowCategory({rows, budgetId, groupRowId, userId, setRows, addExpa
                           helperText={addCatError ? 'Please try again' : 'Ex: Mortgage'} fullWidth />
                       </div>
                       <div className="d-flex w-100" style={{ marginRight: '16px' }}>
-                        <NumericFormat value={catProjected} id='projected' type="currency" required disabled={addCatLoading} prefix="$"
+                        <NumericFormat value={catProjected} id='projected' type="tel" required disabled={addCatLoading} prefix="$"
                           variant="standard" label='Projected' onValueChange={(values) => setCatProjected(values.floatValue)}
                           InputLabelProps={{ required: false }} customInput={TextField} thousandSeparator fullWidth
                           error={addCatError} helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
-                        <NumericFormat value={catActual} id='actual' type="currency" required disabled={addCatLoading} prefix="$"
+                        <NumericFormat value={catActual} id='actual' type="tel" required disabled={addCatLoading} prefix="$"
                           variant="standard" label='Actual' onValueChange={(values) => setCatActual(values.floatValue)}
                           InputLabelProps={{ required: false }} customInput={TextField} thousandSeparator fullWidth
                           error={addCatError} helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
