@@ -7,6 +7,8 @@ const Nav = dynamic(() => import('../components/nav'), {ssr: false})
 const Overview = dynamic(() => import('../components/overview'), { loading: () => <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} width="100%"><div style={{ height: '69vh' }}></div></Skeleton>, ssr: false })
 // eslint-disable-next-line react/display-name
 const Track = dynamic(() => import('../components/track'), { loading: () => <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} width="100%"><div style={{ height: '69vh' }}></div></Skeleton>, ssr: false })
+// eslint-disable-next-line react/display-name
+const Budget = dynamic(() => import('../components/budget'), { loading: () => <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} width="100%"><div style={{ height: '69vh' }}></div></Skeleton>, ssr: false })
 import { Box, Collapse, Fab, Modal, Paper, Skeleton, Slide } from '@mui/material';
 import { ClearRounded, LogoutRounded } from '@mui/icons-material';
 
@@ -103,6 +105,10 @@ export default function Home({ user, setUser, Context }) {
 
       case 'track':
         return <Track userId={user.userId} />
+        break;
+
+      case 'budget':
+        return <Budget userId={user.userId} />
         break;
 
       case 'logout':

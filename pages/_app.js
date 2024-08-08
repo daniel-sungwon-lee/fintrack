@@ -208,6 +208,30 @@ a:hover {
   text-transform: none;
 }
 
+.MuiTableCell-root {
+  font-family: ${Inter.style.fontFamily} !important;
+  border-bottom: none !important;
+}
+
+#RowCategorySpeedDial-action-1 .MuiTooltip-tooltip {
+  background-color: #d32f2f;
+}
+
+#RowGroupSpeedDial-action-1 .MuiTooltip-tooltip {
+  background-color: #d32f2f;
+}
+
+#BudgetTableSpeedDial-action-1 .MuiTooltip-tooltip {
+  background-color: #d32f2f;
+}
+#BudgetTableSpeedDial-actions {
+  padding-top: 44px !important
+}
+
+.MuiButtonBase-root.MuiPaginationItem-root {
+  font-family: ${Inter.style.fontFamily} !important;
+}
+
 
 @media(max-width: 767px) {
   .tracker-fontsize-mobile {

@@ -74,6 +74,21 @@ CREATE TABLE "transactions" (
 
 
 
+CREATE TABLE "budgets" (
+	"budgetId" serial NOT NULL,
+	"userId" integer NOT NULL,
+	"name" TEXT NOT NULL,
+	"frequency" TEXT NOT NULL,
+	"fromDate" TEXT NOT NULL,
+	"toDate" TEXT NOT NULL,
+	"rows" JSON NOT NULL,
+	CONSTRAINT "budgets_pk" PRIMARY KEY ("budgetId")
+) WITH (
+	OIDS=FALSE
+);
+
+
+
 
 ALTER TABLE "institutions" ADD CONSTRAINT "institutions_fk0" FOREIGN KEY ("userId") REFERENCES "users"("userId");
 
@@ -82,3 +97,5 @@ ALTER TABLE "accounts" ADD CONSTRAINT "accounts_fk0" FOREIGN KEY ("item_id") REF
 ALTER TABLE "trackers" ADD CONSTRAINT "trackers_fk0" FOREIGN KEY ("userId") REFERENCES "users"("userId");
 
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_fk0" FOREIGN KEY ("trackerId") REFERENCES "trackers"("trackerId");
+
+ALTER TABLE "budgets" ADD CONSTRAINT "budgets_fk0" FOREIGN KEY ("userId") REFERENCES "users"("userId");

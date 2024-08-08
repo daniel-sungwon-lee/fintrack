@@ -1226,6 +1226,7 @@ function TrackerDetails({ open, setOpen, trackerId, setTrackerId, trackerName, s
                                                               : [
                                                                   connectedAccounts.map(account => {
                                                                     const {name, account_id} = account
+                                                                    //bug when account names are the same...Select doesn't register value change
 
                                                                     return (
                                                                       <MenuItem key={account_id} value={name}>{name}</MenuItem>

@@ -1,4 +1,4 @@
-import { BarChartRounded, HomeRounded, PowerSettingsNewRounded } from "@mui/icons-material";
+import { AccountBalanceWalletRounded, BarChartRounded, HomeRounded, PowerSettingsNewRounded } from "@mui/icons-material";
 import { BottomNavigation, BottomNavigationAction, useScrollTrigger } from "@mui/material";
 import { useEffect, useState } from "react";
 
@@ -22,6 +22,7 @@ export default function Nav({ page, setPage }) {
      }}>
       <BottomNavigationAction label='Overview' value='overview' icon={<HomeRounded />} title='Overview' />
       <BottomNavigationAction label='Track' value='track' icon={<BarChartRounded />} title='Track' />
+      <BottomNavigationAction label='Budget' value='budget' icon={<AccountBalanceWalletRounded />} title="Budget" />
       <BottomNavigationAction color="error" sx={{color:'red !important'}} label='Logout'
        value='logout' icon={<PowerSettingsNewRounded />} title="Logout" />
     </BottomNavigation>
