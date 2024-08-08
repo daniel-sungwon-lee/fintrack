@@ -19,19 +19,19 @@ import { closeSnackbar, enqueueSnackbar, MaterialDesignContent, SnackbarProvider
 
 const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
-// const NumericFormatCustom = forwardRef(function NumericFormatCustom(props, ref) {
-//   const { onChange, ...other } = props
+const NumericFormatCustom = forwardRef(function NumericFormatCustom(props, ref) {
+  const { onChange, ...other } = props
 
-//   return (
-//     <NumericFormat {...other} getInputRef={ref} onValueChange={(values) => {
-//       onChange({ target: { name: props.name, value: values.value }, })
-//     }} thousandSeparator valueIsNumericString prefix="$" />
-//   )
-// })
-// NumericFormatCustom.propTypes = {
-//   name: PropTypes.string.isRequired,
-//   onChange: PropTypes.func.isRequired,
-// }
+  return (
+    <NumericFormat {...other} getInputRef={ref} onValueChange={(values) => {
+      onChange({ target: { name: props.name, value: values.value }, })
+    }} thousandSeparator valueIsNumericString prefix="$" />
+  )
+})
+NumericFormatCustom.propTypes = {
+  name: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+}
 
 const StyledSnackbar = styled(MaterialDesignContent)(() => ({
   '&.notistack-MuiContent-success': {backgroundColor: '#00c169'},
@@ -772,7 +772,7 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
                                   <div className="w-100" style={{ marginRight: '16px' }}>
                                     <TextField value={groupProjected} type="currency" id="projected" required disabled={addGroupLoading}
                                       variant="standard" label="Projected" onChange={(e) => setGroupProjected(e.target.value)}
-                                      InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormat }}
+                                      InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormatCustom }}
                                       helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" fullWidth />
                                   </div>
                                 </div>
@@ -955,7 +955,7 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                               <div className="w-100" style={{ marginRight: '16px' }}>
                                 <TextField value={groupProjected} type="currency" id="projected" required disabled={addGroupLoading}
                                   variant="standard" label="Projected" onChange={(e) => setGroupProjected(e.target.value)}
-                                  InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormat }}
+                                  InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormatCustom }}
                                   helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" fullWidth />
                               </div>
                             </div>
@@ -1235,13 +1235,13 @@ function BudgetRowCategory({rows, budgetId, groupRowId, userId, setRows, addExpa
                                   <div>
                                     <TextField value={catProjected} type="currency" id="projected" required disabled={addCatLoading}
                                       variant="standard" label="Projected" onChange={(e) => setCatProjected(e.target.value)}
-                                      InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
+                                      InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormatCustom }}
                                       helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
                                   </div>
                                   <div>
                                     <TextField value={catActual} type="currency" id="actual" required disabled={addCatLoading}
                                       variant="standard" label="Actual" onChange={(e) => setCatActual(e.target.value)}
-                                      InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
+                                      InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormatCustom }}
                                       helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
                                   </div>
                                 </div>
@@ -1327,13 +1327,13 @@ function BudgetRowCategory({rows, budgetId, groupRowId, userId, setRows, addExpa
                         <div>
                           <TextField value={catProjected} type="currency" id="projected" required disabled={addCatLoading}
                             variant="standard" label="Projected" onChange={(e) => setCatProjected(e.target.value)}
-                            InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
+                            InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormatCustom }}
                             helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
                         </div>
                         <div>
                           <TextField value={catActual} type="currency" id="actual" required disabled={addCatLoading}
                             variant="standard" label="Actual" onChange={(e) => setCatActual(e.target.value)}
-                            InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormat }}
+                            InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormatCustom }}
                             helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
                         </div>
                       </div>
