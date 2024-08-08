@@ -19,20 +19,6 @@ import { closeSnackbar, enqueueSnackbar, MaterialDesignContent, SnackbarProvider
 
 const converter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
-const NumericFormatCustom = forwardRef(function NumericFormatCustom(props, ref) {
-  const { onChange, ...other } = props
-
-  return (
-    <NumericFormat {...other} getInputRef={ref} onValueChange={(values) => {
-      onChange({ target: { name: props.name, value: values.value }, })
-    }} thousandSeparator valueIsNumericString prefix="$" />
-  )
-})
-NumericFormatCustom.propTypes = {
-  name: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-}
-
 const StyledSnackbar = styled(MaterialDesignContent)(() => ({
   '&.notistack-MuiContent-success': {backgroundColor: '#00c169'},
   '&.notistack-MuiContent-error': {backgroundColor: '#d32f2f'}
@@ -770,10 +756,10 @@ function BudgetTable({budgetId, userId, name, frequency, fromDate, toDate, rows,
                                       helperText={addGroupError ? 'Please try again' : 'Ex: Child'} fullWidth />
                                   </div>
                                   <div className="w-100" style={{ marginRight: '16px' }}>
-                                    <TextField value={groupProjected} type="currency" id="projected" required disabled={addGroupLoading}
-                                      variant="standard" label="Projected" onChange={(e) => setGroupProjected(e.target.value)}
-                                      InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormatCustom }}
-                                      helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" fullWidth />
+                                    <NumericFormat value={groupProjected} id='projected' required disabled={addGroupLoading} prefix="$"
+                                      variant="standard" label='Projected' onValueChange={(values) => setGroupProjected(values.floatValue)}
+                                      InputLabelProps={{ required: false }} customInput={TextField} thousandSeparator fullWidth
+                                      error={addGroupError} helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" />
                                   </div>
                                 </div>
                               </div>
@@ -953,10 +939,10 @@ function BudgetRowGroup({budgetId, rowId, category, projected, actual, remaining
                                   helperText={addGroupError ? 'Please try again' : 'Ex: Child'} fullWidth />
                               </div>
                               <div className="w-100" style={{ marginRight: '16px' }}>
-                                <TextField value={groupProjected} type="currency" id="projected" required disabled={addGroupLoading}
-                                  variant="standard" label="Projected" onChange={(e) => setGroupProjected(e.target.value)}
-                                  InputLabelProps={{ required: false }} error={addGroupError} InputProps={{ inputComponent: NumericFormatCustom }}
-                                  helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" fullWidth />
+                                <NumericFormat value={groupProjected} id='projected' required disabled={addGroupLoading} prefix="$"
+                                  variant="standard" label='Projected' onValueChange={(values) => setGroupProjected(values.floatValue)}
+                                  InputLabelProps={{ required: false }} customInput={TextField} thousandSeparator fullWidth
+                                  error={addGroupError} helperText={addGroupError ? 'Please try again' : ''} placeholder="$0.00" />
                               </div>
                             </div>
                           </div>
@@ -1225,25 +1211,21 @@ function BudgetRowCategory({rows, budgetId, groupRowId, userId, setRows, addExpa
                                 </IconButton>
                               </div>
                               <div className="d-flex justify-content-between w-100">
-                                <div className="w-100" style={{ maxWidth: '50%' }}>
+                                <div className="w-100">
                                   <TextField value={catCategory} id="category" required disabled={addCatLoading}
                                     variant="standard" label="Category" onChange={(e) => setCatCategory(e.target.value)}
                                     InputLabelProps={{ required: false }} error={addCatError} sx={{ marginBottom: '0.5rem' }}
                                     helperText={addCatError ? 'Please try again' : 'Ex: Mortgage'} fullWidth />
                                 </div>
-                                <div className="d-flex" style={{ marginRight: '16px' }}>
-                                  <div>
-                                    <TextField value={catProjected} type="currency" id="projected" required disabled={addCatLoading}
-                                      variant="standard" label="Projected" onChange={(e) => setCatProjected(e.target.value)}
-                                      InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormatCustom }}
-                                      helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
-                                  </div>
-                                  <div>
-                                    <TextField value={catActual} type="currency" id="actual" required disabled={addCatLoading}
-                                      variant="standard" label="Actual" onChange={(e) => setCatActual(e.target.value)}
-                                      InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormatCustom }}
-                                      helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
-                                  </div>
+                                <div className="d-flex w-100" style={{ marginRight: '16px' }}>
+                                  <NumericFormat value={catProjected} id='projected' required disabled={addCatLoading} prefix="$"
+                                   variant="standard" label='Projected' onValueChange={(values) => setCatProjected(values.floatValue)}
+                                   InputLabelProps={{ required: false }} customInput={TextField} thousandSeparator fullWidth
+                                   error={addCatError} helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
+                                  <NumericFormat value={catActual} id='actual' required disabled={addCatLoading} prefix="$"
+                                   variant="standard" label='Actual' onValueChange={(values) => setCatActual(values.floatValue)}
+                                   InputLabelProps={{required: false}} customInput={TextField} thousandSeparator fullWidth
+                                   error={addCatError} helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
                                 </div>
                               </div>
                             </div>
@@ -1317,25 +1299,21 @@ function BudgetRowCategory({rows, budgetId, groupRowId, userId, setRows, addExpa
                       </IconButton>
                     </div>
                     <div className="d-flex justify-content-between w-100">
-                      <div className="w-100" style={{ maxWidth: '50%' }}>
+                      <div className="w-100">
                         <TextField value={catCategory} id="category" required disabled={addCatLoading}
                           variant="standard" label="Category" onChange={(e) => setCatCategory(e.target.value)}
                           InputLabelProps={{ required: false }} error={addCatError} sx={{ marginBottom: '0.5rem' }}
                           helperText={addCatError ? 'Please try again' : 'Ex: Mortgage'} fullWidth />
                       </div>
-                      <div className="d-flex" style={{ marginRight: '16px' }}>
-                        <div>
-                          <TextField value={catProjected} type="currency" id="projected" required disabled={addCatLoading}
-                            variant="standard" label="Projected" onChange={(e) => setCatProjected(e.target.value)}
-                            InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormatCustom }}
-                            helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
-                        </div>
-                        <div>
-                          <TextField value={catActual} type="currency" id="actual" required disabled={addCatLoading}
-                            variant="standard" label="Actual" onChange={(e) => setCatActual(e.target.value)}
-                            InputLabelProps={{ required: false }} error={addCatError} InputProps={{ inputComponent: NumericFormatCustom }}
-                            helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
-                        </div>
+                      <div className="d-flex w-100" style={{ marginRight: '16px' }}>
+                        <NumericFormat value={catProjected} id='projected' required disabled={addCatLoading} prefix="$"
+                          variant="standard" label='Projected' onValueChange={(values) => setCatProjected(values.floatValue)}
+                          InputLabelProps={{ required: false }} customInput={TextField} thousandSeparator fullWidth
+                          error={addCatError} helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
+                        <NumericFormat value={catActual} id='actual' required disabled={addCatLoading} prefix="$"
+                          variant="standard" label='Actual' onValueChange={(values) => setCatActual(values.floatValue)}
+                          InputLabelProps={{ required: false }} customInput={TextField} thousandSeparator fullWidth
+                          error={addCatError} helperText={addCatError ? 'Please try again' : ''} placeholder="$0.00" />
                       </div>
                     </div>
                   </div>
